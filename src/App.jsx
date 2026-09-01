@@ -214,6 +214,7 @@ function App() {
   }, [currentPage]);
 
   const handleNavClick = (e, href) => {
+    if (e) e.preventDefault();
     const mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu) {
       mobileMenu.classList.remove('open');
@@ -221,34 +222,35 @@ function App() {
     }
 
     if (href === '#packages') {
-      if (e) e.preventDefault();
       window.location.hash = '#packages';
       setCurrentPage('packages');
       window.scrollTo({ top: 0, behavior: 'instant' });
     } else if (href === '#about') {
-      if (e) e.preventDefault();
       window.location.hash = '#about';
       setCurrentPage('about');
       window.scrollTo({ top: 0, behavior: 'instant' });
     } else if (href === '#booking') {
-      if (e) e.preventDefault();
-      window.location.hash = '#booking';
-      setCurrentPage('booking');
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    } else if (currentPageRef.current !== 'home') {
-      if (e) e.preventDefault();
+      handleBookRedirect(e, 'Navigation Menu');
+    } else {
       window.location.hash = href;
-      setCurrentPage('home');
-      setTimeout(() => {
+      if (currentPageRef.current !== 'home') {
+        setCurrentPage('home');
+        setTimeout(() => {
+          if (href === '#home') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            const target = document.querySelector(href);
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 80);
+      } else {
         if (href === '#home') {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           const target = document.querySelector(href);
           if (target) target.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 60);
-    } else {
-      // Normal anchor on home page
+      }
     }
   };
 
@@ -793,6 +795,7 @@ function App() {
       </section>
 
       <section id="about" className="why-avs" aria-labelledby="why-heading">
+        <span id="rmt" className="section-anchor"></span>
         <div className="container">
           <p className="section-eyebrow reveal-up">Experience the Difference</p>
           <h2 className="why-heading reveal-up" id="why-heading">Why Choose AVS?</h2>
