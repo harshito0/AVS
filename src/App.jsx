@@ -252,16 +252,18 @@ function App() {
     }
   };
 
-  const handleBookRedirect = (e) => {
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingModalSource, setBookingModalSource] = useState('Website CTA');
+
+  const handleBookRedirect = (e, source = 'Website CTA') => {
     if (e) e.preventDefault();
-    window.location.hash = '#booking';
-    setCurrentPage('booking');
     const mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu) {
       mobileMenu.classList.remove('open');
       document.body.style.overflow = '';
     }
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    setBookingModalSource(source);
+    setIsBookingModalOpen(true);
   };
 
   useEffect(() => {
@@ -1260,6 +1262,16 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* --------------------------------------------------------
+          AURA VITAL STAR — PREMIUM LUXURY CONCIERGE BOOKING MODAL
+          -------------------------------------------------------- */}
+      <BookingPage
+        isModal={true}
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        initialSource={bookingModalSource}
+      />
     </>
   );
 }

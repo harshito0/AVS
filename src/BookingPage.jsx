@@ -132,13 +132,19 @@ const SERVICES = [
   }
 ];
 
-export default function BookingPage({ onBackToHome }) {
+export default function BookingPage({
+  onBackToHome,
+  isModal = false,
+  isOpen = false,
+  onClose = () => {},
+  initialSource = 'Website CTA'
+}) {
   // Step control: 0 = Hero Entry, 1 = Location, 2 = Service, 3 = Date & Time, 4 = Details, 5 = Review, 6 = Success
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(isModal ? 1 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Booking State
-  const [bookingSource, setBookingSource] = useState('Website');
+  const [bookingSource, setBookingSource] = useState(initialSource || 'Website CTA');
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
   const [selectedCategory, setSelectedCategory] = useState('ALL SERVICES');
   const [selectedService, setSelectedService] = useState(null);
@@ -183,13 +189,23 @@ export default function BookingPage({ onBackToHome }) {
   const [crmBookings, setCrmBookings] = useState([]);
   const [showQrModal, setShowQrModal] = useState(false);
 
+  // Reset or set step when modal opens
+  useEffect(() => {
+    if (isModal && isOpen) {
+      setStep(1);
+      setBookingSource(initialSource || 'Website CTA');
+    }
+  }, [isModal, isOpen, initialSource]);
+
   // Initialize booking source & CRM records
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    const detected = detectBookingSource();
-    setBookingSource(detected);
+    if (!isModal) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      const detected = detectBookingSource();
+      setBookingSource(detected);
+    }
     setCrmBookings(getBookings());
-  }, []);
+  }, [isModal]);
 
   // Calendar Helpers
   const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
@@ -486,6 +502,512 @@ export default function BookingPage({ onBackToHome }) {
       isSelected,
       key: `day-${d}`
     });
+  }
+
+  // If rendered as a Modal overlay
+  if (isModal) {
+    if (!isOpen) return null;
+
+    return (
+      <div 
+        className={`avs-booking-modal-overlay ${isOpen ? 'active' : ''}`}
+        onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="avs-modal-title"
+      >
+        <div className="avs-booking-modal-panel" onClick={(e) => e.stopPropagation()}>
+          {/* Modal Header */}
+          <div className="avs-booking-modal-header">
+            <div className="avs-booking-modal-header-inner">
+              <div>
+                <span className="avs-booking-modal-eyebrow">AURA VITAL STAR</span>
+                <h2 className="avs-booking-modal-title" id="avs-modal-title">
+                  Let's plan your<br />wellness experience.
+                </h2>
+                <p className="avs-booking-modal-subtext">
+                  Choose your location, service and preferred appointment time.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="avs-booking-modal-close-btn"
+                onClick={onClose}
+                aria-label="Close booking modal"
+              >
+                <span>✕</span> CLOSE
+              </button>
+            </div>
+
+            {/* Progress indicator */}
+            <div className="avs-booking-modal-progress-wrap">
+              <div className="avs-booking-modal-progress-info">
+                <span>STEP {step <= 1 ? '01' : step < 10 ? `0${step}` : step} OF 05</span>
+                <span className="avs-step-name-badge">
+                  {step <= 1 && 'LOCATION'}
+                  {step === 2 && 'SERVICE'}
+                  {step === 3 && 'DATE & TIME'}
+                  {step === 4 && 'YOUR DETAILS'}
+                  {step === 5 && 'REVIEW & CONFIRM'}
+                  {step === 6 && 'CONFIRMED'}
+                </span>
+              </div>
+              <div className="avs-booking-modal-progress-track">
+                <div 
+                  className="avs-booking-modal-progress-fill" 
+                  style={{ width: `${Math.min((Math.max(step, 1) / 5) * 100, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Body Content */}
+          <div className="avs-booking-modal-body">
+            {/* STEP 01: LOCATION */}
+            {step === 1 && (
+              <section className="avs-step-card avs-step-transition-enter">
+                <div className="avs-step-card-header">
+                  <span className="avs-step-tag">STEP 01</span>
+                  <h2 className="avs-step-title">Select Your Preferred Location</h2>
+                  <p className="avs-step-desc">Choose which Aura Vital Star rejuvenation sanctuary you would like to visit.</p>
+                </div>
+
+                <div className="avs-location-grid">
+                  {LOCATIONS.map((loc) => {
+                    const isSelected = selectedLocation?.id === loc.id;
+                    return (
+                      <div
+                        key={loc.id}
+                        className={`avs-location-card ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedLocation(loc)}
+                      >
+                        <div className="avs-location-card-header">
+                          <h3 className="avs-location-name">{loc.name}</h3>
+                          {loc.badge && <span className="avs-location-badge">{loc.badge}</span>}
+                        </div>
+                        <p className="avs-location-address">{loc.address}</p>
+                        <div className="avs-location-hours">
+                          <span>Hours: {loc.hours}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="avs-step-action-bar">
+                  <div></div>
+                  <button
+                    type="button"
+                    className="avs-btn-continue"
+                    onClick={goToNextStep}
+                    disabled={!selectedLocation}
+                  >
+                    <span>CONTINUE</span> &rarr;
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* STEP 02: SERVICE */}
+            {step === 2 && (
+              <section className="avs-step-card avs-step-transition-enter">
+                <div className="avs-step-card-header">
+                  <span className="avs-step-tag">STEP 02</span>
+                  <h2 className="avs-step-title">Select Your Wellness Service</h2>
+                  <p className="avs-step-desc">Explore our curated offerings tailored to your health, beauty, and relaxation.</p>
+                </div>
+
+                <div className="avs-category-pills">
+                  {SERVICE_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={`avs-cat-pill ${selectedCategory === cat ? 'active' : ''}`}
+                      onClick={() => setSelectedCategory(cat)}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="avs-services-grid">
+                  {SERVICES_CATALOG
+                    .filter((s) => selectedCategory === 'ALL SERVICES' || s.category.toUpperCase() === selectedCategory.toUpperCase())
+                    .map((svc) => {
+                      const isSelected = selectedService?.id === svc.id;
+                      return (
+                        <div
+                          key={svc.id}
+                          className={`avs-service-item-card ${isSelected ? 'selected' : ''}`}
+                          onClick={() => setSelectedService(svc)}
+                        >
+                          <div className="avs-svc-top-row">
+                            <h3 className="avs-svc-title">{svc.title}</h3>
+                            <span className="avs-svc-price">{svc.price}</span>
+                          </div>
+                          <p className="avs-svc-desc">{svc.desc}</p>
+                          <div className="avs-svc-meta-row">
+                            <span className="avs-svc-dur">⏱ {svc.duration}</span>
+                            <span className="avs-svc-cat-tag">{svc.category}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                <div className="avs-step-action-bar">
+                  <button type="button" className="avs-btn-back" onClick={goToPrevStep}>&larr; BACK</button>
+                  <button type="button" className="avs-btn-continue" onClick={goToNextStep} disabled={!selectedService}>
+                    <span>CONTINUE</span> &rarr;
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* STEP 03: DATE & TIME */}
+            {step === 3 && (
+              <section className="avs-step-card avs-step-transition-enter">
+                <div className="avs-step-card-header">
+                  <span className="avs-step-tag">STEP 03</span>
+                  <h2 className="avs-step-title">Choose Date &amp; Time Slot</h2>
+                  <p className="avs-step-desc">Select your preferred date on our live calendar and pick an available time slot.</p>
+                </div>
+
+                <div className="avs-datetime-split-grid">
+                  <div className="avs-calendar-panel">
+                    <div className="avs-cal-header">
+                      <button type="button" className="avs-cal-nav-btn" onClick={handlePrevMonth}>&lsaquo;</button>
+                      <h4 className="avs-cal-month-title">{MONTH_NAMES[calMonth]} {calYear}</h4>
+                      <button type="button" className="avs-cal-nav-btn" onClick={handleNextMonth}>&rsaquo;</button>
+                    </div>
+
+                    <div className="avs-cal-days-header">
+                      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                    </div>
+
+                    <div className="avs-cal-grid">
+                      {calendarDays.map((cell) => {
+                        if (cell.empty) return <div key={cell.key} className="avs-cal-cell empty"></div>;
+                        return (
+                          <button
+                            key={cell.key}
+                            type="button"
+                            className={`avs-cal-cell ${cell.isPast ? 'disabled' : ''} ${cell.isToday ? 'today' : ''} ${cell.isSelected ? 'selected' : ''}`}
+                            disabled={cell.isPast}
+                            onClick={() => setSelectedDate(cell.dateStr)}
+                          >
+                            {cell.dayNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="avs-timeslots-panel">
+                    <h4 className="avs-timeslots-title">Available Time Slots</h4>
+                    {!selectedDate ? (
+                      <p className="avs-select-date-prompt">Please select a date on the calendar to view time slots.</p>
+                    ) : (
+                      <div className="avs-time-slots-grid">
+                        {TIME_SLOTS.map((time) => (
+                          <button
+                            key={time}
+                            type="button"
+                            className={`avs-time-slot-btn ${selectedTime === time ? 'selected' : ''}`}
+                            onClick={() => setSelectedTime(time)}
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="avs-step-action-bar">
+                  <button type="button" className="avs-btn-back" onClick={goToPrevStep}>&larr; BACK</button>
+                  <button type="button" className="avs-btn-continue" onClick={goToNextStep} disabled={!selectedDate || !selectedTime}>
+                    <span>CONTINUE</span> &rarr;
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* STEP 04: YOUR DETAILS */}
+            {step === 4 && (
+              <section className="avs-step-card avs-step-transition-enter">
+                <div className="avs-step-card-header">
+                  <span className="avs-step-tag">STEP 04</span>
+                  <h2 className="avs-step-title">Your Contact &amp; Email Verification</h2>
+                  <p className="avs-step-desc">Please fill in your contact information. Email verification is required to guarantee your spot.</p>
+                </div>
+
+                <div className="avs-details-form-grid">
+                  <div className="avs-form-group">
+                    <label className="avs-form-label">Full Name *</label>
+                    <input
+                      type="text"
+                      className={`avs-form-input ${errors.name ? 'error' : ''}`}
+                      placeholder="e.g. Harshit Singh"
+                      value={customerDetails.name}
+                      onChange={(e) => setCustomerDetails({ ...customerDetails, name: e.target.value })}
+                    />
+                    {errors.name && <span className="avs-form-error">{errors.name}</span>}
+                  </div>
+
+                  <div className="avs-form-group">
+                    <label className="avs-form-label">Phone Number *</label>
+                    <input
+                      type="tel"
+                      className={`avs-form-input ${errors.phone ? 'error' : ''}`}
+                      placeholder="e.g. +1 647-987-5451"
+                      value={customerDetails.phone}
+                      onChange={(e) => setCustomerDetails({ ...customerDetails, phone: e.target.value })}
+                    />
+                    {errors.phone && <span className="avs-form-error">{errors.phone}</span>}
+                  </div>
+
+                  <div className="avs-form-group avs-full-width">
+                    <label className="avs-form-label">Email Address * (OTP Verification Required)</label>
+                    <div className="avs-email-otp-input-row">
+                      <input
+                        type="email"
+                        className={`avs-form-input ${errors.email ? 'error' : ''} ${isEmailVerified ? 'verified' : ''}`}
+                        placeholder="e.g. harshitsingh19622@gmail.com"
+                        value={customerDetails.email}
+                        onChange={(e) => {
+                          setCustomerDetails({ ...customerDetails, email: e.target.value });
+                          if (isEmailVerified && e.target.value.trim().toLowerCase() !== verifiedEmail) {
+                            setIsEmailVerified(false);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className={`avs-btn-send-otp ${isEmailVerified ? 'verified' : ''}`}
+                        onClick={handleSendOtp}
+                        disabled={otpSending || !customerDetails.email.includes('@')}
+                      >
+                        {isEmailVerified ? '✓ VERIFIED' : otpSending ? 'SENDING...' : 'SEND OTP'}
+                      </button>
+                    </div>
+                    {errors.email && <span className="avs-form-error">{errors.email}</span>}
+                    {isEmailVerified && (
+                      <p className="avs-verified-badge-line">✓ Email verified successfully! You may proceed with booking.</p>
+                    )}
+                  </div>
+
+                  <div className="avs-form-group avs-full-width">
+                    <label className="avs-form-label">Special Requests or Notes (Optional)</label>
+                    <textarea
+                      className="avs-form-textarea"
+                      rows="3"
+                      placeholder="Mention any specific preferences, allergies, or health conditions..."
+                      value={customerDetails.notes}
+                      onChange={(e) => setCustomerDetails({ ...customerDetails, notes: e.target.value })}
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div className="avs-step-action-bar">
+                  <button type="button" className="avs-btn-back" onClick={goToPrevStep}>&larr; BACK</button>
+                  <button type="button" className="avs-btn-continue" onClick={goToNextStep}>
+                    <span>CONTINUE TO REVIEW</span> &rarr;
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* STEP 05: REVIEW & CONFIRM */}
+            {step === 5 && (
+              <section className="avs-step-card avs-step-transition-enter">
+                <div className="avs-step-card-header">
+                  <span className="avs-step-tag">STEP 05</span>
+                  <h2 className="avs-step-title">Review &amp; Confirm Your Appointment</h2>
+                  <p className="avs-step-desc">Please verify all details before submitting your reservation.</p>
+                </div>
+
+                <div className="avs-review-cards-grid">
+                  <div className="avs-review-card">
+                    <h4 className="avs-review-card-title">1. Location &amp; Service</h4>
+                    <p className="avs-review-detail-line"><strong>Location:</strong> {selectedLocation?.name}</p>
+                    <p className="avs-review-detail-line"><strong>Address:</strong> {selectedLocation?.address}</p>
+                    <p className="avs-review-detail-line"><strong>Service:</strong> {selectedService?.title}</p>
+                    <p className="avs-review-detail-line"><strong>Duration:</strong> {selectedService?.duration}</p>
+                    <p className="avs-review-detail-line"><strong>Price:</strong> {selectedService?.price}</p>
+                  </div>
+
+                  <div className="avs-review-card">
+                    <h4 className="avs-review-card-title">2. Date &amp; Time</h4>
+                    <p className="avs-review-detail-line"><strong>Date:</strong> {formatLuxuryDate(selectedDate)}</p>
+                    <p className="avs-review-detail-line"><strong>Time Slot:</strong> {selectedTime}</p>
+                    <p className="avs-review-detail-line"><strong>Channel:</strong> {bookingSource}</p>
+                  </div>
+
+                  <div className="avs-review-card avs-full-width">
+                    <h4 className="avs-review-card-title">3. Customer Information</h4>
+                    <p className="avs-review-detail-line"><strong>Name:</strong> {customerDetails.name}</p>
+                    <p className="avs-review-detail-line"><strong>Phone:</strong> {customerDetails.phone}</p>
+                    <p className="avs-review-detail-line"><strong>Email:</strong> {customerDetails.email} (Verified ✓)</p>
+                    {customerDetails.notes && <p className="avs-review-detail-line"><strong>Notes:</strong> {customerDetails.notes}</p>}
+                  </div>
+                </div>
+
+                <div className="avs-step-action-bar">
+                  <button type="button" className="avs-btn-back" onClick={goToPrevStep}>&larr; BACK</button>
+                  <button
+                    type="button"
+                    className="avs-btn-continue"
+                    onClick={handleConfirmAppointment}
+                    disabled={isSubmitting}
+                  >
+                    <span>{isSubmitting ? 'CONFIRMING...' : 'CONFIRM APPOINTMENT'}</span> &rarr;
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* STEP 06: CONFIRMATION SUCCESS */}
+            {step === 6 && confirmedBooking && (
+              <section className="avs-success-container avs-step-transition-enter">
+                <div className="avs-success-check-badge">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                    <polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+
+                <p className="avs-success-eyebrow">APPOINTMENT REQUEST RECEIVED</p>
+                <h1 className="avs-success-headline">Thank you, {confirmedBooking.customerName}.</h1>
+                <p className="avs-success-message">
+                  Your appointment request has been recorded under reference <strong>{confirmedBooking.id}</strong>. A confirmation email has been sent to <strong>{confirmedBooking.email}</strong>.
+                </p>
+
+                <div className="avs-success-recap-card">
+                  <div className="avs-success-recap-field">
+                    <span className="avs-review-label">Service</span>
+                    <span className="avs-review-value">{confirmedBooking.service}</span>
+                  </div>
+                  <div className="avs-success-recap-field">
+                    <span className="avs-review-label">Location</span>
+                    <span className="avs-review-value">{confirmedBooking.location}</span>
+                  </div>
+                  <div className="avs-success-recap-field">
+                    <span className="avs-review-label">Date &amp; Time</span>
+                    <span className="avs-review-value">{formatLuxuryDate(confirmedBooking.date)} at {confirmedBooking.time}</span>
+                  </div>
+                </div>
+
+                <div className="avs-success-actions-row">
+                  <button type="button" className="avs-btn-primary-success" onClick={onClose}>
+                    DONE &amp; CLOSE &rarr;
+                  </button>
+                  <button type="button" className="avs-btn-secondary-success" onClick={handleBookAnother}>
+                    BOOK ANOTHER APPOINTMENT
+                  </button>
+                </div>
+              </section>
+            )}
+          </div>
+        </div>
+
+        {/* OTP VERIFICATION MODAL OVERLAY */}
+        {showOtpModal && (
+          <div className="avs-modal-overlay" onClick={() => setShowOtpModal(false)}>
+            <div className="avs-otp-modal-container" onClick={(e) => e.stopPropagation()}>
+              <button 
+                type="button" 
+                className="avs-modal-close-btn"
+                onClick={() => setShowOtpModal(false)}
+                aria-label="Close modal"
+              >
+                &times;
+              </button>
+
+              <div className="avs-otp-modal-header">
+                <div className="avs-otp-shield-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#DFBE77" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="M9 12l2 2 4-4" stroke="#DFBE77" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <h3 className="avs-otp-modal-title">Verify Your Email</h3>
+                <p className="avs-otp-modal-subtitle">
+                  We've dispatched a 6-digit verification code to<br />
+                  <u>{customerDetails.email}</u>
+                </p>
+              </div>
+
+              <div className="avs-otp-modal-body">
+                {otpError && (
+                  <div className="avs-otp-alert-box avs-otp-alert-error">
+                    <span className="avs-otp-alert-icon">!</span>
+                    <span>{otpError}</span>
+                  </div>
+                )}
+
+                {otpSuccessMsg && !otpError && (
+                  <div className="avs-otp-alert-box avs-otp-alert-success">
+                    <span className="avs-otp-alert-icon">✓</span>
+                    <span>{otpSuccessMsg}</span>
+                  </div>
+                )}
+
+                <div className="avs-otp-digit-row" onPaste={handleOtpPaste}>
+                  {otpDigits.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      id={`avs-otp-digit-${idx}`}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      className={`avs-otp-digit-input ${otpError ? 'error' : ''} ${digit ? 'filled' : ''}`}
+                      value={digit}
+                      onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                      autoFocus={idx === 0}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="avs-btn-verify-proceed"
+                  onClick={() => handleVerifyOtp()}
+                  disabled={otpDigits.join('').length < 6 && (!otpInput || otpInput.length < 6)}
+                >
+                  VERIFY &amp; PROCEED &rarr;
+                </button>
+              </div>
+
+              <div className="avs-otp-modal-footer">
+                <span className="avs-otp-resend-status">
+                  {isTimerActive ? (
+                    <>Resend code in <strong>00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong></>
+                  ) : (
+                    <button
+                      type="button"
+                      className="avs-otp-resend-btn"
+                      onClick={handleSendOtp}
+                      disabled={otpSending}
+                    >
+                      {otpSending ? 'Sending code...' : 'Resend Code'}
+                    </button>
+                  )}
+                </span>
+
+                <button
+                  type="button"
+                  className="avs-otp-edit-email-btn"
+                  onClick={() => setShowOtpModal(false)}
+                >
+                  Edit Email
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (

@@ -2252,6 +2252,396 @@
   text-decoration: underline;
   padding: 0;
 }
+.avs-otp-top-icon-circle {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: rgba(185, 151, 91, 0.15);
+  border: 1.5px solid #B9975B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #DFBE77;
+  box-shadow: 0 0 20px rgba(185, 151, 91, 0.25);
+}
+
+.avs-otp-modal-heading {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: #FAF5EA;
+  font-size: 1.65rem;
+  font-weight: 600;
+  margin: 0 0 6px;
+  letter-spacing: 0.02em;
+}
+
+.avs-otp-modal-subheading {
+  color: #D3C4A7;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.avs-otp-email-highlight {
+  color: #FAF5EA;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #B9975B;
+}
+
+.avs-otp-close-x {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #FAF5EA;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+
+.avs-otp-close-x:hover {
+  opacity: 1;
+}
+
+/* MODAL BODY & 6 BOXES */
+.avs-otp-modal-content {
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+
+.avs-otp-boxes-grid {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0 24px;
+}
+
+.avs-otp-input-box {
+  width: 52px;
+  height: 60px;
+  background: #FAF7F2;
+  border: 2px solid #DCD3C5;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1.65rem;
+  font-weight: 700;
+  font-family: 'Inter', -apple-system, monospace;
+  color: #062C22;
+  transition: all 0.2s ease;
+  caret-color: #B9975B;
+}
+
+.avs-otp-input-box:focus {
+  outline: none;
+  border-color: #B9975B;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(185, 151, 91, 0.22), 0 4px 12px rgba(6, 44, 34, 0.08);
+  transform: translateY(-2px);
+}
+
+.avs-otp-input-box.filled {
+  border-color: #96763A;
+  background: #FFFDF9;
+}
+
+.avs-otp-input-box.has-error {
+  border-color: #C0392B;
+  background: #FFF6F5;
+}
+
+/* FEEDBACK MESSAGES */
+.avs-otp-feedback-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  margin-bottom: 18px;
+  animation: avsFadeIn 0.2s ease;
+}
+
+.avs-otp-feedback-msg.error {
+  background: #FDF1F0;
+  color: #A92619;
+  border: 1px solid rgba(192, 57, 43, 0.25);
+}
+
+.avs-otp-feedback-msg.success {
+  background: #EFF8F3;
+  color: #0E6245;
+  border: 1px solid rgba(14, 98, 69, 0.25);
+}
+
+/* ACTIONS */
+.avs-otp-submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #062C22 0%, #0B3F32 100%);
+  color: #FAF5EA;
+  border: 1px solid #B9975B;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 14px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(6, 44, 34, 0.25);
+}
+
+.avs-otp-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #08382C 0%, #0F4D3D 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(6, 44, 34, 0.35);
+  transform: translateY(-1px);
+}
+
+.avs-otp-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.avs-otp-resend-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #EBE4D8;
+  font-size: 0.82rem;
+  color: #5C6762;
+}
+
+.avs-otp-resend-link {
+  background: none;
+  border: none;
+  color: #062C22;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.82rem;
+  transition: color 0.2s;
+}
+
+.avs-otp-resend-link:hover {
+  color: #B9975B;
+}
+
+.avs-otp-change-email-btn {
+  background: none;
+  border: none;
+  color: #7A8680;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.avs-otp-change-email-btn:hover {
+  color: #062C22;
+}
+
+@keyframes avsModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.avs-otp-modal-heading {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: #FAF5EA;
+  font-size: 1.65rem;
+  font-weight: 600;
+  margin: 0 0 6px;
+  letter-spacing: 0.02em;
+}
+
+.avs-otp-modal-subheading {
+  color: #D3C4A7;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.avs-otp-email-highlight {
+  color: #FAF5EA;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #B9975B;
+}
+
+.avs-otp-close-x {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #FAF5EA;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+
+.avs-otp-close-x:hover {
+  opacity: 1;
+}
+
+/* MODAL BODY & 6 BOXES */
+.avs-otp-modal-content {
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+
+.avs-otp-boxes-grid {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0 24px;
+}
+
+.avs-otp-input-box {
+  width: 52px;
+  height: 60px;
+  background: #FAF7F2;
+  border: 2px solid #DCD3C5;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1.65rem;
+  font-weight: 700;
+  font-family: 'Inter', -apple-system, monospace;
+  color: #062C22;
+  transition: all 0.2s ease;
+  caret-color: #B9975B;
+}
+
+.avs-otp-input-box:focus {
+  outline: none;
+  border-color: #B9975B;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(185, 151, 91, 0.22), 0 4px 12px rgba(6, 44, 34, 0.08);
+  transform: translateY(-2px);
+}
+
+.avs-otp-input-box.filled {
+  border-color: #96763A;
+  background: #FFFDF9;
+}
+
+.avs-otp-input-box.has-error {
+  border-color: #C0392B;
+  background: #FFF6F5;
+}
+
+/* FEEDBACK MESSAGES */
+.avs-otp-feedback-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  margin-bottom: 18px;
+  animation: avsFadeIn 0.2s ease;
+}
+
+.avs-otp-feedback-msg.error {
+  background: #FDF1F0;
+  color: #A92619;
+  border: 1px solid rgba(192, 57, 43, 0.25);
+}
+
+.avs-otp-feedback-msg.success {
+  background: #EFF8F3;
+  color: #0E6245;
+  border: 1px solid rgba(14, 98, 69, 0.25);
+}
+
+/* ACTIONS */
+.avs-otp-submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #062C22 0%, #0B3F32 100%);
+  color: #FAF5EA;
+  border: 1px solid #B9975B;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 14px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(6, 44, 34, 0.25);
+}
+
+.avs-otp-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #08382C 0%, #0F4D3D 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(6, 44, 34, 0.35);
+  transform: translateY(-1px);
+}
+
+.avs-otp-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.avs-otp-resend-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #EBE4D8;
+  font-size: 0.82rem;
+  color: #5C6762;
+}
+
+.avs-otp-resend-link {
+  background: none;
+  border: none;
+  color: #062C22;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.82rem;
+  transition: color 0.2s;
+}
+
+.avs-otp-resend-link:hover {
+  color: #B9975B;
+}
+
+.avs-otp-change-email-btn {
+  background: none;
+  border: none;
+  color: #7A8680;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
 
 .avs-otp-change-email-btn:hover {
   color: #062C22;
@@ -2276,5 +2666,192 @@
     height: 52px;
     font-size: 1.35rem;
     border-radius: 8px;
+  }
+}
+
+/* ==========================================================================
+   PREMIUM AVS CONCIERGE BOOKING MODAL (FULL EXPERIENCE)
+   ========================================================================== */
+
+.avs-booking-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(6, 44, 34, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.avs-booking-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.avs-booking-modal-panel {
+  width: 100%;
+  max-width: 1100px;
+  max-height: 90vh;
+  height: 90vh;
+  background: #FAF7F2;
+  border-radius: 20px;
+  border: 1px solid #E0D9CB;
+  box-shadow: 0 32px 64px rgba(6, 44, 34, 0.4), 0 0 0 1px rgba(185, 151, 91, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transform: scale(0.97) translateY(16px);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.avs-booking-modal-overlay.active .avs-booking-modal-panel {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* Modal Header Bar */
+.avs-booking-modal-header {
+  background: #062C22;
+  color: #FAF5EA;
+  padding: 28px 36px 20px 36px;
+  position: relative;
+  border-bottom: 2px solid #B9975B;
+  flex-shrink: 0;
+}
+
+.avs-booking-modal-header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.avs-booking-modal-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #DFBE77;
+  text-transform: uppercase;
+  margin: 0 0 6px 0;
+  display: block;
+}
+
+.avs-booking-modal-title {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: #FAF5EA;
+  margin: 0 0 6px 0;
+  line-height: 1.25;
+}
+
+.avs-booking-modal-subtext {
+  font-size: 0.88rem;
+  color: #D3C9B8;
+  margin: 0;
+}
+
+.avs-booking-modal-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(185, 151, 91, 0.35);
+  color: #FAF5EA;
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.avs-booking-modal-close-btn:hover {
+  background: #B9975B;
+  color: #062C22;
+  border-color: #B9975B;
+  box-shadow: 0 4px 14px rgba(185, 151, 91, 0.3);
+}
+
+/* Modal Progress Bar */
+.avs-booking-modal-progress-wrap {
+  margin-top: 18px;
+}
+
+.avs-booking-modal-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #DFBE77;
+  margin-bottom: 6px;
+}
+
+.avs-step-name-badge {
+  color: #FAF5EA;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.avs-booking-modal-progress-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.avs-booking-modal-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #B9975B 0%, #DFBE77 100%);
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Modal Body Content Container */
+.avs-booking-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 36px;
+  background: #FAF7F2;
+  scroll-behavior: smooth;
+}
+
+/* Mobile Responsive full-screen modal */
+@media (max-width: 768px) {
+  .avs-booking-modal-overlay {
+    padding: 0;
+  }
+  .avs-booking-modal-panel {
+    max-width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+  .avs-booking-modal-header {
+    padding: 20px 20px 16px 20px;
+  }
+  .avs-booking-modal-title {
+    font-size: 1.4rem;
+  }
+  .avs-booking-modal-body {
+    padding: 20px 16px;
   }
 }
