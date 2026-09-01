@@ -337,10 +337,14 @@ export default function BookingPage({
 
     if (isMatch) {
       setIsEmailVerified(true);
+      setVerifiedEmail(customerDetails.email.trim().toLowerCase());
       setOtpError('');
       setOtpSuccessMsg('✓ Email verified successfully!');
       setShowOtpModal(false);
       setErrors((prev) => ({ ...prev, email: null }));
+      if (step === 4) {
+        setStep(5);
+      }
     } else {
       setOtpError('No active OTP found for this email. Please click "Resend Code".');
     }
@@ -393,8 +397,8 @@ export default function BookingPage({
       if (pastedData.length === 6) {
         handleVerifyOtp(pastedData);
       } else {
-        const nextIndex = Math.min(pastedData.length, 5);
-        const nextInput = document.getElementById(`avs-otp-digit-${nextIndex}`);
+        const targetIdx = Math.min(pastedData.length, 5);
+        const nextInput = document.getElementById(`avs-otp-digit-${targetIdx}`);
         if (nextInput) nextInput.focus();
       }
     }
@@ -410,10 +414,8 @@ export default function BookingPage({
       errs.phone = 'Please provide a valid 10-digit phone number.';
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!customerDetails.email || !emailRegex.test(customerDetails.email)) {
+    if (!customerDetails.email || !emailRegex.test(customerDetails.email.trim())) {
       errs.email = 'Please provide a valid email address.';
-    } else if (!isEmailVerified) {
-      errs.email = 'Please click "SEND OTP" and verify your email address before proceeding.';
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -631,9 +633,7 @@ export default function BookingPage({
                 </div>
 
                 <div className="avs-services-grid">
-                  {SERVICES_CATALOG
-                    .filter((s) => selectedCategory === 'ALL SERVICES' || s.category.toUpperCase() === selectedCategory.toUpperCase())
-                    .map((svc) => {
+                  {filteredServices.map((svc) => {
                       const isSelected = selectedService?.id === svc.id;
                       return (
                         <div
@@ -677,7 +677,7 @@ export default function BookingPage({
                   <div className="avs-calendar-panel">
                     <div className="avs-cal-header">
                       <button type="button" className="avs-cal-nav-btn" onClick={handlePrevMonth}>&lsaquo;</button>
-                      <h4 className="avs-cal-month-title">{MONTH_NAMES[calMonth]} {calYear}</h4>
+                      <h4 className="avs-cal-month-title">{monthNames[calMonth]} {calYear}</h4>
                       <button type="button" className="avs-cal-nav-btn" onClick={handleNextMonth}>&rsaquo;</button>
                     </div>
 
@@ -686,7 +686,7 @@ export default function BookingPage({
                     </div>
 
                     <div className="avs-cal-grid">
-                      {calendarDays.map((cell) => {
+                      {calendarCells.map((cell) => {
                         if (cell.empty) return <div key={cell.key} className="avs-cal-cell empty"></div>;
                         return (
                           <button
@@ -696,7 +696,7 @@ export default function BookingPage({
                             disabled={cell.isPast}
                             onClick={() => setSelectedDate(cell.dateStr)}
                           >
-                            {cell.dayNum}
+                            {cell.day}
                           </button>
                         );
                       })}
@@ -709,14 +709,15 @@ export default function BookingPage({
                       <p className="avs-select-date-prompt">Please select a date on the calendar to view time slots.</p>
                     ) : (
                       <div className="avs-time-slots-grid">
-                        {TIME_SLOTS.map((time) => (
+                        {availableSlots.map((slot) => (
                           <button
-                            key={time}
+                            key={slot.time}
                             type="button"
-                            className={`avs-time-slot-btn ${selectedTime === time ? 'selected' : ''}`}
-                            onClick={() => setSelectedTime(time)}
+                            className={`avs-time-slot-btn ${selectedTime === slot.time ? 'selected' : ''} ${slot.booked ? 'booked' : ''}`}
+                            disabled={slot.booked}
+                            onClick={() => setSelectedTime(slot.time)}
                           >
-                            {time}
+                            {slot.time}
                           </button>
                         ))}
                       </div>
