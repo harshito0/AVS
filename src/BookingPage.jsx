@@ -294,7 +294,7 @@ export default function BookingPage({
   // OTP Dispatch & Verification Handlers
   const handleSendOtp = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!customerDetails.email || !emailRegex.test(customerDetails.email)) {
+    if (!customerDetails.email || !emailRegex.test(customerDetails.email.trim())) {
       setErrors((prev) => ({ ...prev, email: 'Please provide a valid email address first.' }));
       return;
     }
@@ -302,9 +302,9 @@ export default function BookingPage({
     setOtpSending(true);
     setOtpError('');
     setOtpSuccessMsg('');
-    setShowOtpModal(true);
+    setOtpSent(true);
 
-    const res = await sendOtpEmail(customerDetails.email, customerDetails.name);
+    const res = await sendOtpEmail(customerDetails.email.trim(), customerDetails.name);
     setOtpSending(false);
 
     if (res && res.success) {
@@ -350,6 +350,8 @@ export default function BookingPage({
     }
   };
 
+  const getOtpInputEl = (idx) => document.getElementById(`avs-otp-digit-inline-${idx}`) || document.getElementById(`avs-otp-digit-${idx}`);
+
   const handleOtpDigitChange = (index, value) => {
     const cleanVal = value.replace(/\D/g, '');
     if (!cleanVal) {
@@ -366,7 +368,7 @@ export default function BookingPage({
     setOtpInput(newDigits.join(''));
 
     if (index < 5) {
-      const nextInput = document.getElementById(`avs-otp-digit-${index + 1}`);
+      const nextInput = getOtpInputEl(index + 1);
       if (nextInput) nextInput.focus();
     }
 
@@ -378,7 +380,7 @@ export default function BookingPage({
 
   const handleOtpKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      const prevInput = document.getElementById(`avs-otp-digit-${index - 1}`);
+      const prevInput = getOtpInputEl(index - 1);
       if (prevInput) prevInput.focus();
     }
   };
@@ -398,7 +400,7 @@ export default function BookingPage({
         handleVerifyOtp(pastedData);
       } else {
         const targetIdx = Math.min(pastedData.length, 5);
-        const nextInput = document.getElementById(`avs-otp-digit-${targetIdx}`);
+        const nextInput = getOtpInputEl(targetIdx);
         if (nextInput) nextInput.focus();
       }
     }
@@ -848,6 +850,84 @@ export default function BookingPage({
                     {isEmailVerified && (
                       <p className="avs-verified-badge-line">✓ Email verified successfully! You may proceed with booking.</p>
                     )}
+
+                    {/* Inline 6-Digit OTP Verification Card */}
+                    {otpSent && !isEmailVerified && (
+                      <div className="avs-inline-otp-card" style={{ marginTop: '16px', background: '#062C22', padding: '18px 20px', borderRadius: '12px', border: '1px solid #B9975B', color: '#FAF5EA' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(185, 151, 91, 0.2)', border: '1px solid #B9975B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DFBE77" strokeWidth="2">
+                              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                              <path d="M9 12l2 2 4-4" stroke="#DFBE77" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '0.95rem', fontFamily: 'Cormorant Garamond, serif', color: '#FAF5EA' }}>Enter 6-Digit Verification Code</h4>
+                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#D3C4A7' }}>Dispatched to <u>{customerDetails.email}</u></p>
+                          </div>
+                        </div>
+
+                        {otpError && (
+                          <div className="avs-otp-alert-box avs-otp-alert-error" style={{ margin: '8px 0', fontSize: '0.82rem', padding: '8px 12px' }}>
+                            <span className="avs-otp-alert-icon">!</span>
+                            <span>{otpError}</span>
+                          </div>
+                        )}
+
+                        {otpSuccessMsg && !otpError && (
+                          <div className="avs-otp-alert-box avs-otp-alert-success" style={{ margin: '8px 0', fontSize: '0.82rem', padding: '8px 12px' }}>
+                            <span className="avs-otp-alert-icon">✓</span>
+                            <span>{otpSuccessMsg}</span>
+                          </div>
+                        )}
+
+                        <div className="avs-otp-digit-row" onPaste={handleOtpPaste} style={{ margin: '14px 0', justifyContent: 'center', gap: '8px' }}>
+                          {otpDigits.map((digit, idx) => (
+                            <input
+                              key={idx}
+                              id={`avs-otp-digit-inline-${idx}`}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              className={`avs-otp-digit-input ${otpError ? 'error' : ''} ${digit ? 'filled' : ''}`}
+                              value={digit}
+                              onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                              onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                              autoFocus={idx === 0}
+                              style={{ width: '42px', height: '48px', fontSize: '1.4rem' }}
+                            />
+                          ))}
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
+                          <button
+                            type="button"
+                            className="avs-btn-verify-proceed"
+                            onClick={() => handleVerifyOtp()}
+                            disabled={otpDigits.join('').length < 6 && (!otpInput || otpInput.length < 6)}
+                            style={{ width: 'auto', padding: '8px 20px', fontSize: '0.82rem' }}
+                          >
+                            VERIFY CODE &rarr;
+                          </button>
+
+                          <span className="avs-otp-resend-status" style={{ fontSize: '0.8rem', color: '#D3C4A7' }}>
+                            {isTimerActive ? (
+                              <>Resend in <strong>00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong></>
+                            ) : (
+                              <button
+                                type="button"
+                                className="avs-otp-resend-btn"
+                                onClick={handleSendOtp}
+                                disabled={otpSending}
+                                style={{ color: '#DFBE77' }}
+                              >
+                                {otpSending ? 'Sending...' : 'Resend Code'}
+                              </button>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="avs-form-group avs-full-width">
@@ -935,18 +1015,57 @@ export default function BookingPage({
                   Your appointment request has been recorded under reference <strong>{confirmedBooking.id}</strong>. A confirmation email has been sent to <strong>{confirmedBooking.email}</strong>.
                 </p>
 
-                <div className="avs-success-recap-card">
-                  <div className="avs-success-recap-field">
-                    <span className="avs-review-label">Service</span>
-                    <span className="avs-review-value">{confirmedBooking.service}</span>
-                  </div>
-                  <div className="avs-success-recap-field">
-                    <span className="avs-review-label">Location</span>
-                    <span className="avs-review-value">{confirmedBooking.location}</span>
-                  </div>
-                  <div className="avs-success-recap-field">
-                    <span className="avs-review-label">Date &amp; Time</span>
-                    <span className="avs-review-value">{formatLuxuryDate(confirmedBooking.date)} at {confirmedBooking.time}</span>
+                <div className="avs-success-recap-card" style={{ textAlign: 'left', background: '#FFFFFF', border: '1.5px solid #DFBE77', borderRadius: '14px', padding: '24px', margin: '24px 0', boxShadow: '0 10px 28px -6px rgba(6, 44, 34, 0.1)' }}>
+                  {confirmedBooking.serviceImage && (
+                    <div style={{ width: '100%', height: '140px', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', border: '1px solid #B9975B' }}>
+                      <img
+                        src={confirmedBooking.serviceImage}
+                        alt={confirmedBooking.service}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px 24px' }}>
+                    <div>
+                      <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Reference ID</span>
+                      <span className="avs-review-value" style={{ fontSize: '1.05rem', color: '#B9975B', fontWeight: 700 }}>{confirmedBooking.id}</span>
+                    </div>
+
+                    <div>
+                      <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Client Name</span>
+                      <span className="avs-review-value" style={{ fontSize: '0.98rem', color: '#062C22', fontWeight: 600 }}>{confirmedBooking.customerName}</span>
+                    </div>
+
+                    <div>
+                      <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Contact Info</span>
+                      <span className="avs-review-value" style={{ fontSize: '0.92rem', color: '#062C22', display: 'block' }}>{confirmedBooking.phone}</span>
+                      <span style={{ fontSize: '0.8rem', color: '#0E6245', fontWeight: 600 }}>{confirmedBooking.email} (Verified ✓)</span>
+                    </div>
+
+                    <div>
+                      <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Booked Service</span>
+                      <span className="avs-review-value" style={{ fontSize: '0.98rem', color: '#062C22', fontWeight: 600 }}>{confirmedBooking.service}</span>
+                      <span style={{ fontSize: '0.8rem', color: '#55625B', display: 'block' }}>⏱ {confirmedBooking.duration}</span>
+                    </div>
+
+                    <div>
+                      <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Sanctuary Location</span>
+                      <span className="avs-review-value" style={{ fontSize: '0.92rem', color: '#062C22' }}>{confirmedBooking.location}</span>
+                    </div>
+
+                    <div>
+                      <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Date &amp; Time Slot</span>
+                      <span className="avs-review-value" style={{ fontSize: '0.92rem', color: '#062C22', display: 'block' }}>{formatLuxuryDate(confirmedBooking.date)}</span>
+                      <span style={{ fontSize: '0.88rem', color: '#DFBE77', fontWeight: 700 }}>{confirmedBooking.time}</span>
+                    </div>
+
+                    {confirmedBooking.notes && (
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Special Requests / Notes</span>
+                        <span className="avs-review-value" style={{ fontSize: '0.9rem', color: '#55625B', fontStyle: 'italic' }}>"{confirmedBooking.notes}"</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1978,30 +2097,64 @@ export default function BookingPage({
               Your appointment request has been successfully submitted. We've recorded your booking under reference <strong>{confirmedBooking.id}</strong> and sent the complete appointment details to <strong>{confirmedBooking.email}</strong>.
             </p>
 
-            <div className="avs-success-recap-card">
-              <div className="avs-success-recap-field">
-                <span className="avs-review-label">Service</span>
-                <span className="avs-review-value">{confirmedBooking.service}</span>
-                <span className="avs-review-subtext">{confirmedBooking.duration}</span>
-              </div>
+            <div className="avs-success-recap-card" style={{ textAlign: 'left', background: '#FFFFFF', border: '1.5px solid #DFBE77', borderRadius: '14px', padding: '24px', margin: '24px 0', boxShadow: '0 10px 28px -6px rgba(6, 44, 34, 0.1)' }}>
+              {confirmedBooking.serviceImage && (
+                <div style={{ width: '100%', height: '160px', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', border: '1px solid #B9975B' }}>
+                  <img
+                    src={confirmedBooking.serviceImage}
+                    alt={confirmedBooking.service}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+              )}
 
-              <div className="avs-success-recap-field">
-                <span className="avs-review-label">Location</span>
-                <span className="avs-review-value">{confirmedBooking.location}</span>
-              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '18px 24px' }}>
+                <div>
+                  <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Reference ID</span>
+                  <span className="avs-review-value" style={{ fontSize: '1.05rem', color: '#B9975B', fontWeight: 700 }}>{confirmedBooking.id}</span>
+                </div>
 
-              <div className="avs-success-recap-field">
-                <span className="avs-review-label">Date &amp; Time</span>
-                <span className="avs-review-value">
-                  {formatLuxuryDate(confirmedBooking.date)} at {confirmedBooking.time}
-                </span>
-              </div>
+                <div>
+                  <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Client Name</span>
+                  <span className="avs-review-value" style={{ fontSize: '0.98rem', color: '#062C22', fontWeight: 600 }}>{confirmedBooking.customerName}</span>
+                </div>
 
-              <div className="avs-success-recap-field">
-                <span className="avs-review-label">Booking Source</span>
-                <span className="avs-review-value" style={{ color: '#987739' }}>
-                  {confirmedBooking.source}
-                </span>
+                <div>
+                  <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Contact Info</span>
+                  <span className="avs-review-value" style={{ fontSize: '0.92rem', color: '#062C22', display: 'block' }}>{confirmedBooking.phone}</span>
+                  <span style={{ fontSize: '0.8rem', color: '#0E6245', fontWeight: 600 }}>{confirmedBooking.email} (Verified ✓)</span>
+                </div>
+
+                <div>
+                  <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Booked Service</span>
+                  <span className="avs-review-value" style={{ fontSize: '0.98rem', color: '#062C22', fontWeight: 600 }}>{confirmedBooking.service}</span>
+                  <span style={{ fontSize: '0.8rem', color: '#55625B', display: 'block' }}>⏱ {confirmedBooking.duration}</span>
+                </div>
+
+                <div>
+                  <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Sanctuary Location</span>
+                  <span className="avs-review-value" style={{ fontSize: '0.92rem', color: '#062C22' }}>{confirmedBooking.location}</span>
+                </div>
+
+                <div>
+                  <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Date &amp; Time Slot</span>
+                  <span className="avs-review-value" style={{ fontSize: '0.92rem', color: '#062C22', display: 'block' }}>{formatLuxuryDate(confirmedBooking.date)}</span>
+                  <span style={{ fontSize: '0.88rem', color: '#DFBE77', fontWeight: 700 }}>{confirmedBooking.time}</span>
+                </div>
+
+                {confirmedBooking.notes && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Special Requests / Notes</span>
+                    <span className="avs-review-value" style={{ fontSize: '0.9rem', color: '#55625B', fontStyle: 'italic' }}>"{confirmedBooking.notes}"</span>
+                  </div>
+                )}
+
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Status &amp; Channel</span>
+                  <span className="avs-review-value" style={{ fontSize: '0.88rem', color: '#0E6245', fontWeight: 600 }}>
+                    PENDING &bull; Channel: {confirmedBooking.source}
+                  </span>
+                </div>
               </div>
             </div>
 
