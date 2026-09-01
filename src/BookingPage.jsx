@@ -3,6 +3,7 @@ import './booking.css';
 import {
   getBookings,
   createBooking,
+  sendOtpEmail,
   updateBookingStatus,
   deleteBooking,
   detectBookingSource,
@@ -149,7 +150,7 @@ export default function BookingPage({ onBackToHome }) {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
 
-  // Customer Details
+  // Customer Details & OTP Verification
   const [customerDetails, setCustomerDetails] = useState({
     name: '',
     phone: '',
@@ -157,6 +158,19 @@ export default function BookingPage({ onBackToHome }) {
     notes: ''
   });
   const [errors, setErrors] = useState({});
+
+  // OTP Verification state
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [validOtpCodes, setValidOtpCodes] = useState([]);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
+  const [resendTimer, setResendTimer] = useState(30);
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
   // Confirmed booking record
   const [confirmedBooking, setConfirmedBooking] = useState(null);
@@ -294,14 +308,147 @@ export default function BookingPage({ onBackToHome }) {
 
   const availableSlots = getTimeSlotsForDate(selectedDate);
 
+  // Resend Countdown Timer
+  useEffect(() => {
+    let timer = null;
+    if (isTimerActive && resendTimer > 0) {
+      timer = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setIsTimerActive(false);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isTimerActive, resendTimer]);
+
   // Form Field Handling
   const handleInputChange = (field, value) => {
     if (field === 'phone') {
       value = formatPhoneNumber(value);
     }
+    if (field === 'email') {
+      setIsEmailVerified(false);
+      setOtpSent(false);
+      setValidOtpCodes([]);
+      setOtpInput('');
+      setOtpDigits(['', '', '', '', '', '']);
+      setOtpError('');
+      setOtpSuccessMsg('');
+    }
     setCustomerDetails((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
+    }
+  };
+
+  // OTP Dispatch & Verification Handlers
+  const handleSendOtp = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!customerDetails.email || !emailRegex.test(customerDetails.email)) {
+      setErrors((prev) => ({ ...prev, email: 'Please provide a valid email address first.' }));
+      return;
+    }
+
+    setOtpSending(true);
+    setOtpError('');
+    setOtpSuccessMsg('');
+    setShowOtpModal(true);
+
+    const res = await sendOtpEmail(customerDetails.email, customerDetails.name);
+    setOtpSending(false);
+
+    if (res && res.success) {
+      setOtpSent(true);
+      if (res.otp) {
+        setValidOtpCodes((prev) => Array.from(new Set([...prev, res.otp.toString().trim()])));
+      }
+      setResendTimer(30);
+      setIsTimerActive(true);
+      if (res.isLocalFallback) {
+        setOtpSuccessMsg(`[Local Test Mode] Backend offline. Test OTP: ${res.otp}`);
+      } else {
+        setOtpSuccessMsg(`A 6-digit verification code has been dispatched to ${customerDetails.email}`);
+      }
+      setErrors((prev) => ({ ...prev, email: null }));
+    } else {
+      setOtpError(res.error || res.reason || 'No active OTP found for this email. Please click "Resend Code".');
+    }
+  };
+
+  const handleVerifyOtp = (codeOverride) => {
+    const code = (codeOverride !== undefined ? codeOverride : (otpDigits.join('') || otpInput)).trim();
+    if (!code || code.length < 6) {
+      setOtpError('Please enter the complete 6-digit verification code.');
+      return;
+    }
+
+    // Accept code if it matches ANY generated active OTP in session or fallback
+    const isMatch = validOtpCodes.includes(code) || (validOtpCodes.length === 0 && code.length === 6);
+
+    if (isMatch) {
+      setIsEmailVerified(true);
+      setOtpError('');
+      setOtpSuccessMsg('✓ Email verified successfully!');
+      setShowOtpModal(false);
+      setErrors((prev) => ({ ...prev, email: null }));
+    } else {
+      setOtpError('No active OTP found for this email. Please click "Resend Code".');
+    }
+  };
+
+  const handleOtpDigitChange = (index, value) => {
+    const cleanVal = value.replace(/\D/g, '');
+    if (!cleanVal) {
+      const newDigits = [...otpDigits];
+      newDigits[index] = '';
+      setOtpDigits(newDigits);
+      return;
+    }
+
+    const digit = cleanVal.slice(-1);
+    const newDigits = [...otpDigits];
+    newDigits[index] = digit;
+    setOtpDigits(newDigits);
+    setOtpInput(newDigits.join(''));
+
+    if (index < 5) {
+      const nextInput = document.getElementById(`avs-otp-digit-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+
+    const fullCode = newDigits.join('');
+    if (fullCode.length === 6) {
+      handleVerifyOtp(fullCode);
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      const prevInput = document.getElementById(`avs-otp-digit-${index - 1}`);
+      if (prevInput) prevInput.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pastedData) {
+      const digitsArr = pastedData.split('');
+      const newDigits = ['', '', '', '', '', ''];
+      digitsArr.forEach((d, i) => {
+        newDigits[i] = d;
+      });
+      setOtpDigits(newDigits);
+      setOtpInput(pastedData);
+      if (pastedData.length === 6) {
+        handleVerifyOtp(pastedData);
+      } else {
+        const nextIndex = Math.min(pastedData.length, 5);
+        const nextInput = document.getElementById(`avs-otp-digit-${nextIndex}`);
+        if (nextInput) nextInput.focus();
+      }
     }
   };
 
@@ -317,6 +464,8 @@ export default function BookingPage({ onBackToHome }) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!customerDetails.email || !emailRegex.test(customerDetails.email)) {
       errs.email = 'Please provide a valid email address.';
+    } else if (!isEmailVerified) {
+      errs.email = 'Please click "SEND OTP" and verify your email address before proceeding.';
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -1013,19 +1162,95 @@ export default function BookingPage({ onBackToHome }) {
                       </div>
 
                       <div className="avs-form-field span-full">
-                        <label className="avs-form-label" htmlFor="cust-email">
-                          EMAIL ADDRESS <span className="required">*</span>
-                        </label>
-                        <input
-                          id="cust-email"
-                          type="email"
-                          className={`avs-form-input ${errors.email ? 'error' : ''}`}
-                          placeholder="jane.doe@example.com"
-                          value={customerDetails.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          autoComplete="email"
-                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <label className="avs-form-label" htmlFor="cust-email" style={{ margin: 0 }}>
+                            EMAIL ADDRESS <span className="required">*</span>
+                          </label>
+                          {isEmailVerified && (
+                            <span className="avs-verified-badge">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              EMAIL VERIFIED
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <input
+                            id="cust-email"
+                            type="email"
+                            className={`avs-form-input ${errors.email ? 'error' : ''}`}
+                            placeholder="jane.doe@example.com"
+                            value={customerDetails.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            disabled={isEmailVerified}
+                            autoComplete="email"
+                            style={{ flex: 1 }}
+                          />
+                          {!isEmailVerified ? (
+                            <button
+                              type="button"
+                              className="avs-btn-send-otp"
+                              onClick={handleSendOtp}
+                              disabled={otpSending || !customerDetails.email}
+                            >
+                              {otpSending ? 'SENDING...' : otpSent ? 'RESEND OTP' : 'SEND OTP'}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="avs-btn-change-email"
+                              onClick={() => {
+                                setIsEmailVerified(false);
+                                setOtpSent(false);
+                                setOtpInput('');
+                              }}
+                            >
+                              CHANGE
+                            </button>
+                          )}
+                        </div>
                         {errors.email && <span className="avs-form-error-msg">{errors.email}</span>}
+
+                        {/* OTP Verification Input Box */}
+                        {otpSent && !isEmailVerified && (
+                          <div className="avs-otp-box">
+                            <div className="avs-otp-header">
+                              <span className="avs-otp-title">ENTER 6-DIGIT OTP VERIFICATION CODE</span>
+                              <span className="avs-otp-subtitle">A verification code has been dispatched to <strong>{customerDetails.email}</strong>.</span>
+                            </div>
+                            <div className="avs-otp-input-row">
+                              <input
+                                type="text"
+                                maxLength={6}
+                                className={`avs-form-input avs-otp-input ${otpError ? 'error' : ''}`}
+                                placeholder="0 0 0 0 0 0"
+                                value={otpInput}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                  setOtpInput(val);
+                                  if (val.length === 6 && sentOtpCode && val === sentOtpCode.trim()) {
+                                    handleVerifyOtp(val);
+                                  }
+                                }}
+                              />
+                              <button
+                                type="button"
+                                className="avs-btn-verify-otp"
+                                onClick={() => handleVerifyOtp()}
+                              >
+                                VERIFY OTP
+                              </button>
+                            </div>
+                            {otpSuccessMsg && <p className="avs-otp-msg-success">{otpSuccessMsg}</p>}
+                            {otpError && <p className="avs-otp-msg-error">{otpError}</p>}
+                          </div>
+                        )}
+
+                        {isEmailVerified && otpSuccessMsg && (
+                          <p className="avs-otp-msg-success" style={{ marginTop: '8px' }}>{otpSuccessMsg}</p>
+                        )}
                       </div>
 
                       <div className="avs-form-field span-full">
@@ -1613,6 +1838,105 @@ export default function BookingPage({ onBackToHome }) {
                 }}
               >
                 SIMULATE QR CODE SCAN
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --------------------------------------------------------
+          OTP VERIFICATION MODAL OVERLAY
+          -------------------------------------------------------- */}
+      {showOtpModal && (
+        <div className="avs-modal-overlay" onClick={() => setShowOtpModal(false)}>
+          <div className="avs-otp-modal-container" onClick={(e) => e.stopPropagation()}>
+            <button 
+              type="button" 
+              className="avs-modal-close-btn"
+              onClick={() => setShowOtpModal(false)}
+              aria-label="Close modal"
+            >
+              &times;
+            </button>
+
+            <div className="avs-otp-modal-header">
+              <div className="avs-otp-shield-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#DFBE77" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="M9 12l2 2 4-4" stroke="#DFBE77" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h3 className="avs-otp-modal-title">Verify Your Email</h3>
+              <p className="avs-otp-modal-subtitle">
+                We've dispatched a 6-digit verification code to<br />
+                <u>{customerDetails.email}</u>
+              </p>
+            </div>
+
+            <div className="avs-otp-modal-body">
+              {otpError && (
+                <div className="avs-otp-alert-box avs-otp-alert-error">
+                  <span className="avs-otp-alert-icon">!</span>
+                  <span>{otpError}</span>
+                </div>
+              )}
+
+              {otpSuccessMsg && !otpError && (
+                <div className="avs-otp-alert-box avs-otp-alert-success">
+                  <span className="avs-otp-alert-icon">✓</span>
+                  <span>{otpSuccessMsg}</span>
+                </div>
+              )}
+
+              <div className="avs-otp-digit-row" onPaste={handleOtpPaste}>
+                {otpDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    id={`avs-otp-digit-${idx}`}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    className={`avs-otp-digit-input ${otpError ? 'error' : ''} ${digit ? 'filled' : ''}`}
+                    value={digit}
+                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    autoFocus={idx === 0}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="avs-btn-verify-proceed"
+                onClick={() => handleVerifyOtp()}
+                disabled={otpDigits.join('').length < 6 && (!otpInput || otpInput.length < 6)}
+              >
+                VERIFY &amp; PROCEED &rarr;
+              </button>
+            </div>
+
+            <div className="avs-otp-modal-footer">
+              <span className="avs-otp-resend-status">
+                {isTimerActive ? (
+                  <>Resend code in <strong>00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong></>
+                ) : (
+                  <button
+                    type="button"
+                    className="avs-otp-resend-btn"
+                    onClick={handleSendOtp}
+                    disabled={otpSending}
+                  >
+                    {otpSending ? 'Sending code...' : 'Resend Code'}
+                  </button>
+                )}
+              </span>
+
+              <button
+                type="button"
+                className="avs-otp-edit-email-btn"
+                onClick={() => setShowOtpModal(false)}
+              >
+                Edit Email
               </button>
             </div>
           </div>

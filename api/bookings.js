@@ -6,7 +6,6 @@ const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || GMAIL_USER).trim();
 
 function getTransporter() {
   return nodemailer.createTransport({
-    service: 'gmail',
     host: 'smtp.gmail.com',
     port: 587,
     secure: false, // TLS via STARTTLS for high serverless compatibility

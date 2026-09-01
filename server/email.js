@@ -20,7 +20,6 @@ function getTransporter() {
   }
 
   return nodemailer.createTransport({
-    service: 'gmail',
     host: 'smtp.gmail.com',
     port: 587,
     secure: false, // TLS via STARTTLS

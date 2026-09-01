@@ -5,10 +5,9 @@ const GMAIL_PASS = (process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replac
 
 function getTransporter() {
   return nodemailer.createTransport({
-    service: 'gmail',
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // TLS via STARTTLS
+    secure: false, // TLS via STARTTLS for high serverless & local compatibility
     auth: {
       user: GMAIL_USER,
       pass: GMAIL_PASS
