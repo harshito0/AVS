@@ -49,7 +49,7 @@ const SERVICE_CATEGORIES = [
   'PACKAGES'
 ];
 
-const SERVICES = [
+export const SERVICES = [
   {
     id: 'rmt-massage',
     category: 'MASSAGE & RMT',

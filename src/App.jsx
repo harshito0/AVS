@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import PackagesPage from './PackagesPage';
 import AboutPage from './AboutPage';
 import BookingPage from './BookingPage';
+import SalonPage from './SalonPage';
 
 const announceItems = [
   '⭐ New Client Offer: Get 15% Off on Your First Visit',
@@ -221,7 +222,11 @@ function App() {
       document.body.style.overflow = '';
     }
 
-    if (href === '#packages') {
+    if (href === '#salon' || href === '/salon' || href === '#/salon') {
+      window.location.hash = '#salon';
+      setCurrentPage('salon');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else if (href === '#packages') {
       window.location.hash = '#packages';
       setCurrentPage('packages');
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -273,7 +278,10 @@ function App() {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
       const search = window.location.search;
-      if (hash === '#packages' || hash === '#/packages') {
+      if (hash === '#salon' || hash === '#/salon' || pathname.includes('/salon')) {
+        setCurrentPage('salon');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (hash === '#packages' || hash === '#/packages') {
         setCurrentPage('packages');
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (hash === '#about' || hash === '#/about') {
@@ -635,7 +643,9 @@ function App() {
           </a>
           <ul className="nav-links" role="list">
             {navLinks.map((link) => {
-              const isActive = currentPage === 'packages'
+              const isActive = currentPage === 'salon'
+                ? link.href === '#salon'
+                : currentPage === 'packages'
                 ? link.href === '#packages'
                 : currentPage === 'about'
                 ? link.href === '#about'
@@ -705,6 +715,15 @@ function App() {
 
       {currentPage === 'booking' ? (
         <BookingPage
+          onBackToHome={() => {
+            window.location.hash = '#home';
+            setCurrentPage('home');
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }}
+        />
+      ) : currentPage === 'salon' ? (
+        <SalonPage
+          onBookClick={handleBookRedirect}
           onBackToHome={() => {
             window.location.hash = '#home';
             setCurrentPage('home');
