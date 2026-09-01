@@ -101,11 +101,11 @@ export default async function handler(req, res) {
             <p style="font-size: 13px; color: #666; text-align: center;">Use this OTP code to verify your email registration. If you did not request this code, please ignore this email.</p>
             
             <div class="recap-box">
+              ${(fullBooking.serviceImage || fullBooking.image) ? `<div style="margin-bottom: 14px; border-radius: 8px; overflow: hidden; border: 1px solid #B9975B;"><img src="https://www.auravitalstar.ca${fullBooking.serviceImage || fullBooking.image}" alt="${fullBooking.service}" style="width: 100%; height: 160px; object-fit: cover; display: block;" /></div>` : ''}
               <div class="recap-row"><span class="recap-label">Reference:</span> <strong>${fullBooking.id}</strong></div>
-              <div class="recap-row"><span class="recap-label">Service:</span> ${fullBooking.service || 'Signature Treatment'} (${fullBooking.duration || '60 min'})</div>
+              <div class="recap-row"><span class="recap-label">Service:</span> <strong>${fullBooking.service || 'Signature Treatment'}</strong> (${fullBooking.duration || '60 min'})</div>
               <div class="recap-row"><span class="recap-label">Location:</span> ${fullBooking.location || 'Brampton Rejuvenation Centre (157 Queen St W)'}</div>
-              <div class="recap-row"><span class="recap-label">Date:</span> ${fullBooking.date}</div>
-              <div class="recap-row"><span class="recap-label">Time:</span> ${fullBooking.time}</div>
+              <div class="recap-row"><span class="recap-label">Date &amp; Time:</span> ${fullBooking.date} at ${fullBooking.time}</div>
               ${fullBooking.notes ? `<div class="recap-row"><span class="recap-label">Notes:</span> <em>"${fullBooking.notes}"</em></div>` : ''}
             </div>
 

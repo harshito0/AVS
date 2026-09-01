@@ -457,6 +457,7 @@ export default function BookingPage({
         service: selectedService.title,
         serviceCategory: selectedService.category,
         duration: selectedService.duration,
+        serviceImage: selectedService.image,
         date: selectedDate,
         time: selectedTime,
         source: bookingSource
@@ -634,25 +635,44 @@ export default function BookingPage({
 
                 <div className="avs-services-grid">
                   {filteredServices.map((svc) => {
-                      const isSelected = selectedService?.id === svc.id;
-                      return (
-                        <div
-                          key={svc.id}
-                          className={`avs-service-item-card ${isSelected ? 'selected' : ''}`}
-                          onClick={() => setSelectedService(svc)}
-                        >
-                          <div className="avs-svc-top-row">
-                            <h3 className="avs-svc-title">{svc.title}</h3>
-                            <span className="avs-svc-price">{svc.price}</span>
+                    const isSelected = selectedService?.id === svc.id;
+                    return (
+                      <div
+                        key={svc.id}
+                        className={`avs-service-card ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedService(svc)}
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isSelected}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className="avs-service-card-img-wrap">
+                          <img
+                            src={svc.image}
+                            alt={svc.title}
+                            className="avs-service-card-img"
+                          />
+                          <span className="avs-service-card-badge">{svc.category}</span>
+                          <span className="avs-service-card-check" aria-hidden="true">
+                            {isSelected ? '✓' : ''}
+                          </span>
+                        </div>
+
+                        <div className="avs-service-card-body">
+                          <div>
+                            <h3 className="avs-service-card-title">{svc.title}</h3>
+                            <p className="avs-service-card-desc">{svc.desc}</p>
                           </div>
-                          <p className="avs-svc-desc">{svc.desc}</p>
-                          <div className="avs-svc-meta-row">
-                            <span className="avs-svc-dur">⏱ {svc.duration}</span>
-                            <span className="avs-svc-cat-tag">{svc.category}</span>
+                          <div className="avs-service-card-meta">
+                            <span>⏱ {svc.duration}</span>
+                            <span style={{ fontWeight: 600, color: isSelected ? '#062C22' : '#8C734B' }}>
+                              {isSelected ? '✓ SELECTED' : 'SELECT SERVICE'}
+                            </span>
                           </div>
                         </div>
-                      );
-                    })}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="avs-step-action-bar">
@@ -2048,11 +2068,21 @@ export default function BookingPage({
                       Thank you for choosing Aura Vital Star. We have received your appointment request and are looking forward to welcoming you into our sanctuary.
                     </p>
 
-                    <div style={{ background: '#FAF7F2', border: '1px solid #E2D9CB', borderRadius: '8px', padding: '14px 18px', margin: '18px 0' }}>
+                    <div style={{ background: '#FAF7F2', border: '1px solid #E2D9CB', borderRadius: '8px', padding: '16px 18px', margin: '18px 0' }}>
+                      {(confirmedBooking?.serviceImage || selectedService?.image) && (
+                        <div style={{ marginBottom: '14px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #B9975B' }}>
+                          <img
+                            src={confirmedBooking?.serviceImage || selectedService?.image}
+                            alt={confirmedBooking?.service || selectedService?.title}
+                            style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }}
+                          />
+                        </div>
+                      )}
                       <h4 style={{ color: '#062C22', marginBottom: '8px', fontFamily: 'Cormorant Garamond, serif', fontSize: '1.2rem' }}>
                         Appointment Details:
                       </h4>
                       <p style={{ margin: '4px 0' }}><strong>Service:</strong> {confirmedBooking?.service || selectedService?.title}</p>
+                      <p style={{ margin: '4px 0' }}><strong>Category:</strong> {confirmedBooking?.serviceCategory || selectedService?.category}</p>
                       <p style={{ margin: '4px 0' }}><strong>Location:</strong> {confirmedBooking?.location || selectedLocation?.name}</p>
                       <p style={{ margin: '4px 0' }}><strong>Date:</strong> {formatLuxuryDate(confirmedBooking?.date || selectedDate)}</p>
                       <p style={{ margin: '4px 0' }}><strong>Time:</strong> {confirmedBooking?.time || selectedTime}</p>
