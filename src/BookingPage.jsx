@@ -693,26 +693,47 @@ export default function BookingPage({
                   <p className="avs-step-desc">Select your preferred date on our live calendar and pick an available time slot.</p>
                 </div>
 
-                <div className="avs-datetime-split-grid">
-                  <div className="avs-calendar-panel">
-                    <div className="avs-cal-header">
-                      <button type="button" className="avs-cal-nav-btn" onClick={handlePrevMonth}>&lsaquo;</button>
-                      <h4 className="avs-cal-month-title">{monthNames[calMonth]} {calYear}</h4>
-                      <button type="button" className="avs-cal-nav-btn" onClick={handleNextMonth}>&rsaquo;</button>
+                <div className="avs-datetime-container">
+                  {/* Left: Interactive Calendar */}
+                  <div className="avs-calendar-card">
+                    <div className="avs-calendar-header">
+                      <h3 className="avs-calendar-month-label">
+                        {monthNames[calMonth]} {calYear}
+                      </h3>
+                      <div className="avs-calendar-nav-btns">
+                        <button
+                          type="button"
+                          className="avs-calendar-nav-btn"
+                          onClick={handlePrevMonth}
+                          aria-label="Previous month"
+                        >
+                          &lsaquo;
+                        </button>
+                        <button
+                          type="button"
+                          className="avs-calendar-nav-btn"
+                          onClick={handleNextMonth}
+                          aria-label="Next month"
+                        >
+                          &rsaquo;
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="avs-cal-days-header">
+                    <div className="avs-calendar-weekdays">
                       <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
                     </div>
 
-                    <div className="avs-cal-grid">
+                    <div className="avs-calendar-grid">
                       {calendarCells.map((cell) => {
-                        if (cell.empty) return <div key={cell.key} className="avs-cal-cell empty"></div>;
+                        if (cell.empty) {
+                          return <div key={cell.key} className="avs-cal-day empty" />;
+                        }
                         return (
                           <button
                             key={cell.key}
                             type="button"
-                            className={`avs-cal-cell ${cell.isPast ? 'disabled' : ''} ${cell.isToday ? 'today' : ''} ${cell.isSelected ? 'selected' : ''}`}
+                            className={`avs-cal-day ${cell.isSelected ? 'selected' : ''} ${cell.isToday ? 'today' : ''}`}
                             disabled={cell.isPast}
                             onClick={() => setSelectedDate(cell.dateStr)}
                           >
@@ -723,24 +744,35 @@ export default function BookingPage({
                     </div>
                   </div>
 
-                  <div className="avs-timeslots-panel">
-                    <h4 className="avs-timeslots-title">Available Time Slots</h4>
+                  {/* Right: Available Times */}
+                  <div className="avs-times-card">
+                    <h3 className="avs-times-header">Available Time Slots</h3>
                     {!selectedDate ? (
-                      <p className="avs-select-date-prompt">Please select a date on the calendar to view time slots.</p>
+                      <p style={{ fontSize: '0.88rem', color: '#5C6762', marginTop: '12px' }}>
+                        Please select a date on the calendar to view available time slots.
+                      </p>
                     ) : (
-                      <div className="avs-time-slots-grid">
-                        {availableSlots.map((slot) => (
-                          <button
-                            key={slot.time}
-                            type="button"
-                            className={`avs-time-slot-btn ${selectedTime === slot.time ? 'selected' : ''} ${slot.booked ? 'booked' : ''}`}
-                            disabled={slot.booked}
-                            onClick={() => setSelectedTime(slot.time)}
-                          >
-                            {slot.time}
-                          </button>
-                        ))}
-                      </div>
+                      <>
+                        <p style={{ fontSize: '0.84rem', color: '#5C6762', marginBottom: '12px' }}>
+                          Slots for <strong>{formatLuxuryDate(selectedDate)}</strong>:
+                        </p>
+                        <div className="avs-time-slots-grid">
+                          {availableSlots.map((slot) => {
+                            const isSelected = selectedTime === slot.time;
+                            return (
+                              <button
+                                key={slot.time}
+                                type="button"
+                                className={`avs-time-btn ${isSelected ? 'selected' : ''}`}
+                                disabled={slot.booked}
+                                onClick={() => setSelectedTime(slot.time)}
+                              >
+                                {slot.time}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
