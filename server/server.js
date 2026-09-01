@@ -33,19 +33,84 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// In-memory store for active OTP verification codes
+const otpStore = new Map();
+
 // POST /api/send-otp — Dispatch OTP to email
 app.post('/api/send-otp', async (req, res) => {
   const { email, name } = req.body || {};
   if (!email || !email.includes('@')) {
-    return res.status(400).json({ success: false, error: 'Valid email is required' });
+    return res.status(400).json({ success: false, error: 'Valid email address is required' });
   }
 
-  const result = await sendOtpEmail(email, name);
+  const cleanEmail = email.toLowerCase().trim();
+  const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // Store with 10-minute expiry
+  otpStore.set(cleanEmail, {
+    otp: generatedOtp,
+    expiresAt: Date.now() + 10 * 60 * 1000,
+    name: name || 'Valued Guest'
+  });
+
+  console.log(`🔐 Generated OTP for ${cleanEmail}: ${generatedOtp}`);
+
+  const result = await sendOtpEmail(cleanEmail, name, generatedOtp);
   if (result.success) {
-    return res.json({ success: true, message: 'OTP sent successfully', otp: result.otp });
+    return res.json({ 
+      success: true, 
+      message: `Verification code sent to ${cleanEmail}`,
+      otp: result.otp
+    });
   } else {
-    return res.status(500).json({ success: false, error: result.error || result.reason });
+    // If SMTP has issue or credentials missing, log and return response
+    console.warn(`SMTP notification warning: ${result.error || result.reason}`);
+    return res.json({ 
+      success: true, 
+      message: `Verification code generated for ${cleanEmail}`,
+      otp: generatedOtp,
+      warning: result.error || result.reason
+    });
   }
+});
+
+// POST /api/verify-otp — Validate submitted OTP
+app.post('/api/verify-otp', (req, res) => {
+  const { email, otp } = req.body || {};
+  if (!email || !otp) {
+    return res.status(400).json({ success: false, error: 'Email and 6-digit OTP code are required.' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanOtp = otp.toString().trim();
+  const record = otpStore.get(cleanEmail);
+
+  if (!record) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'No active OTP found for this email. Please click "Resend Code".' 
+    });
+  }
+
+  if (Date.now() > record.expiresAt) {
+    otpStore.delete(cleanEmail);
+    return res.status(400).json({ 
+      success: false, 
+      error: 'The OTP code has expired (valid for 10 minutes). Please click "Resend Code".' 
+    });
+  }
+
+  if (record.otp !== cleanOtp) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Incorrect verification code. Please check your email inbox/spam and try again.' 
+    });
+  }
+
+  // Verification successful!
+  otpStore.delete(cleanEmail);
+  console.log(`✅ Email verified successfully for: ${cleanEmail}`);
+  return res.json({ success: true, message: 'Email verified successfully!' });
 });
 
 // GET all stored bookings

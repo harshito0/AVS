@@ -143,6 +143,24 @@ export async function sendOtpEmail(email, name = '') {
 }
 
 /**
+ * Verifies the 6-digit OTP entered by the user
+ */
+export async function verifyOtp(email, otp) {
+  try {
+    const res = await fetch('/api/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp })
+    });
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Failed to verify OTP with backend:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
  * Creates and saves a new booking into the database and triggers Gmail confirmation + OTP
  */
 export async function createBooking(bookingData) {

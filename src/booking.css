@@ -49,10 +49,11 @@
   z-index: 1;
   pointer-events: none;
   background: radial-gradient(circle at 18% 25%, #0B352A 0%, #062C22 45%, #041712 100%);
-  transition: opacity 0.5s ease;
+  contain: strict;
+  transform: translateZ(0);
 }
 
-/* LAYER 02 — ATMOSPHERIC LIGHT POOLS */
+/* LAYER 02 — ATMOSPHERIC LIGHT POOLS (HIGH PERFORMANCE NATIVE RADIAL GLOWS) */
 .avs-z-light-layer {
   position: absolute;
   inset: 0;
@@ -61,51 +62,38 @@
   z-index: 2;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .avs-light-pool {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
   pointer-events: none;
-  opacity: 0.14;
-  animation: poolBreathe 14s ease-in-out infinite alternate;
 }
 
 .avs-light-pool-1 {
-  width: 520px;
-  height: 520px;
-  top: -80px;
+  width: 600px;
+  height: 600px;
+  top: -100px;
   right: -100px;
-  background: radial-gradient(circle, #DFBE77 0%, rgba(185, 151, 91, 0.4) 50%, transparent 75%);
+  background: radial-gradient(circle, rgba(223, 190, 119, 0.16) 0%, rgba(185, 151, 91, 0.08) 35%, rgba(6, 44, 34, 0) 70%);
 }
 
 .avs-light-pool-2 {
-  width: 680px;
-  height: 680px;
+  width: 750px;
+  height: 750px;
   bottom: -150px;
   left: -150px;
-  background: radial-gradient(circle, #B9975B 0%, rgba(11, 53, 42, 0.5) 60%, transparent 80%);
-  animation-duration: 18s;
-  animation-delay: -5s;
+  background: radial-gradient(circle, rgba(185, 151, 91, 0.12) 0%, rgba(11, 53, 42, 0.25) 45%, rgba(4, 23, 18, 0) 75%);
 }
 
 .avs-light-pool-3 {
-  width: 440px;
-  height: 440px;
-  top: 45%;
-  right: 25%;
-  background: radial-gradient(circle, #E8DCBE 0%, rgba(185, 151, 91, 0.25) 50%, transparent 75%);
-  opacity: 0.09;
-  animation-duration: 16s;
-  animation-delay: -9s;
-}
-
-@keyframes poolBreathe {
-  0% { transform: scale(1) translate3d(0, 0, 0); opacity: 0.12; }
-  50% { transform: scale(1.08) translate3d(15px, -15px, 0); opacity: 0.18; }
-  100% { transform: scale(0.96) translate3d(-12px, 12px, 0); opacity: 0.14; }
+  width: 500px;
+  height: 500px;
+  top: 40%;
+  right: 20%;
+  background: radial-gradient(circle, rgba(232, 220, 190, 0.09) 0%, rgba(185, 151, 91, 0.04) 40%, transparent 70%);
 }
 
 /* LAYER 03 — BOTANICAL ELEMENTS */
@@ -117,7 +105,8 @@
   z-index: 3;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .avs-botanical-svg {
@@ -125,7 +114,6 @@
   pointer-events: none;
   stroke: #B9975B;
   fill: none;
-  transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .avs-botanical-top-left {
@@ -173,20 +161,20 @@
   z-index: 4;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .avs-depth-image {
   position: absolute;
-  top: -5%;
-  left: -5%;
-  width: 110%;
-  height: 110%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  opacity: 0.06;
-  filter: blur(14px) saturate(1.1);
-  transform: translate3d(0, 0, 0);
-  transition: transform 0.25s ease-out;
+  opacity: 0.035;
+  mix-blend-mode: luminosity;
+  pointer-events: none;
 }
 
 /* LAYER 05 — FOREGROUND PARTICLES & FINE LINES */
@@ -198,7 +186,8 @@
   z-index: 5;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .avs-gold-particle {
@@ -206,21 +195,14 @@
   border-radius: 50%;
   background: radial-gradient(circle, #DFBE77 0%, rgba(185, 151, 91, 0.4) 60%, transparent 100%);
   pointer-events: none;
-  opacity: 0.35;
-  animation: particleDrift 10s ease-in-out infinite alternate;
+  opacity: 0.25;
 }
 
-.avs-gold-particle.gp-1 { width: 3px; height: 3px; top: 18%; left: 22%; animation-duration: 9s; }
-.avs-gold-particle.gp-2 { width: 2.5px; height: 2.5px; top: 34%; right: 19%; animation-duration: 13s; animation-delay: -3s; }
-.avs-gold-particle.gp-3 { width: 4px; height: 4px; bottom: 25%; left: 14%; animation-duration: 11s; animation-delay: -6s; }
-.avs-gold-particle.gp-4 { width: 2px; height: 2px; bottom: 35%; right: 28%; animation-duration: 8s; animation-delay: -2s; }
-.avs-gold-particle.gp-5 { width: 3.5px; height: 3.5px; top: 62%; left: 45%; animation-duration: 14s; animation-delay: -8s; }
-
-@keyframes particleDrift {
-  0% { transform: translate3d(0, 0, 0); opacity: 0.2; }
-  50% { transform: translate3d(8px, -12px, 0); opacity: 0.45; }
-  100% { transform: translate3d(-6px, 10px, 0); opacity: 0.25; }
-}
+.avs-gold-particle.gp-1 { width: 3px; height: 3px; top: 18%; left: 22%; }
+.avs-gold-particle.gp-2 { width: 2.5px; height: 2.5px; top: 34%; right: 19%; }
+.avs-gold-particle.gp-3 { width: 4px; height: 4px; bottom: 25%; left: 14%; }
+.avs-gold-particle.gp-4 { width: 2px; height: 2px; bottom: 35%; right: 28%; }
+.avs-gold-particle.gp-5 { width: 3.5px; height: 3.5px; top: 62%; left: 45%; }
 
 .avs-fine-hairline {
   position: absolute;
@@ -1972,393 +1954,327 @@
 }
 
 /* ==========================================================================
-   OTP VERIFICATION & BADGE STYLES
+   AURA VITAL STAR — LUXURY OTP VERIFICATION COMPONENT
    ========================================================================== */
-.avs-verified-badge {
-  display: inline-flex;
+.avs-email-label-row {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(39, 174, 96, 0.12);
-  color: #27AE60;
-  border: 1px solid rgba(39, 174, 96, 0.4);
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  justify-content: space-between;
+  margin-bottom: 2px;
 }
 
-.avs-btn-send-otp {
-  background: #062C22;
-  color: #DFBE77;
-  border: 1px solid #B9975B;
-  border-radius: 10px;
-  padding: 12px 18px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  white-space: nowrap;
+.avs-otp-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 20px;
   transition: all 0.25s ease;
 }
 
-.avs-btn-send-otp:hover:not(:disabled) {
-  background: #B9975B;
-  color: #062C22;
-  box-shadow: 0 4px 14px rgba(185, 151, 91, 0.3);
+.avs-otp-status-badge.verified {
+  background: rgba(14, 82, 59, 0.12);
+  color: #0E6245;
+  border: 1px solid rgba(14, 98, 69, 0.28);
 }
 
-.avs-btn-send-otp:disabled {
+.avs-otp-status-badge.unverified {
+  background: rgba(185, 151, 91, 0.12);
+  color: #937233;
+  border: 1px solid rgba(185, 151, 91, 0.25);
+}
+
+.avs-email-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.avs-email-inline-verify-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #062C22;
+  color: #FAF5EA;
+  border: 1px solid #B9975B;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avs-email-inline-verify-btn:hover {
+  background: #0B4234;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(6, 44, 34, 0.25);
+}
+
+.avs-email-inline-verify-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.avs-btn-change-email {
-  background: transparent;
-  color: #8C734B;
-  border: 1px solid #D4C4A8;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 0.76rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.avs-btn-change-email:hover {
-  background: #FAF7F2;
-  color: #062C22;
-}
-
-.avs-otp-box {
-  background: #FAF7F2;
-  border: 1px solid #E2D9CB;
-  border-radius: 12px;
-  padding: 18px 20px;
-  margin-top: 14px;
-  box-shadow: 0 4px 16px rgba(6, 44, 34, 0.04);
-}
-
-.avs-otp-header {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 12px;
-}
-
-.avs-otp-title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #062C22;
-}
-
-.avs-otp-subtitle {
-  font-size: 0.82rem;
-  color: #68706B;
-}
-
-.avs-otp-input-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.avs-otp-input {
-  max-width: 180px;
-  letter-spacing: 0.35em;
-  font-size: 1.2rem;
-  font-weight: 700;
-  text-align: center;
-  background: #FFFFFF;
-}
-
-.avs-btn-verify-otp {
-  background: linear-gradient(135deg, #062C22 0%, #0E4839 100%);
-  color: #FAF5EA;
-  border: 1px solid #B9975B;
-  border-radius: 10px;
-  padding: 12px 22px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.avs-btn-verify-otp:hover {
-  background: #B9975B;
-  color: #062C22;
-  box-shadow: 0 4px 14px rgba(185, 151, 91, 0.3);
-}
-
-.avs-otp-msg-success {
-  font-size: 0.84rem;
-  color: #27AE60;
-  font-weight: 600;
-  margin-top: 10px;
-}
-
-.avs-otp-msg-error {
-  font-size: 0.84rem;
-  color: #C0392B;
-  font-weight: 600;
-  margin-top: 10px;
-}
-
-/* ==========================================================================
-   OTP VERIFICATION MODAL (Luxurious Emerald & Gold Styling)
-   ========================================================================== */
-
-.avs-modal-overlay {
+/* OTP MODAL OVERLAY */
+.avs-otp-modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(6, 20, 16, 0.75);
-  backdrop-filter: blur(8px);
+  inset: 0;
   z-index: 9999;
+  background: rgba(4, 18, 14, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: avsFadeIn 0.3s ease-out forwards;
+  animation: avsModalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.avs-otp-modal-container {
+.avs-otp-modal-dialog {
+  background: #FFFFFF;
+  border-radius: 20px;
   width: 100%;
-  max-width: 460px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 24px 48px rgba(6, 44, 34, 0.35);
+  max-width: 480px;
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(185, 151, 91, 0.3);
   overflow: hidden;
   position: relative;
-  border: 1px solid #E0D9CB;
-  animation: avsSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: avsModalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.avs-modal-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 18px;
-  background: transparent;
-  border: none;
-  color: #FAF5EA;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-  z-index: 10;
-  opacity: 0.8;
-  transition: opacity 0.2s ease;
-}
-
-.avs-modal-close-btn:hover {
-  opacity: 1;
-}
-
-.avs-otp-modal-header {
-  background: #062C22;
-  color: #FAF5EA;
-  padding: 30px 24px 22px 24px;
+.avs-otp-modal-top-bar {
+  background: linear-gradient(135deg, #062C22 0%, #0B3B2F 100%);
+  padding: 28px 24px 22px;
   text-align: center;
   position: relative;
-  border-bottom: 1px solid rgba(185, 151, 91, 0.3);
+  border-bottom: 2px solid #B9975B;
 }
 
-.avs-otp-shield-icon {
-  width: 52px;
-  height: 52px;
+.avs-otp-top-icon-circle {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 12px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(185, 151, 91, 0.15);
   border: 1.5px solid #B9975B;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 14px auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: #DFBE77;
+  box-shadow: 0 0 20px rgba(185, 151, 91, 0.25);
 }
 
-.avs-otp-modal-title {
-  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
-  font-size: 24px;
-  font-weight: 600;
+.avs-otp-modal-heading {
+  font-family: 'Cormorant Garamond', Georgia, serif;
   color: #FAF5EA;
-  margin: 0 0 6px 0;
+  font-size: 1.65rem;
+  font-weight: 600;
+  margin: 0 0 6px;
   letter-spacing: 0.02em;
 }
 
-.avs-otp-modal-subtitle {
-  font-size: 13.5px;
-  color: #D3C9B8;
+.avs-otp-modal-subheading {
+  color: #D3C4A7;
+  font-size: 0.86rem;
   line-height: 1.45;
   margin: 0;
 }
 
-.avs-otp-modal-subtitle u {
+.avs-otp-email-highlight {
   color: #FAF5EA;
-  font-weight: 600;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   text-decoration-color: #B9975B;
 }
 
-.avs-otp-modal-body {
-  padding: 24px 26px;
-  background: #ffffff;
-}
-
-.avs-otp-alert-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.4;
-  margin-bottom: 20px;
-}
-
-.avs-otp-alert-error {
-  background: #FDF2F2;
-  border: 1px solid #F8D7DA;
-  color: #901F1F;
-}
-
-.avs-otp-alert-success {
-  background: #F0F9F5;
-  border: 1px solid #C8E6D9;
-  color: #0E5A3C;
-}
-
-.avs-otp-alert-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 11px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.avs-otp-alert-error .avs-otp-alert-icon {
-  background: #F8D7DA;
-  color: #901F1F;
-}
-
-.avs-otp-alert-success .avs-otp-alert-icon {
-  background: #C8E6D9;
-  color: #0E5A3C;
-}
-
-.avs-otp-digit-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.avs-otp-digit-input {
-  width: 48px;
-  height: 56px;
-  border: 1.5px solid #D6CEBE;
-  border-radius: 10px;
-  font-size: 22px;
-  font-weight: 700;
-  text-align: center;
-  color: #062C22;
-  background: #FAF8F5;
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-.avs-otp-digit-input:focus {
-  border-color: #B9975B;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(185, 151, 91, 0.2);
-}
-
-.avs-otp-digit-input.filled {
-  border-color: #062C22;
-  background: #ffffff;
-}
-
-.avs-otp-digit-input.error {
-  border-color: #D9534F;
-  background: #FFF5F5;
-  color: #D9534F;
-}
-
-.avs-btn-verify-proceed {
-  width: 100%;
-  padding: 15px 20px;
-  background: #062C22;
-  color: #FAF5EA;
+.avs-otp-close-x {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: transparent;
   border: none;
-  border-radius: 10px;
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  color: #FAF5EA;
+  font-size: 1.5rem;
   cursor: pointer;
-  transition: all 0.25s ease;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+
+.avs-otp-close-x:hover {
+  opacity: 1;
+}
+
+/* MODAL BODY & 6 BOXES */
+.avs-otp-modal-content {
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+
+.avs-otp-boxes-grid {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0 24px;
+}
+
+.avs-otp-input-box {
+  width: 52px;
+  height: 60px;
+  background: #FAF7F2;
+  border: 2px solid #DCD3C5;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1.65rem;
+  font-weight: 700;
+  font-family: 'Inter', -apple-system, monospace;
+  color: #062C22;
+  transition: all 0.2s ease;
+  caret-color: #B9975B;
+}
+
+.avs-otp-input-box:focus {
+  outline: none;
+  border-color: #B9975B;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(185, 151, 91, 0.22), 0 4px 12px rgba(6, 44, 34, 0.08);
+  transform: translateY(-2px);
+}
+
+.avs-otp-input-box.filled {
+  border-color: #96763A;
+  background: #FFFDF9;
+}
+
+.avs-otp-input-box.has-error {
+  border-color: #C0392B;
+  background: #FFF6F5;
+}
+
+/* FEEDBACK MESSAGES */
+.avs-otp-feedback-msg {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(6, 44, 34, 0.2);
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  margin-bottom: 18px;
+  animation: avsFadeIn 0.2s ease;
 }
 
-.avs-btn-verify-proceed:hover:not(:disabled) {
-  background: #0a3d30;
+.avs-otp-feedback-msg.error {
+  background: #FDF1F0;
+  color: #A92619;
+  border: 1px solid rgba(192, 57, 43, 0.25);
+}
+
+.avs-otp-feedback-msg.success {
+  background: #EFF8F3;
+  color: #0E6245;
+  border: 1px solid rgba(14, 98, 69, 0.25);
+}
+
+/* ACTIONS */
+.avs-otp-submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #062C22 0%, #0B3F32 100%);
+  color: #FAF5EA;
+  border: 1px solid #B9975B;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 14px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(6, 44, 34, 0.25);
+}
+
+.avs-otp-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #08382C 0%, #0F4D3D 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(6, 44, 34, 0.35);
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(6, 44, 34, 0.28);
 }
 
-.avs-btn-verify-proceed:disabled {
-  opacity: 0.55;
+.avs-otp-submit-btn:disabled {
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
-.avs-otp-modal-footer {
-  padding: 16px 26px 22px 26px;
-  background: #ffffff;
-  border-top: 1px solid #F0ECE3;
+.avs-otp-resend-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 13px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #EBE4D8;
+  font-size: 0.82rem;
+  color: #5C6762;
 }
 
-.avs-otp-resend-status {
-  color: #666666;
-}
-
-.avs-otp-resend-btn {
-  background: transparent;
+.avs-otp-resend-link {
+  background: none;
   border: none;
   color: #062C22;
   font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
   padding: 0;
-  text-decoration: underline;
+  font-size: 0.82rem;
+  transition: color 0.2s;
 }
 
-.avs-otp-edit-email-btn {
-  background: transparent;
+.avs-otp-resend-link:hover {
+  color: #B9975B;
+}
+
+.avs-otp-change-email-btn {
+  background: none;
   border: none;
-  color: #666666;
-  text-decoration: underline;
+  color: #7A8680;
+  font-size: 0.82rem;
   cursor: pointer;
+  text-decoration: underline;
   padding: 0;
 }
 
-@keyframes avsFadeIn {
+.avs-otp-change-email-btn:hover {
+  color: #062C22;
+}
+
+@keyframes avsModalFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes avsSlideUp {
-  from { opacity: 0; transform: translateY(20px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes avsModalScaleUp {
+  from { transform: scale(0.92) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
+@media (max-width: 480px) {
+  .avs-otp-boxes-grid {
+    gap: 6px;
+  }
+  .avs-otp-input-box {
+    width: 42px;
+    height: 52px;
+    font-size: 1.35rem;
+    border-radius: 8px;
+  }
+}
