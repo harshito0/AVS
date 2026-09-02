@@ -197,35 +197,33 @@ function App() {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
       const search = window.location.search;
-      if (
-        hash === '#services' ||
-        hash === '#/services' ||
-        pathname === '/services' ||
-        pathname.startsWith('/services')
-      ) {
-        return 'services';
-      }
+
+      // Prioritize hash if present
+      if (hash === '#services' || hash === '#/services') return 'services';
+      if (hash === '#salon' || hash === '#/salon') return 'salon';
+      if (hash === '#rmt' || hash === '#/rmt') return 'rmt';
       if (hash === '#packages' || hash === '#/packages') return 'packages';
       if (hash === '#about' || hash === '#/about') return 'about';
-      if (
-        hash === '#gallery' ||
-        hash === '#/gallery' ||
-        pathname === '/gallery' ||
-        pathname.startsWith('/gallery')
-      ) {
-        return 'gallery';
-      }
-      if (hash === '#rmt' || hash === '#/rmt' || pathname.includes('/rmt')) return 'rmt';
+      if (hash === '#gallery' || hash === '#/gallery') return 'gallery';
       if (
         hash === '#booking' ||
         hash === '#/booking' ||
         hash.includes('#booking') ||
-        pathname.includes('/booking') ||
         search.includes('source=qr') ||
         search.includes('page=booking')
       ) {
         return 'booking';
       }
+      if (hash === '#home' || hash === '#contact' || hash === '#why-us') return 'home';
+
+      // Path-based fallback when no conflicting hash
+      if (pathname === '/services' || pathname.startsWith('/services')) return 'services';
+      if (pathname.includes('/salon')) return 'salon';
+      if (pathname.includes('/rmt')) return 'rmt';
+      if (pathname.includes('/packages')) return 'packages';
+      if (pathname.includes('/about')) return 'about';
+      if (pathname.includes('/gallery')) return 'gallery';
+      if (pathname.includes('/booking')) return 'booking';
     }
     return 'home';
   });
@@ -242,59 +240,55 @@ function App() {
       document.body.style.overflow = '';
     }
 
-    if (href === '#services' || href === '/services' || href === '#/services') {
-      if (window.location.pathname !== '/services') {
-        window.history.pushState(null, '', '/services');
-      }
-      setCurrentPage('services');
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    } else if (href === '#salon' || href === '/salon' || href === '#/salon') {
-      window.location.hash = '#salon';
-      setCurrentPage('salon');
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    } else if (href === '#rmt' || href === '/rmt' || href === '#/rmt') {
-      window.location.hash = '#rmt';
-      setCurrentPage('rmt');
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    } else if (href === '#packages') {
-      window.location.hash = '#packages';
-      setCurrentPage('packages');
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    } else if (href === '#about') {
-      window.location.hash = '#about';
-      setCurrentPage('about');
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    } else if (href === '#gallery' || href === '/gallery' || href === '#/gallery') {
-      if (window.location.pathname !== '/gallery') {
-        window.history.pushState(null, '', '/gallery');
+    const cleanHref = href.startsWith('/') && !href.startsWith('/#') ? '#' + href.replace(/^\//, '') : href;
+
+    // Helper to safely transition URL without polluting path
+    const navigateTo = (targetPage, targetHash) => {
+      if (window.location.pathname !== '/') {
+        window.history.pushState(null, '', '/' + (targetHash === '#home' ? '' : targetHash));
       } else {
-        window.location.hash = '#gallery';
+        window.location.hash = targetHash;
       }
-      setCurrentPage('gallery');
+      setCurrentPage(targetPage);
       window.scrollTo({ top: 0, behavior: 'instant' });
-    } else if (href === '#booking') {
+    };
+
+    if (cleanHref === '#services') {
+      navigateTo('services', '#services');
+    } else if (cleanHref === '#salon') {
+      navigateTo('salon', '#salon');
+    } else if (cleanHref === '#rmt') {
+      navigateTo('rmt', '#rmt');
+    } else if (cleanHref === '#packages') {
+      navigateTo('packages', '#packages');
+    } else if (cleanHref === '#about') {
+      navigateTo('about', '#about');
+    } else if (cleanHref === '#gallery') {
+      navigateTo('gallery', '#gallery');
+    } else if (cleanHref === '#booking') {
       handleBookRedirect(e, 'Navigation Menu');
     } else {
+      // Home or on-page anchor (e.g. #contact, #home)
       if (window.location.pathname !== '/') {
-        window.history.pushState(null, '', '/' + (href === '#home' ? '' : href));
+        window.history.pushState(null, '', '/' + (cleanHref === '#home' ? '' : cleanHref));
       } else {
-        window.location.hash = href;
+        window.location.hash = cleanHref;
       }
       if (currentPageRef.current !== 'home') {
         setCurrentPage('home');
         setTimeout(() => {
-          if (href === '#home' || href === '/') {
+          if (cleanHref === '#home' || cleanHref === '/' || !cleanHref) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           } else {
-            const target = document.querySelector(href);
+            const target = document.querySelector(cleanHref);
             if (target) target.scrollIntoView({ behavior: 'smooth' });
           }
         }, 80);
       } else {
-        if (href === '#home' || href === '/') {
+        if (cleanHref === '#home' || cleanHref === '/' || !cleanHref) {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          const target = document.querySelector(href);
+          const target = document.querySelector(cleanHref);
           if (target) target.scrollIntoView({ behavior: 'smooth' });
         }
       }
@@ -320,18 +314,15 @@ function App() {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
       const search = window.location.search;
-      if (
-        hash === '#services' ||
-        hash === '#/services' ||
-        pathname === '/services' ||
-        pathname.startsWith('/services')
-      ) {
+
+      // Check explicit hash first
+      if (hash === '#services' || hash === '#/services') {
         setCurrentPage('services');
         window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (hash === '#salon' || hash === '#/salon' || pathname.includes('/salon')) {
+      } else if (hash === '#salon' || hash === '#/salon') {
         setCurrentPage('salon');
         window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (hash === '#rmt' || hash === '#/rmt' || pathname.includes('/rmt')) {
+      } else if (hash === '#rmt' || hash === '#/rmt') {
         setCurrentPage('rmt');
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (hash === '#packages' || hash === '#/packages') {
@@ -340,22 +331,52 @@ function App() {
       } else if (hash === '#about' || hash === '#/about') {
         setCurrentPage('about');
         window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (
-        hash === '#gallery' ||
-        hash === '#/gallery' ||
-        pathname === '/gallery' ||
-        pathname.startsWith('/gallery')
-      ) {
+      } else if (hash === '#gallery' || hash === '#/gallery') {
         setCurrentPage('gallery');
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (
         hash === '#booking' ||
         hash === '#/booking' ||
         hash.includes('#booking') ||
-        pathname.includes('/booking') ||
         search.includes('source=qr') ||
         search.includes('page=booking')
       ) {
+        setCurrentPage('booking');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (
+        hash === '#home' ||
+        hash === '#/home' ||
+        hash === '#contact' ||
+        hash === '#why-us' ||
+        hash === '#testimonials' ||
+        hash === '#hours'
+      ) {
+        setCurrentPage('home');
+        if (hash && hash !== '#home') {
+          setTimeout(() => {
+            const target = document.querySelector(hash);
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+          }, 60);
+        }
+      } else if (pathname === '/services' || pathname.startsWith('/services')) {
+        setCurrentPage('services');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (pathname.includes('/salon')) {
+        setCurrentPage('salon');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (pathname.includes('/rmt')) {
+        setCurrentPage('rmt');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (pathname.includes('/packages')) {
+        setCurrentPage('packages');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (pathname.includes('/about')) {
+        setCurrentPage('about');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (pathname.includes('/gallery')) {
+        setCurrentPage('gallery');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (pathname.includes('/booking')) {
         setCurrentPage('booking');
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else {
@@ -835,7 +856,11 @@ function App() {
       {currentPage === 'booking' ? (
         <BookingPage
           onBackToHome={() => {
-            window.location.hash = '#home';
+            if (window.location.pathname !== '/') {
+              window.history.pushState(null, '', '/#home');
+            } else {
+              window.location.hash = '#home';
+            }
             setCurrentPage('home');
             window.scrollTo({ top: 0, behavior: 'instant' });
           }}
@@ -844,7 +869,11 @@ function App() {
         <SalonPage
           onBookClick={handleBookRedirect}
           onBackToHome={() => {
-            window.location.hash = '#home';
+            if (window.location.pathname !== '/') {
+              window.history.pushState(null, '', '/#home');
+            } else {
+              window.location.hash = '#home';
+            }
             setCurrentPage('home');
             window.scrollTo({ top: 0, behavior: 'instant' });
           }}
@@ -853,7 +882,11 @@ function App() {
         <RMTPage
           onBookClick={handleBookRedirect}
           onBackToHome={() => {
-            window.location.hash = '#home';
+            if (window.location.pathname !== '/') {
+              window.history.pushState(null, '', '/#home');
+            } else {
+              window.location.hash = '#home';
+            }
             setCurrentPage('home');
             window.scrollTo({ top: 0, behavior: 'instant' });
           }}
