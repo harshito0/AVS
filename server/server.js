@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getAllBookings, insertBooking, updateStatus } from './db.js';
-import { sendBookingEmails, sendOtpEmail } from './email.js';
+import { sendBookingEmails, sendOtpEmail, sendContactInquiryEmail } from './email.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -202,7 +202,16 @@ app.post('/api/contact', async (req, res) => {
       contacts.push(newContact);
       fs.writeFileSync(contactsFile, JSON.stringify(contacts, null, 2), 'utf8');
       console.log(`✉️ Received and stored contact inquiry from: ${name} (${email})`);
-      res.status(201).json({ success: true, contact: newContact });
+
+      // Dispatch real email notification to Admin Gmail (auravitalstar@gmail.com)
+      let emailResult = { success: false };
+      try {
+        emailResult = await sendContactInquiryEmail(newContact);
+      } catch (eErr) {
+        console.error('Email dispatch error:', eErr);
+      }
+
+      res.status(201).json({ success: true, contact: newContact, emailResult });
     } catch (fsErr) {
       console.error('Error writing to contacts.json:', fsErr);
       res.status(200).json({ success: true, note: 'Message acknowledged' });

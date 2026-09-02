@@ -227,3 +227,115 @@ export async function sendBookingEmails(booking) {
   }
 }
 
+/**
+ * Dispatches contact inquiry notification to Admin Gmail + courtesy auto-reply to Guest
+ */
+export async function sendContactInquiryEmail(contact) {
+  const transporter = getTransporter();
+  const gmailUser = (process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
+  const adminEmail = (process.env.ADMIN_EMAIL || gmailUser).trim();
+
+  if (!transporter) {
+    console.warn('⚠️ GMAIL_USER or GMAIL_APP_PASSWORD not configured. Skipping live email dispatch.');
+    return { success: false, reason: 'Credentials not configured' };
+  }
+
+  const { name, email, phone, service, message } = contact;
+  const cleanName = name || 'Valued Guest';
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanPhone = (phone || '').trim();
+  const cleanService = (service && service !== 'Select a service') ? service : 'General Wellness Inquiry';
+  const cleanMessage = message || '';
+  const receivedTime = new Date().toLocaleString('en-US', {
+    timeZone: 'America/Toronto',
+    dateStyle: 'full',
+    timeStyle: 'medium'
+  });
+
+  const adminHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F7F3EC; margin: 0; padding: 24px; color: #1E2421; }
+        .card { max-width: 620px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #E0D9CB; overflow: hidden; box-shadow: 0 10px 30px rgba(6,44,34,0.1); }
+        .header { background: #062C22; color: #FAF5EA; padding: 30px 24px; text-align: center; border-bottom: 2px solid #C59A3F; }
+        .header h1 { font-family: Georgia, serif; margin: 0 0 6px 0; font-size: 24px; color: #FAF5EA; }
+        .header p { margin: 0; color: #DFBE77; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
+        .content { padding: 32px 28px; line-height: 1.6; }
+        .meta-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .meta-table td { padding: 10px 12px; border-bottom: 1px solid #F0ECE4; font-size: 14px; }
+        .meta-table td.label { font-weight: 700; color: #062C22; width: 140px; text-transform: uppercase; font-size: 12px; letter-spacing: 0.08em; }
+        .message-box { background: #FAF7F2; border-left: 4px solid #C59A3F; border-radius: 4px; padding: 18px 20px; margin: 22px 0; font-size: 15px; color: #2C3530; line-height: 1.7; white-space: pre-line; }
+        .action-btn { display: inline-block; background: #062C22; color: #DFBE77 !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 10px; }
+        .footer { background: #F6F1E8; padding: 18px 24px; font-size: 12px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <p>AURA VITAL STAR REJUVENATION CENTRE</p>
+          <h1>New Website Contact Message</h1>
+        </div>
+        <div class="content">
+          <p style="font-size: 15px; margin-top: 0;">A guest has submitted a new inquiry through the AVS Contact page:</p>
+          
+          <table class="meta-table">
+            <tr>
+              <td class="label">Guest Name:</td>
+              <td><strong>${cleanName}</strong></td>
+            </tr>
+            <tr>
+              <td class="label">Email:</td>
+              <td><a href="mailto:${cleanEmail}" style="color: #062C22; font-weight: 600;">${cleanEmail}</a></td>
+            </tr>
+            <tr>
+              <td class="label">Phone:</td>
+              <td>${cleanPhone ? `<a href="tel:${cleanPhone}" style="color: #062C22; font-weight: 600;">${cleanPhone}</a>` : '<span style="color: #999;">Not provided</span>'}</td>
+            </tr>
+            <tr>
+              <td class="label">Service:</td>
+              <td><span style="background: rgba(197,154,63,0.15); color: #062C22; padding: 3px 10px; border-radius: 12px; font-weight: 600; font-size: 13px;">${cleanService}</span></td>
+            </tr>
+            <tr>
+              <td class="label">Date Received:</td>
+              <td style="color: #555; font-size: 13px;">${receivedTime}</td>
+            </tr>
+          </table>
+
+          <p style="font-weight: 700; color: #062C22; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;">Message Details:</p>
+          <div class="message-box">${cleanMessage}</div>
+
+          <div style="text-align: center; margin-top: 24px;">
+            <a href="mailto:${cleanEmail}?subject=Re: Your Aura Vital Star Inquiry (${cleanService})" class="action-btn">
+              Reply Directly to ${cleanName}
+            </a>
+          </div>
+        </div>
+        <div class="footer">
+          157 Queen Street West, Brampton, ON L6Y 1P9 &bull; <a href="https://www.auravitalstar.ca" style="color: #C59A3F; text-decoration: none;">www.auravitalstar.ca</a>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    // 1. Dispatch to Admin Gmail
+    await transporter.sendMail({
+      from: `"AVS Website Contact" <${gmailUser}>`,
+      to: adminEmail,
+      replyTo: cleanEmail,
+      subject: `✉️ New Contact Message: ${cleanName} - ${cleanService}`,
+      html: adminHtml
+    });
+    console.log(`✅ Admin email notification delivered to ${adminEmail}`);
+
+    return { success: true };
+  } catch (err) {
+    console.error('❌ Failed to dispatch contact inquiry to Gmail:', err);
+    return { success: false, error: err.message };
+  }
+}
+
