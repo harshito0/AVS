@@ -7,6 +7,7 @@ const SalonPage = lazy(() => import('./SalonPage'));
 const RMTPage = lazy(() => import('./RMTPage'));
 const ServicesPage = lazy(() => import('./ServicesPage'));
 const GalleryPage = lazy(() => import('./GalleryPage'));
+const ContactPage = lazy(() => import('./ContactPage'));
 
 const announceItems = [
   '⭐ New Client Offer: Get 15% Off on Your First Visit',
@@ -23,7 +24,7 @@ const navLinks = [
   { href: '/packages', path: '/packages', page: 'packages', label: 'PACKAGES' },
   { href: '/about', path: '/about', page: 'about', label: 'ABOUT AVS' },
   { href: '/gallery', path: '/gallery', page: 'gallery', label: 'GALLERY' },
-  { href: '/#contact', path: '/#contact', page: 'contact', label: 'CONTACT' }
+  { href: '/contact', path: '/contact', page: 'contact', label: 'CONTACT' }
 ];
 
 const heroSlides = [
@@ -228,11 +229,12 @@ function App() {
     if (hash === '#booking' || hash === '#/booking' || search.includes('source=qr') || search.includes('page=booking')) {
       return 'booking';
     }
+    if (hash === '#contact' || hash === '#/contact') {
+      if (pathname !== '/contact' || hash) window.history.replaceState(null, '', '/contact');
+      return 'contact';
+    }
     if (hash === '#home' || hash === '#/home') {
       if (pathname !== '/' || hash) window.history.replaceState(null, '', '/');
-      return 'home';
-    }
-    if (hash === '#contact') {
       return 'home';
     }
 
@@ -243,6 +245,7 @@ function App() {
     if (pathname === '/rmt' || pathname.startsWith('/rmt')) return 'rmt';
     if (pathname === '/packages' || pathname.startsWith('/packages')) return 'packages';
     if (pathname === '/gallery' || pathname.startsWith('/gallery')) return 'gallery';
+    if (pathname === '/contact' || pathname.startsWith('/contact')) return 'contact';
     if (pathname === '/booking' || pathname.startsWith('/booking')) return 'booking';
 
     return 'home';
@@ -304,17 +307,7 @@ function App() {
     } else if (page === 'booking') {
       handleBookRedirect(e, 'Navigation Menu');
     } else if (page === 'contact') {
-      window.history.pushState(null, '', '/#contact');
-      if (currentPageRef.current !== 'home') {
-        setCurrentPage('home');
-        setTimeout(() => {
-          const el = document.querySelector('#contact');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 80);
-      } else {
-        const el = document.querySelector('#contact');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }
+      navigateTo('contact', '/contact');
     } else {
       // Home
       window.history.pushState(null, '', '/');
@@ -794,6 +787,11 @@ function App() {
             onBookClick={handleBookRedirect}
             onNavClick={(e, href) => handleNavClick(e, href)}
           />
+        ) : currentPage === 'contact' ? (
+          <ContactPage
+            onBookClick={handleBookRedirect}
+            onNavClick={(e, href) => handleNavClick(e, href)}
+          />
         ) : (
           <>
           <section id="home" className="hero" aria-labelledby="hero-heading">
@@ -1230,8 +1228,8 @@ function App() {
                 </li>
                 <li>
                   <a
-                    href="#contact"
-                    onClick={(e) => handleNavClick(e, '#contact')}
+                    href="/contact"
+                    onClick={(e) => handleNavClick(e, 'contact')}
                     className="footer-nav-item"
                   >
                     <span>Contact</span>

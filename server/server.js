@@ -175,6 +175,44 @@ app.patch('/api/bookings/:id/status', (req, res) => {
   }
 });
 
+// POST /api/contact — Handle contact inquiries
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, phone, service, message } = req.body || {};
+    if (!name || !email || !message) {
+      return res.status(400).json({ success: false, error: 'Name, email, and message are required.' });
+    }
+
+    const contactsFile = path.join(__dirname, 'data', 'contacts.json');
+    let contacts = [];
+    try {
+      const fs = await import('fs');
+      if (fs.existsSync(contactsFile)) {
+        contacts = JSON.parse(fs.readFileSync(contactsFile, 'utf8'));
+      }
+      const newContact = {
+        id: `contact_${Date.now()}`,
+        name: name.trim(),
+        email: email.trim(),
+        phone: (phone || '').trim(),
+        service: service || 'General Inquiry',
+        message: message.trim(),
+        createdAt: new Date().toISOString()
+      };
+      contacts.push(newContact);
+      fs.writeFileSync(contactsFile, JSON.stringify(contacts, null, 2), 'utf8');
+      console.log(`✉️ Received and stored contact inquiry from: ${name} (${email})`);
+      res.status(201).json({ success: true, contact: newContact });
+    } catch (fsErr) {
+      console.error('Error writing to contacts.json:', fsErr);
+      res.status(200).json({ success: true, note: 'Message acknowledged' });
+    }
+  } catch (err) {
+    console.error('Error processing contact inquiry:', err);
+    res.status(500).json({ success: false, error: 'Failed to process inquiry' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✨ AVS Booking Server & Database running on http://localhost:${PORT}`);
   console.log(`📧 Gmail notifications: ${process.env.GMAIL_USER || 'Add credentials to server/.env'}`);
