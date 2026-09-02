@@ -3,6 +3,8 @@ import PackagesPage from './PackagesPage';
 import AboutPage from './AboutPage';
 import BookingPage from './BookingPage';
 import SalonPage from './SalonPage';
+import RMTPage from './RMTPage';
+import ServicesPage from './ServicesPage';
 
 const announceItems = [
   '⭐ New Client Offer: Get 15% Off on Your First Visit',
@@ -194,8 +196,17 @@ function App() {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
       const search = window.location.search;
+      if (
+        hash === '#services' ||
+        hash === '#/services' ||
+        pathname === '/services' ||
+        pathname.startsWith('/services')
+      ) {
+        return 'services';
+      }
       if (hash === '#packages' || hash === '#/packages') return 'packages';
       if (hash === '#about' || hash === '#/about') return 'about';
+      if (hash === '#rmt' || hash === '#/rmt' || pathname.includes('/rmt')) return 'rmt';
       if (
         hash === '#booking' ||
         hash === '#/booking' ||
@@ -222,9 +233,19 @@ function App() {
       document.body.style.overflow = '';
     }
 
-    if (href === '#salon' || href === '/salon' || href === '#/salon') {
+    if (href === '#services' || href === '/services' || href === '#/services') {
+      if (window.location.pathname !== '/services') {
+        window.history.pushState(null, '', '/services');
+      }
+      setCurrentPage('services');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else if (href === '#salon' || href === '/salon' || href === '#/salon') {
       window.location.hash = '#salon';
       setCurrentPage('salon');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else if (href === '#rmt' || href === '/rmt' || href === '#/rmt') {
+      window.location.hash = '#rmt';
+      setCurrentPage('rmt');
       window.scrollTo({ top: 0, behavior: 'instant' });
     } else if (href === '#packages') {
       window.location.hash = '#packages';
@@ -237,11 +258,15 @@ function App() {
     } else if (href === '#booking') {
       handleBookRedirect(e, 'Navigation Menu');
     } else {
-      window.location.hash = href;
+      if (window.location.pathname !== '/') {
+        window.history.pushState(null, '', '/' + (href === '#home' ? '' : href));
+      } else {
+        window.location.hash = href;
+      }
       if (currentPageRef.current !== 'home') {
         setCurrentPage('home');
         setTimeout(() => {
-          if (href === '#home') {
+          if (href === '#home' || href === '/') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           } else {
             const target = document.querySelector(href);
@@ -249,7 +274,7 @@ function App() {
           }
         }, 80);
       } else {
-        if (href === '#home') {
+        if (href === '#home' || href === '/') {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           const target = document.querySelector(href);
@@ -274,12 +299,23 @@ function App() {
   };
 
   useEffect(() => {
-    const handleHashChange = () => {
+    const handleLocationChange = () => {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
       const search = window.location.search;
-      if (hash === '#salon' || hash === '#/salon' || pathname.includes('/salon')) {
+      if (
+        hash === '#services' ||
+        hash === '#/services' ||
+        pathname === '/services' ||
+        pathname.startsWith('/services')
+      ) {
+        setCurrentPage('services');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (hash === '#salon' || hash === '#/salon' || pathname.includes('/salon')) {
         setCurrentPage('salon');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (hash === '#rmt' || hash === '#/rmt' || pathname.includes('/rmt')) {
+        setCurrentPage('rmt');
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (hash === '#packages' || hash === '#/packages') {
         setCurrentPage('packages');
@@ -308,8 +344,12 @@ function App() {
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
+    };
   }, []);
 
   const [announceIndex, setAnnounceIndex] = useState(0);
@@ -511,6 +551,13 @@ function App() {
       if (!navTicking) {
         window.requestAnimationFrame(() => {
           if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 40);
+          if (currentPageRef.current === 'services') {
+            navLinksGroup.forEach((link) => {
+              link.classList.toggle('active', link.getAttribute('href') === '#services');
+            });
+            navTicking = false;
+            return;
+          }
           if (currentPageRef.current === 'packages') {
             navLinksGroup.forEach((link) => {
               link.classList.toggle('active', link.getAttribute('href') === '#packages');
@@ -521,6 +568,13 @@ function App() {
           if (currentPageRef.current === 'about') {
             navLinksGroup.forEach((link) => {
               link.classList.toggle('active', link.getAttribute('href') === '#about');
+            });
+            navTicking = false;
+            return;
+          }
+          if (currentPageRef.current === 'rmt') {
+            navLinksGroup.forEach((link) => {
+              link.classList.toggle('active', link.getAttribute('href') === '#rmt');
             });
             navTicking = false;
             return;
@@ -598,13 +652,21 @@ function App() {
 
   useEffect(() => {
     const navLinksGroup = document.querySelectorAll('.nav-link');
-    if (currentPage === 'packages') {
+    if (currentPage === 'services') {
+      navLinksGroup.forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === '#services');
+      });
+    } else if (currentPage === 'packages') {
       navLinksGroup.forEach((link) => {
         link.classList.toggle('active', link.getAttribute('href') === '#packages');
       });
     } else if (currentPage === 'about') {
       navLinksGroup.forEach((link) => {
         link.classList.toggle('active', link.getAttribute('href') === '#about');
+      });
+    } else if (currentPage === 'rmt') {
+      navLinksGroup.forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === '#rmt');
       });
     }
   }, [currentPage]);
@@ -643,8 +705,12 @@ function App() {
           </a>
           <ul className="nav-links" role="list">
             {navLinks.map((link) => {
-              const isActive = currentPage === 'salon'
+              const isActive = currentPage === 'services'
+                ? link.href === '#services' || link.href === '/services'
+                : currentPage === 'salon'
                 ? link.href === '#salon'
+                : currentPage === 'rmt'
+                ? link.href === '#rmt'
                 : currentPage === 'packages'
                 ? link.href === '#packages'
                 : currentPage === 'about'
@@ -688,17 +754,30 @@ function App() {
         <button className="mobile-menu-close" id="mobile-close" aria-label="Close menu">&times;</button>
         <nav aria-label="Mobile navigation">
           <ul role="list">
-            {navLinks.map((link) => (
-              <li key={link.href + '-mobile'}>
-                <a
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="mobile-link"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
+            {navLinks.map((link) => {
+              const isMobileActive = currentPage === 'services'
+                ? link.href === '#services' || link.href === '/services'
+                : currentPage === 'salon'
+                ? link.href === '#salon'
+                : currentPage === 'rmt'
+                ? link.href === '#rmt'
+                : currentPage === 'packages'
+                ? link.href === '#packages'
+                : currentPage === 'about'
+                ? link.href === '#about'
+                : link.href === '#home';
+              return (
+                <li key={link.href + '-mobile'}>
+                  <a
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className={`mobile-link ${isMobileActive ? 'active' : ''}`}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
           <a
             href="#booking"
@@ -730,10 +809,25 @@ function App() {
             window.scrollTo({ top: 0, behavior: 'instant' });
           }}
         />
+      ) : currentPage === 'rmt' ? (
+        <RMTPage
+          onBookClick={handleBookRedirect}
+          onBackToHome={() => {
+            window.location.hash = '#home';
+            setCurrentPage('home');
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }}
+          onNavClick={(e, href) => handleNavClick(e, href)}
+        />
       ) : currentPage === 'packages' ? (
         <PackagesPage onBookClick={handleBookRedirect} />
       ) : currentPage === 'about' ? (
         <AboutPage onBookClick={handleBookRedirect} />
+      ) : currentPage === 'services' ? (
+        <ServicesPage
+          onBookClick={handleBookRedirect}
+          onNavClick={(e, href) => handleNavClick(e, href)}
+        />
       ) : (
         <>
           <section id="home" className="hero" aria-labelledby="hero-heading">
