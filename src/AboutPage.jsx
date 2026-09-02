@@ -143,8 +143,7 @@ export default function AboutPage({ onBookClick }) {
                 </div>
 
                 <div className="about-hero-image-cinematic-frame">
-                  <img
-                    src="/about_hero_interior.jpg"
+                  <img loading="lazy" decoding="async" src="/about_hero_interior.webp"
                     alt="Aura Vital Star luxurious wellness and beauty sanctuary reception lounge"
                     className="about-hero-cinematic-img"
                   />
@@ -197,8 +196,7 @@ export default function AboutPage({ onBookClick }) {
             {/* Left Image */}
             <div className="about-story-media">
               <div className="about-story-image-wrap">
-                <img
-                  src="/hero_wellness.jpg"
+                <img loading="lazy" decoding="async" src="/hero_wellness.webp"
                   alt="Aura Vital Star wellness story"
                   className="about-story-img"
                 />
@@ -490,7 +488,7 @@ export default function AboutPage({ onBookClick }) {
           <div className="care-grid-cards">
             {/* Card 1: Salon & Beauty */}
             <div className="care-card">
-              <img src="/salon_bg.jpg" alt="Salon & Beauty" className="care-card-img" />
+              <img loading="lazy" decoding="async" src="/salon_bg.webp" alt="Salon & Beauty" className="care-card-img" />
               <div className="care-card-overlay"></div>
               <div className="care-card-content">
                 <h3 className="care-card-title">Salon &amp; Beauty</h3>
@@ -501,7 +499,7 @@ export default function AboutPage({ onBookClick }) {
 
             {/* Card 2: RMT & Massage */}
             <div className="care-card">
-              <img src="/hero_massage.jpg" alt="RMT & Massage" className="care-card-img" />
+              <img loading="lazy" decoding="async" src="/hero_massage.webp" alt="RMT & Massage" className="care-card-img" />
               <div className="care-card-overlay"></div>
               <div className="care-card-content">
                 <h3 className="care-card-title">RMT &amp; Massage</h3>
@@ -512,7 +510,7 @@ export default function AboutPage({ onBookClick }) {
 
             {/* Card 3: Skin & Facials */}
             <div className="care-card">
-              <img src="/hero_facial.jpg" alt="Skin & Facials" className="care-card-img" />
+              <img loading="lazy" decoding="async" src="/hero_facial.webp" alt="Skin & Facials" className="care-card-img" />
               <div className="care-card-overlay"></div>
               <div className="care-card-content">
                 <h3 className="care-card-title">Skin &amp; Facials</h3>
@@ -523,7 +521,7 @@ export default function AboutPage({ onBookClick }) {
 
             {/* Card 4: Nail Care */}
             <div className="care-card">
-              <img src="/brand_editorial.jpg" alt="Nail Care" className="care-card-img" />
+              <img loading="lazy" decoding="async" src="/brand_editorial.webp" alt="Nail Care" className="care-card-img" />
               <div className="care-card-overlay"></div>
               <div className="care-card-content">
                 <h3 className="care-card-title">Nail Care</h3>
@@ -534,7 +532,7 @@ export default function AboutPage({ onBookClick }) {
 
             {/* Card 5: Waxing & Laser */}
             <div className="care-card">
-              <img src="/hero_bg.jpg" alt="Waxing & Laser" className="care-card-img" />
+              <img loading="lazy" decoding="async" src="/hero_bg.webp" alt="Waxing & Laser" className="care-card-img" />
               <div className="care-card-overlay"></div>
               <div className="care-card-content">
                 <h3 className="care-card-title">Waxing &amp; Laser</h3>
@@ -545,7 +543,7 @@ export default function AboutPage({ onBookClick }) {
 
             {/* Card 6: Wellness Therapies */}
             <div className="care-card">
-              <img src="/hero_wellness.jpg" alt="Wellness Therapies" className="care-card-img" />
+              <img loading="lazy" decoding="async" src="/hero_wellness.webp" alt="Wellness Therapies" className="care-card-img" />
               <div className="care-card-overlay"></div>
               <div className="care-card-content">
                 <h3 className="care-card-title">Wellness Therapies</h3>
@@ -582,7 +580,7 @@ export default function AboutPage({ onBookClick }) {
             {/* Member 1 */}
             <div className="team-card">
               <div className="team-img-wrap">
-                <img src="/brand_editorial.jpg" alt="Senior Stylist portrait" className="team-img" />
+                <img loading="lazy" decoding="async" src="/brand_editorial.webp" alt="Senior Stylist portrait" className="team-img" />
                 <div className="team-img-gradient"></div>
               </div>
               <div className="team-info">
@@ -595,7 +593,7 @@ export default function AboutPage({ onBookClick }) {
             {/* Member 2 */}
             <div className="team-card">
               <div className="team-img-wrap">
-                <img src="/hero_massage.jpg" alt="RMT Therapist portrait" className="team-img" />
+                <img loading="lazy" decoding="async" src="/hero_massage.webp" alt="RMT Therapist portrait" className="team-img" />
                 <div className="team-img-gradient"></div>
               </div>
               <div className="team-info">
@@ -608,7 +606,7 @@ export default function AboutPage({ onBookClick }) {
             {/* Member 3 */}
             <div className="team-card">
               <div className="team-img-wrap">
-                <img src="/hero_facial.jpg" alt="Skin Expert portrait" className="team-img" />
+                <img loading="lazy" decoding="async" src="/hero_facial.webp" alt="Skin Expert portrait" className="team-img" />
                 <div className="team-img-gradient"></div>
               </div>
               <div className="team-info">
@@ -621,7 +619,7 @@ export default function AboutPage({ onBookClick }) {
             {/* Member 4 */}
             <div className="team-card">
               <div className="team-img-wrap">
-                <img src="/hero_wellness.jpg" alt="Wellness Coach portrait" className="team-img" />
+                <img loading="lazy" decoding="async" src="/hero_wellness.webp" alt="Wellness Coach portrait" className="team-img" />
                 <div className="team-img-gradient"></div>
               </div>
               <div className="team-info">
@@ -657,35 +655,35 @@ export default function AboutPage({ onBookClick }) {
 
           <div className="ambience-gallery-row">
             <div className="ambience-item">
-              <img src="/promise_bg.jpg" alt="Reception lounge" className="ambience-img" />
+              <img loading="lazy" decoding="async" src="/promise_bg.webp" alt="Reception lounge" className="ambience-img" />
               <div className="ambience-caption">
                 <span className="amb-title">Reception Sanctuary</span>
               </div>
             </div>
 
             <div className="ambience-item">
-              <img src="/salon_bg.jpg" alt="Luxury salon suite" className="ambience-img" />
+              <img loading="lazy" decoding="async" src="/salon_bg.webp" alt="Luxury salon suite" className="ambience-img" />
               <div className="ambience-caption">
                 <span className="amb-title">Salon Suite</span>
               </div>
             </div>
 
             <div className="ambience-item">
-              <img src="/hero_massage.jpg" alt="Quiet massage room" className="ambience-img" />
+              <img loading="lazy" decoding="async" src="/hero_massage.webp" alt="Quiet massage room" className="ambience-img" />
               <div className="ambience-caption">
                 <span className="amb-title">Massage Room</span>
               </div>
             </div>
 
             <div className="ambience-item">
-              <img src="/hero_facial.jpg" alt="Facial treatment room" className="ambience-img" />
+              <img loading="lazy" decoding="async" src="/hero_facial.webp" alt="Facial treatment room" className="ambience-img" />
               <div className="ambience-caption">
                 <span className="amb-title">Facial Room</span>
               </div>
             </div>
 
             <div className="ambience-item">
-              <img src="/brand_editorial.jpg" alt="Apothecary and product area" className="ambience-img" />
+              <img loading="lazy" decoding="async" src="/brand_editorial.webp" alt="Apothecary and product area" className="ambience-img" />
               <div className="ambience-caption">
                 <span className="amb-title">Product Sanctuary</span>
               </div>
@@ -705,7 +703,7 @@ export default function AboutPage({ onBookClick }) {
           SECTION 9 — FINAL CINEMATIC CTA
           =================================================== */}
       <section className="about-final-cta" id="final-cta" aria-label="Book Your Appointment">
-        <div className="final-cta-bg" style={{ backgroundImage: "url('/promise_bg.jpg')" }}></div>
+        <div className="final-cta-bg" style={{ backgroundImage: "url('/promise_bg.webp')" }}></div>
         <div className="final-cta-overlay"></div>
 
         <div className="about-container">

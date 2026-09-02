@@ -1,11 +1,12 @@
-import { useEffect, useState, useRef } from 'react';
-import PackagesPage from './PackagesPage';
-import AboutPage from './AboutPage';
-import BookingPage from './BookingPage';
-import SalonPage from './SalonPage';
-import RMTPage from './RMTPage';
-import ServicesPage from './ServicesPage';
-import GalleryPage from './GalleryPage';
+import { useEffect, useState, useRef, lazy, Suspense } from 'react';
+
+const PackagesPage = lazy(() => import('./PackagesPage'));
+const AboutPage = lazy(() => import('./AboutPage'));
+const BookingPage = lazy(() => import('./BookingPage'));
+const SalonPage = lazy(() => import('./SalonPage'));
+const RMTPage = lazy(() => import('./RMTPage'));
+const ServicesPage = lazy(() => import('./ServicesPage'));
+const GalleryPage = lazy(() => import('./GalleryPage'));
 
 const announceItems = [
   '⭐ New Client Offer: Get 15% Off on Your First Visit',
@@ -28,42 +29,42 @@ const navLinks = [
 const heroSlides = [
   {
     label: 'AURA VITAL STAR',
-    image: '/hero_brand_bg.jpg',
+    image: '/hero_brand_bg.webp',
     alt: 'Aura Vital Star Rejuvenation Centre',
     brand: true,
     className: 'slide-brand'
   },
   {
     label: 'FACIAL TREATMENTS',
-    image: '/hero_facial.jpg',
+    image: '/hero_facial.webp',
     alt: 'Facial Treatments at Aura Vital Star',
     title: 'FACIAL\nTREATMENTS',
     subtitle: 'Revealing brighter,\nhealthier, glowing skin.'
   },
   {
     label: 'MASSAGE THERAPY',
-    image: '/hero_massage.jpg',
+    image: '/hero_massage.webp',
     alt: 'Massage Therapy at Aura Vital Star',
     title: 'MASSAGE\nTHERAPY',
     subtitle: 'Relax. Rejuvenate.\nRestore your natural balance and inner peace.'
   },
   {
     label: 'ORTHOTICS & COMPRESSION',
-    image: '/hero_orthotics2.jpg',
+    image: '/hero_orthotics2.webp',
     alt: 'Orthotics and Compression at Aura Vital Star',
     title: 'ORTHOTICS &\nCOMPRESSION',
     subtitle: 'Support. Comfort.\nMove with confidence.\n<small>Custom orthotics solutions for pain relief and better movement.</small>'
   },
   {
     label: 'WELLNESS RITUALS',
-    image: '/hero_wellness.jpg',
+    image: '/hero_wellness.webp',
     alt: 'Wellness Rituals at Aura Vital Star',
     title: 'WELLNESS\nRITUALS',
     subtitle: 'Mind. Body. Soul.\nBalanced beautifully.\n<small>Experience rituals designed to restore your inner harmony.</small>'
   },
   {
     label: 'RELAXATION PACKAGES',
-    image: '/hero_relaxation.jpg',
+    image: '/hero_relaxation.webp',
     alt: 'Relaxation Packages at Aura Vital Star',
     title: 'RELAXATION\nPACKAGES',
     subtitle: 'Curated packages for\ncomplete relaxation.'
@@ -79,13 +80,13 @@ const whyPillars = [
 ];
 
 const services = [
-  { title: 'Massage Therapy', desc: 'Relax. Rejuvenate. Professionals you can trust.', image: '/salon_bg.jpg', icon: 'massage' },
-  { title: 'Facial Treatments', desc: 'Revealing brighter, healthier, glowing skin.', image: '/brand_editorial.jpg', icon: 'facial' },
-  { title: 'Body Treatments', desc: 'Detox. Nourish. Revive your natural glow.', image: '/hero_bg.jpg', icon: 'body' },
-  { title: 'Hair Removal', desc: 'Smooth. Confident. Long-lasting results.', image: '/hero_facial.jpg', icon: 'hair' },
-  { title: 'Relaxation Packages', desc: 'Curated packages for complete relaxation.', image: '/hero_relaxation.jpg', icon: 'relax' },
-  { title: 'Wellness Rituals', desc: 'Mind. Body. Soul. Balanced beautifully.', image: '/hero_wellness.jpg', icon: 'wellness' },
-  { title: 'Orthotics & Compression Socks', desc: 'Custom support. Better movement.', image: '/hero_orthotics2.jpg', icon: 'orthotics' }
+  { title: 'Massage Therapy', desc: 'Relax. Rejuvenate. Professionals you can trust.', image: '/salon_bg.webp', icon: 'massage' },
+  { title: 'Facial Treatments', desc: 'Revealing brighter, healthier, glowing skin.', image: '/brand_editorial.webp', icon: 'facial' },
+  { title: 'Body Treatments', desc: 'Detox. Nourish. Revive your natural glow.', image: '/hero_bg.webp', icon: 'body' },
+  { title: 'Hair Removal', desc: 'Smooth. Confident. Long-lasting results.', image: '/hero_facial.webp', icon: 'hair' },
+  { title: 'Relaxation Packages', desc: 'Curated packages for complete relaxation.', image: '/hero_relaxation.webp', icon: 'relax' },
+  { title: 'Wellness Rituals', desc: 'Mind. Body. Soul. Balanced beautifully.', image: '/hero_wellness.webp', icon: 'wellness' },
+  { title: 'Orthotics & Compression Socks', desc: 'Custom support. Better movement.', image: '/hero_orthotics2.webp', icon: 'orthotics' }
 ];
 
 const testimonials = [
@@ -249,9 +250,28 @@ function App() {
 
   const [currentPage, setCurrentPage] = useState(() => parseLocation());
   const currentPageRef = useRef(currentPage);
+  const [loadedSlideCount, setLoadedSlideCount] = useState(1);
+
   useEffect(() => {
     currentPageRef.current = currentPage;
   }, [currentPage]);
+
+  // Progressive slide loader: only load slide 1 initially, defer slides 2-6 until idle
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(() => {
+          setLoadedSlideCount(heroSlides.length);
+        }, { timeout: 3000 });
+        return () => window.cancelIdleCallback(id);
+      } else {
+        const t = setTimeout(() => {
+          setLoadedSlideCount(heroSlides.length);
+        }, 2000);
+        return () => clearTimeout(t);
+      }
+    }
+  }, []);
 
   const handleNavClick = (e, target) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -633,7 +653,7 @@ function App() {
     <>
       <div id="loader" aria-hidden="true">
         <div className="loader-logo">
-          <img className="avs-logo-img" src="/logoavs.png" alt="Aura Vital Star logo" />
+          <img className="avs-logo-img" src="/logoavs.webp" alt="Aura Vital Star logo" width="120" height="120" decoding="async" />
         </div>
       </div>
 
@@ -659,7 +679,7 @@ function App() {
             className="nav-logo"
             aria-label="AVS Home"
           >
-            <img className="nav-logo-img" src="/logoavs.png" alt="Aura Vital Star" />
+            <img className="nav-logo-img" src="/logoavs.webp" alt="Aura Vital Star" width="160" height="48" decoding="async" />
           </a>
           <ul className="nav-links" role="list">
             {navLinks.map((link) => {
@@ -732,61 +752,50 @@ function App() {
         </nav>
       </div>
 
-      {currentPage === 'booking' ? (
-        <BookingPage
-          onBackToHome={() => {
-            if (window.location.pathname !== '/') {
-              window.history.pushState(null, '', '/#home');
-            } else {
-              window.location.hash = '#home';
-            }
-            setCurrentPage('home');
-            window.scrollTo({ top: 0, behavior: 'instant' });
-          }}
-        />
-      ) : currentPage === 'salon' ? (
-        <SalonPage
-          onBookClick={handleBookRedirect}
-          onBackToHome={() => {
-            if (window.location.pathname !== '/') {
-              window.history.pushState(null, '', '/#home');
-            } else {
-              window.location.hash = '#home';
-            }
-            setCurrentPage('home');
-            window.scrollTo({ top: 0, behavior: 'instant' });
-          }}
-        />
-      ) : currentPage === 'rmt' ? (
-        <RMTPage
-          onBookClick={handleBookRedirect}
-          onBackToHome={() => {
-            if (window.location.pathname !== '/') {
-              window.history.pushState(null, '', '/#home');
-            } else {
-              window.location.hash = '#home';
-            }
-            setCurrentPage('home');
-            window.scrollTo({ top: 0, behavior: 'instant' });
-          }}
-          onNavClick={(e, href) => handleNavClick(e, href)}
-        />
-      ) : currentPage === 'packages' ? (
-        <PackagesPage onBookClick={handleBookRedirect} />
-      ) : currentPage === 'about' ? (
-        <AboutPage onBookClick={handleBookRedirect} />
-      ) : currentPage === 'services' ? (
-        <ServicesPage
-          onBookClick={handleBookRedirect}
-          onNavClick={(e, href) => handleNavClick(e, href)}
-        />
-      ) : currentPage === 'gallery' ? (
-        <GalleryPage
-          onBookClick={handleBookRedirect}
-          onNavClick={(e, href) => handleNavClick(e, href)}
-        />
-      ) : (
-        <>
+      <Suspense fallback={<div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="loader-logo"><img className="avs-logo-img" src="/logoavs.webp" alt="Loading..." width="100" height="100" /></div></div>}>
+        {currentPage === 'booking' ? (
+          <BookingPage
+            onBackToHome={() => {
+              window.history.pushState(null, '', '/');
+              setCurrentPage('home');
+              window.scrollTo({ top: 0, behavior: 'instant' });
+            }}
+          />
+        ) : currentPage === 'salon' ? (
+          <SalonPage
+            onBookClick={handleBookRedirect}
+            onBackToHome={() => {
+              window.history.pushState(null, '', '/');
+              setCurrentPage('home');
+              window.scrollTo({ top: 0, behavior: 'instant' });
+            }}
+          />
+        ) : currentPage === 'rmt' ? (
+          <RMTPage
+            onBookClick={handleBookRedirect}
+            onBackToHome={() => {
+              window.history.pushState(null, '', '/');
+              setCurrentPage('home');
+              window.scrollTo({ top: 0, behavior: 'instant' });
+            }}
+            onNavClick={(e, href) => handleNavClick(e, href)}
+          />
+        ) : currentPage === 'packages' ? (
+          <PackagesPage onBookClick={handleBookRedirect} />
+        ) : currentPage === 'about' ? (
+          <AboutPage onBookClick={handleBookRedirect} />
+        ) : currentPage === 'services' ? (
+          <ServicesPage
+            onBookClick={handleBookRedirect}
+            onNavClick={(e, href) => handleNavClick(e, href)}
+          />
+        ) : currentPage === 'gallery' ? (
+          <GalleryPage
+            onBookClick={handleBookRedirect}
+            onNavClick={(e, href) => handleNavClick(e, href)}
+          />
+        ) : (
+          <>
           <section id="home" className="hero" aria-labelledby="hero-heading">
         <div className="hero-left">
           <p className="hero-eyebrow reveal-item">Where Wellness Meets Radiance</p>
@@ -840,11 +849,19 @@ function App() {
                 onMouseMove={slide.brand ? handleBrandWave : undefined}
                 onMouseLeave={slide.brand ? resetBrandWave : undefined}
               >
-                <img src={slide.image} alt={slide.alt} />
+                <img
+                  src={idx < loadedSlideCount ? slide.image : undefined}
+                  alt={slide.alt}
+                  width="1600"
+                  height="900"
+                  loading={idx === 0 ? 'eager' : 'lazy'}
+                  decoding={idx === 0 ? 'sync' : 'async'}
+                  fetchPriority={idx === 0 ? 'high' : 'low'}
+                />
                 {slide.brand ? (
                   <div className="hero-brand-emblem-wrap">
                     <div className="hero-brand-glow"></div>
-                    <img className="hero-brand-logo-img" src="/logoavs.png" alt="Aura Vital Star Logo" />
+                    <img className="hero-brand-logo-img" src="/logoavs.webp" alt="Aura Vital Star Logo" width="180" height="60" fetchPriority="high" />
                   </div>
                 ) : (
                   <div className="slide-info-panel">
@@ -899,7 +916,7 @@ function App() {
             {services.map((service) => (
               <div className="svc-card" key={service.title} id={service.title === 'Orthotics & Compression Socks' ? 'orthotics' : undefined}>
                 <div className="svc-card-img">
-                  <img src={service.image} alt={service.title} />
+                  <img src={service.image} alt={service.title} width="400" height="260" loading="lazy" decoding="async" />
                   <div className="svc-card-icon"><Icon name={service.icon} /></div>
                 </div>
                 <div className="svc-card-body">
@@ -1064,6 +1081,7 @@ function App() {
       </section>
         </>
       )}
+      </Suspense>
 
       <footer id="contact" className="footer-luxury" aria-label="Aura Vital Star Footer">
         {/* Top gold accent border line */}
@@ -1095,7 +1113,7 @@ function App() {
                 className="footer-brand-logo-link"
                 aria-label="Aura Vital Star Home"
               >
-                <img className="footer-luxury-logo" src="/logoavs.png" alt="Aura Vital Star logo" />
+                <img className="footer-luxury-logo" src="/logoavs.webp" alt="Aura Vital Star logo" width="160" height="48" loading="lazy" decoding="async" />
               </a>
               <h3 className="footer-brand-tagline">
                 Where Wellness<br />Meets Radiance

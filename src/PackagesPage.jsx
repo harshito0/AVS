@@ -81,8 +81,7 @@ export default function PackagesPage({ onBookClick }) {
             {/* Visual Lifestyle Image Column */}
             <div className="packages-visual-col">
               <div className="packages-visual-frame">
-                <img
-                  src="/hero_relaxation.jpg"
+                <img loading="lazy" decoding="async" src="/hero_relaxation.webp"
                   alt="Aura Vital Star signature wellness packages ambiance"
                   className="packages-editorial-img"
                 />

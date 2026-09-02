@@ -18,7 +18,7 @@ export const AVS_SERVICES = [
       'Silky, healthy gloss and manageable texture'
     ],
     experience: 'Approx. 50 – 60 min • Includes warm botanical oil blend, acupressure scalp massage, and nourishing hair rinse',
-    image: '/svc_hair_head.jpg'
+    image: '/svc_hair_head.webp'
   },
   {
     id: 'body-massage-pain-relief',
@@ -35,7 +35,7 @@ export const AVS_SERVICES = [
       'Personalized pressure for targeted pain relief'
     ],
     experience: 'Approx. 60 – 90 min • Certified therapist consultation, targeted trigger point relief, warm towels',
-    image: '/hero_massage.jpg'
+    image: '/hero_massage.webp'
   },
   {
     id: 'facials-all-types',
@@ -52,7 +52,7 @@ export const AVS_SERVICES = [
       'Noticeable natural luminosity and refined texture'
     ],
     experience: 'Approx. 60 min • Ultrasonic pore cleanse, gentle botanical peel, relaxing face & neck massage, specialized mask',
-    image: '/salon_facial_glow.jpg'
+    image: '/salon_facial_glow.webp'
   },
   {
     id: 'organic-spa-facials',
@@ -69,7 +69,7 @@ export const AVS_SERVICES = [
       'Infuses antioxidants for enduring organic radiance'
     ],
     experience: 'Approx. 60 min • Rosewater compress, organic honey & oat exfoliant, cold-pressed botanical oil facial massage',
-    image: '/brand_editorial.jpg'
+    image: '/brand_editorial.webp'
   },
   {
     id: 'body-polishing',
@@ -86,7 +86,7 @@ export const AVS_SERVICES = [
       'Leaves full-body skin satin-smooth and delicately scented'
     ],
     experience: 'Approx. 60 min • Full-body botanical exfoliation, warm rinse, and rich golden hydration balm application',
-    image: '/svc_body_polishing.jpg'
+    image: '/svc_body_polishing.webp'
   },
   {
     id: 'foot-spa-pamper-feet',
@@ -103,7 +103,7 @@ export const AVS_SERVICES = [
       'Leaves your step light, rejuvenated, and invigorated'
     ],
     experience: 'Approx. 45 min • Rose petal mineral soak, revitalizing foot scrub, pressure-point massage, warm towel wrap',
-    image: '/svc_foot_spa.jpg'
+    image: '/svc_foot_spa.webp'
   },
   {
     id: 'couple-retreats',
@@ -120,7 +120,7 @@ export const AVS_SERVICES = [
       'Complimentary soothing herbal tea & wellness refreshments'
     ],
     experience: 'Approx. 75 – 90 min • Shared sanctuary time, customized tandem treatments, botanical relaxation ritual',
-    image: '/svc_couple_retreat.jpg'
+    image: '/svc_couple_retreat.webp'
   },
   {
     id: 'waxing-laser',
@@ -137,7 +137,7 @@ export const AVS_SERVICES = [
       'Significantly reduces ingrown hairs and slows regrowth'
     ],
     experience: 'Approx. 30 – 60 min • Sanitizing skin prep, skilled rapid technique, soothing aloe & chamomile post-care',
-    image: '/svc_waxing_laser.jpg'
+    image: '/svc_waxing_laser.webp'
   },
   {
     id: 'full-arm-waxing',
@@ -154,7 +154,7 @@ export const AVS_SERVICES = [
       'Finished with cooling antioxidant mist and silky lotion'
     ],
     experience: 'Approx. 30 min • Thorough skin prep, full arm wax, and anti-inflammatory calming application',
-    image: '/rmt_customized.jpg'
+    image: '/rmt_customized.webp'
   },
   {
     id: 'under-arm-waxing',
@@ -171,7 +171,7 @@ export const AVS_SERVICES = [
       'Lasts up to 3 to 4 weeks of carefree smoothness'
     ],
     experience: 'Approx. 15 min • Gentle cleansing, rapid low-temperature wax removal, tea-tree soothing balm',
-    image: '/rmt_why_avs.jpg'
+    image: '/rmt_why_avs.webp'
   },
   {
     id: 'bikini-waxing',
@@ -188,7 +188,7 @@ export const AVS_SERVICES = [
       'Soothing botanical post-treatment to eliminate redness'
     ],
     experience: 'Approx. 20 – 30 min • Professional consultation, gentle precision waxing, cooling cucumber barrier',
-    image: '/promise_bg.jpg'
+    image: '/promise_bg.webp'
   },
   {
     id: 'full-body-waxing',
@@ -205,7 +205,7 @@ export const AVS_SERVICES = [
       'Full-body hydrating and soothing oil application'
     ],
     experience: 'Approx. 75 – 90 min • Comprehensive full-body treatment with continuous soothing skin comfort',
-    image: '/hero_bg.jpg'
+    image: '/hero_bg.webp'
   },
   {
     id: 'pedicure-pamper-feet',
@@ -222,7 +222,7 @@ export const AVS_SERVICES = [
       'Wide collection of premium, toxin-free luxury polishes'
     ],
     experience: 'Approx. 50 min • Mineral soak, organic scrub, nail shaping, massage, professional polish application',
-    image: '/salon_nails_beauty.jpg'
+    image: '/salon_nails_beauty.webp'
   },
   {
     id: 'manicure-pamper-hands',
@@ -239,7 +239,7 @@ export const AVS_SERVICES = [
       'Flawless, chip-resistant finish for everyday elegance'
     ],
     experience: 'Approx. 40 min • Warm hand soak, cuticle care, hand scrub, acupressure massage, luxury polish',
-    image: '/hero_relaxation.jpg'
+    image: '/hero_relaxation.webp'
   },
   {
     id: 'party-bridal-makeup',
@@ -256,7 +256,7 @@ export const AVS_SERVICES = [
       'Includes premium false lash application and touch-up guidance'
     ],
     experience: 'Approx. 60 – 90 min • Skin preparation, custom color blending, radiant contouring, setting finish',
-    image: '/svc_bridal_makeup.jpg'
+    image: '/svc_bridal_makeup.webp'
   }
 ];
 
@@ -266,35 +266,35 @@ export const HERO_SLIDES = [
     id: 'slide-01',
     num: '01',
     title: 'Luxury Spa Sanctuary',
-    image: '/svc_couple_retreat.jpg',
+    image: '/svc_couple_retreat.webp',
     alt: 'Luxury Spa Sanctuary at Aura Vital Star'
   },
   {
     id: 'slide-02',
     num: '02',
     title: 'Hair Spa & Head Massage',
-    image: '/svc_hair_head.jpg',
+    image: '/svc_hair_head.webp',
     alt: 'Hair Spa and Scalp Massage Experience'
   },
   {
     id: 'slide-03',
     num: '03',
     title: 'Facial & Skincare Treatment',
-    image: '/salon_facial_glow.jpg',
+    image: '/salon_facial_glow.webp',
     alt: 'Radiant Facial and Skincare Therapy'
   },
   {
     id: 'slide-04',
     num: '04',
     title: 'Relaxing Body Massage',
-    image: '/hero_massage.jpg',
+    image: '/hero_massage.webp',
     alt: 'Therapeutic Body Massage Therapy'
   },
   {
     id: 'slide-05',
     num: '05',
     title: 'Premium Wellness Experience',
-    image: '/hero_wellness.jpg',
+    image: '/hero_wellness.webp',
     alt: 'Holistic Wellness Rituals'
   }
 ];
@@ -574,11 +574,9 @@ export default function ServicesPage({ onBookClick, onNavClick }) {
           {filteredServices.map((service) => (
             <article key={service.id} className="svc-card">
               <div className="svc-card-img-wrap">
-                <img
-                  src={service.image}
+                <img loading="lazy" decoding="async" src={service.image}
                   alt={`${service.title} at Aura Vital Star Brampton`}
                   className="svc-card-img"
-                  loading="lazy"
                 />
                 <span className="svc-card-category-badge">{service.category}</span>
                 <span className="svc-card-num-badge" aria-hidden="true">{service.num}</span>
@@ -657,8 +655,7 @@ export default function ServicesPage({ onBookClick, onNavClick }) {
             </button>
 
             <div className="svc-modal-img-wrap">
-              <img
-                src={selectedService.image}
+              <img loading="lazy" decoding="async" src={selectedService.image}
                 alt={selectedService.title}
                 className="svc-modal-img"
               />

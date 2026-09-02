@@ -6,42 +6,42 @@ const rmtServices = [
     id: 'therapeutic',
     title: 'Therapeutic Massage',
     desc: 'Targeted techniques to address tension, discomfort and areas of concern. Each session is adapted to your specific needs for meaningful, lasting relief.',
-    image: '/rmt_therapeutic.jpg',
+    image: '/rmt_therapeutic.webp',
     duration: '60 – 90 min',
   },
   {
     id: 'relaxation',
     title: 'Relaxation Massage',
     desc: 'A full-body, flowing treatment designed to calm the nervous system, ease muscle tension and restore your sense of balance and ease.',
-    image: '/rmt_relaxation.jpg',
+    image: '/rmt_relaxation.webp',
     duration: '60 – 90 min',
   },
   {
     id: 'deep-tissue',
     title: 'Deep Tissue Massage',
     desc: 'Focused pressure applied to deeper layers of muscle and connective tissue, helping to release chronic patterns of tension and improve mobility.',
-    image: '/rmt_deep_tissue.jpg',
+    image: '/rmt_deep_tissue.webp',
     duration: '60 – 90 min',
   },
   {
     id: 'prenatal',
     title: 'Prenatal Massage',
     desc: 'Specially adapted care for mothers-to-be. Gentle, supportive techniques designed to promote comfort, reduce strain and support your changing body.',
-    image: '/rmt_prenatal.jpg',
+    image: '/rmt_prenatal.webp',
     duration: '60 min',
   },
   {
     id: 'sports',
     title: 'Sports & Recovery Massage',
     desc: 'Designed for active individuals, this treatment supports muscle recovery, reduces post-activity soreness and helps maintain performance and flexibility.',
-    image: '/rmt_sports.jpg',
+    image: '/rmt_sports.webp',
     duration: '60 – 90 min',
   },
   {
     id: 'customized',
     title: 'Customized Massage Therapy',
     desc: 'Not sure which treatment is right for you? We build a personalized session around your goals, preferences and areas of focus — your comfort guides everything.',
-    image: '/rmt_customized.jpg',
+    image: '/rmt_customized.webp',
     duration: 'Flexible',
   },
 ];
@@ -164,8 +164,7 @@ export default function RMTPage({ onBookClick, onBackToHome, onNavClick }) {
       ====================================================== */}
       <section className="rmt-hero" aria-labelledby="rmt-hero-heading" id="rmt-hero">
         <div className="rmt-hero-img-wrap">
-          <img
-            src="/rmt_hero_massage.jpg"
+          <img loading="lazy" decoding="async" src="/rmt_hero_massage.webp"
             alt="Professional RMT therapist providing massage treatment at Aura Vital Star wellness centre"
             className="rmt-hero-img"
           />
@@ -326,8 +325,7 @@ export default function RMTPage({ onBookClick, onBackToHome, onNavClick }) {
                 style={{ '--card-delay': `${i * 0.08}s` }}
               >
                 <div className="rmt-svc-img-wrap">
-                  <img
-                    src={service.image}
+                  <img loading="lazy" decoding="async" src={service.image}
                     alt={service.title}
                     className="rmt-svc-img"
                   />
@@ -372,8 +370,7 @@ export default function RMTPage({ onBookClick, onBackToHome, onNavClick }) {
         <div className="rmt-why-inner">
           <div className="rmt-why-image-col">
             <div className="rmt-why-img-frame">
-              <img
-                src="/rmt_why_avs.jpg"
+              <img loading="lazy" decoding="async" src="/rmt_why_avs.webp"
                 alt="Tranquil massage therapy room at Aura Vital Star"
                 className="rmt-why-img"
               />

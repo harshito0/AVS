@@ -45,7 +45,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
           loop
           muted
           playsInline
-          poster="/hero_salon_editorial.jpg"
+          poster="/hero_salon_editorial.webp"
           className="avs-salon-hero-full-bg-video"
         >
           <source src="/scene_-_hair_wash_experience.mp4" type="video/mp4" />
@@ -115,8 +115,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
             </div>
 
             <div className="avs-salon-hero-img-card">
-              <img
-                src="/hero_salon_editorial.jpg"
+              <img loading="lazy" decoding="async" src="/hero_salon_editorial.webp"
                 alt="Aura Vital Star Luxury Salon Interior"
                 className="avs-salon-hero-img"
               />
@@ -137,8 +136,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
           <div className="avs-salon-split-layout">
             {/* Left Portrait Editorial Image */}
             <div className="avs-salon-story-img-wrap">
-              <img
-                src="/salon_hair_styling.jpg"
+              <img loading="lazy" decoding="async" src="/salon_hair_styling.webp"
                 alt="Stylist creating personalized salon hair care at Aura Vital Star"
                 className="avs-salon-story-img"
               />
@@ -216,7 +214,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
             {filteredServices.map((svc) => (
               <article className="avs-salon-service-card" key={svc.id}>
                 <div className="avs-salon-card-img-frame">
-                  <img src={svc.image || '/hero_salon_editorial.jpg'} alt={svc.title} className="avs-salon-card-img" />
+                  <img loading="lazy" decoding="async" src={svc.image || '/hero_salon_editorial.webp'} alt={svc.title} className="avs-salon-card-img" />
                   <span className="avs-salon-card-cat-badge">{svc.category}</span>
                 </div>
                 <div className="avs-salon-card-body">
@@ -246,7 +244,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
           SECTION 04 — FEATURED SALON EXPERIENCE
           ==================================================================== */}
       <section className="avs-salon-featured-section">
-        <div className="avs-salon-featured-bg" style={{ backgroundImage: "url('/salon_bg.jpg')" }}></div>
+        <div className="avs-salon-featured-bg" style={{ backgroundImage: "url('/salon_bg.webp')" }}></div>
         <div className="avs-salon-featured-overlay"></div>
         <div className="avs-salon-featured-content">
           <span className="avs-featured-eyebrow">THE AVS DIFFERENCE</span>
@@ -281,7 +279,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
             {/* Visual 1: THE LOOK */}
             <div className="avs-editorial-card">
               <div className="avs-editorial-img-wrap">
-                <img src="/salon_hair_styling.jpg" alt="The Look - Luxury Hair Styling" />
+                <img loading="lazy" decoding="async" src="/salon_hair_styling.webp" alt="The Look - Luxury Hair Styling" />
                 <div className="avs-editorial-badge">01 &bull; THE LOOK</div>
               </div>
               <div className="avs-editorial-caption">
@@ -293,7 +291,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
             {/* Visual 2: THE GLOW */}
             <div className="avs-editorial-card">
               <div className="avs-editorial-img-wrap">
-                <img src="/salon_facial_glow.jpg" alt="The Glow - Skin & Aesthetics" />
+                <img loading="lazy" decoding="async" src="/salon_facial_glow.webp" alt="The Glow - Skin & Aesthetics" />
                 <div className="avs-editorial-badge">02 &bull; THE GLOW</div>
               </div>
               <div className="avs-editorial-caption">
@@ -305,7 +303,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
             {/* Visual 3: THE DETAIL */}
             <div className="avs-editorial-card">
               <div className="avs-editorial-img-wrap">
-                <img src="/salon_nails_beauty.jpg" alt="The Detail - Nails & Finishing" />
+                <img loading="lazy" decoding="async" src="/salon_nails_beauty.webp" alt="The Detail - Nails & Finishing" />
                 <div className="avs-editorial-badge">03 &bull; THE DETAIL</div>
               </div>
               <div className="avs-editorial-caption">
@@ -333,7 +331,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
           <div className="avs-salon-team-grid">
             <div className="avs-team-card">
               <div className="avs-team-img-frame">
-                <img src="/hero_facial.jpg" alt="Elena Rostova - Master Stylist" />
+                <img loading="lazy" decoding="async" src="/hero_facial.webp" alt="Elena Rostova - Master Stylist" />
               </div>
               <div className="avs-team-info">
                 <h4 className="avs-team-name">Elena Rostova</h4>
@@ -344,7 +342,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
 
             <div className="avs-team-card">
               <div className="avs-team-img-frame">
-                <img src="/hero_wellness.jpg" alt="Sophia Chen - Senior Aesthetician" />
+                <img loading="lazy" decoding="async" src="/hero_wellness.webp" alt="Sophia Chen - Senior Aesthetician" />
               </div>
               <div className="avs-team-info">
                 <h4 className="avs-team-name">Sophia Chen</h4>
@@ -355,7 +353,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
 
             <div className="avs-team-card">
               <div className="avs-team-img-frame">
-                <img src="/hero_relaxation.jpg" alt="Amara Patel - Nail Artist" />
+                <img loading="lazy" decoding="async" src="/hero_relaxation.webp" alt="Amara Patel - Nail Artist" />
               </div>
               <div className="avs-team-info">
                 <h4 className="avs-team-name">Amara Patel</h4>
@@ -379,13 +377,13 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
 
           <div className="avs-salon-collage-grid">
             <div className="avs-collage-main">
-              <img src="/hero_salon_editorial.jpg" alt="Aura Vital Star Styling Studio Space" />
+              <img loading="lazy" decoding="async" src="/hero_salon_editorial.webp" alt="Aura Vital Star Styling Studio Space" />
             </div>
             <div className="avs-collage-sub top">
-              <img src="/salon_hair_styling.jpg" alt="Salon styling chair" />
+              <img loading="lazy" decoding="async" src="/salon_hair_styling.webp" alt="Salon styling chair" />
             </div>
             <div className="avs-collage-sub bottom">
-              <img src="/salon_nails_beauty.jpg" alt="Nail manicure space" />
+              <img loading="lazy" decoding="async" src="/salon_nails_beauty.webp" alt="Nail manicure space" />
             </div>
           </div>
 
@@ -426,7 +424,7 @@ export default function SalonPage({ onBookClick, onBackToHome }) {
           SECTION 09 — SALON CTA
           ==================================================================== */}
       <section className="avs-salon-final-cta-section">
-        <div className="avs-salon-cta-bg" style={{ backgroundImage: "url('/hero_salon_editorial.jpg')" }}></div>
+        <div className="avs-salon-cta-bg" style={{ backgroundImage: "url('/hero_salon_editorial.webp')" }}></div>
         <div className="avs-salon-cta-overlay"></div>
         <div className="avs-salon-cta-content">
           <span className="avs-salon-cta-eyebrow">YOUR NEXT LOOK STARTS HERE</span>

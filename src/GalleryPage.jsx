@@ -22,7 +22,7 @@ const GALLERY_ITEMS = [
     title: 'Basalt Hot Stone Ritual',
     subtitle: 'Warm minerals & restorative botanicals',
     desc: 'Heated volcanic basalt stones combined with organic essential oils melt deep muscular tension, restoring vital energy and serene inner balance.',
-    image: '/gallery_hot_stones.jpg',
+    image: '/gallery_hot_stones.webp',
     alt: 'Luxury hot stone ritual with basalt stones, natural orchids, and aromatic candles',
     spanClass: 'span-feature'
   },
@@ -33,7 +33,7 @@ const GALLERY_ITEMS = [
     title: 'Glow & Rejuvenate',
     subtitle: 'Cellular hydration & brightening',
     desc: 'Personalized facial experiences designed to deeply nourish, refresh, and restore your natural, luminous radiant complexion.',
-    image: '/hero_facial.jpg',
+    image: '/hero_facial.webp',
     alt: 'Rejuvenating facial skincare treatment at Aura Vital Star',
     spanClass: 'span-portrait'
   },
@@ -44,7 +44,7 @@ const GALLERY_ITEMS = [
     title: 'The Grand AVS Sanctuary',
     subtitle: 'Architectural wellness lounge',
     desc: 'Step into our tranquil sanctuary featuring curved emerald velvet, fluted natural oak, and warm ambient glow designed for ultimate peace.',
-    image: '/gallery_lounge_interior.jpg',
+    image: '/gallery_lounge_interior.webp',
     alt: 'Luxury boutique spa reception and lounge interior with curved green velvet seating',
     spanClass: 'span-landscape'
   },
@@ -55,7 +55,7 @@ const GALLERY_ITEMS = [
     title: 'Therapeutic Massage Therapy',
     subtitle: 'RMT certified muscle release',
     desc: 'Targeted deep tissue and relaxation strokes by certified Registered Massage Professionals designed to alleviate tension and improve mobility.',
-    image: '/hero_massage.jpg',
+    image: '/hero_massage.webp',
     alt: 'Professional massage therapy session in tranquil treatment suite',
     spanClass: 'span-landscape'
   },
@@ -66,7 +66,7 @@ const GALLERY_ITEMS = [
     title: 'Scalp Detox & Hair Spa',
     subtitle: 'Botanical infusion & head massage',
     desc: 'An invigorating scalp massage and deeply restorative hair treatment using nourishing botanical extracts for silky, healthy shine.',
-    image: '/svc_hair_head.jpg',
+    image: '/svc_hair_head.webp',
     alt: 'Nourishing scalp massage and Japanese style hair spa ritual',
     spanClass: 'span-small'
   },
@@ -77,7 +77,7 @@ const GALLERY_ITEMS = [
     title: 'Harmony Couples Retreat',
     subtitle: 'Shared peace & dual relaxation',
     desc: 'Immerse together in a private candlelit suite with dual treatment beds, hot aromatic towel compresses, and personalized massage therapy.',
-    image: '/svc_couple_retreat.jpg',
+    image: '/svc_couple_retreat.webp',
     alt: 'Luxury couple spa environment with two treatment beds and candles',
     spanClass: 'span-wide'
   },
@@ -88,7 +88,7 @@ const GALLERY_ITEMS = [
     title: 'Couture Nail Artistry',
     subtitle: 'Precision shaping & gel pampering',
     desc: 'Refined manicure treatments featuring premium non-toxic polishes, gentle cuticular grooming, and restorative hand massage.',
-    image: '/salon_nails_beauty.jpg',
+    image: '/salon_nails_beauty.webp',
     alt: 'Elegant manicure and nail styling treatment',
     spanClass: 'span-square'
   },
@@ -99,7 +99,7 @@ const GALLERY_ITEMS = [
     title: 'Haute Bridal & Glamour',
     subtitle: 'Editorial radiant elegance',
     desc: 'Flawless makeup artistry tailored for brides and special events, highlighting your natural beauty with camera-ready luminous grace.',
-    image: '/svc_bridal_makeup.jpg',
+    image: '/svc_bridal_makeup.webp',
     alt: 'Bridal makeup and luxury beauty styling preparation',
     spanClass: 'span-portrait'
   },
@@ -110,7 +110,7 @@ const GALLERY_ITEMS = [
     title: 'Botanical Body Polish',
     subtitle: 'Exfoliation & golden hydration',
     desc: 'An exquisite full-body polish with sea salts and organic oils, sloughing away dull cells to reveal velvety, glowing skin.',
-    image: '/svc_body_polishing.jpg',
+    image: '/svc_body_polishing.webp',
     alt: 'Full body botanical polishing and detox treatment',
     spanClass: 'span-landscape'
   },
@@ -121,7 +121,7 @@ const GALLERY_ITEMS = [
     title: 'Private Sanctuary Suite',
     subtitle: 'Serene acoustic isolation',
     desc: 'Each treatment room at AVS is private, climate-controlled, and infused with calming aromatherapy notes for total peace of mind.',
-    image: '/about_hero_interior.jpg',
+    image: '/about_hero_interior.webp',
     alt: 'Private luxury spa treatment suite interior with warm ivory lighting',
     spanClass: 'span-square'
   },
@@ -132,7 +132,7 @@ const GALLERY_ITEMS = [
     title: 'Precision Silkening Care',
     subtitle: 'Gentle & long-lasting smoothness',
     desc: 'Advanced hair removal performed by seasoned estheticians in an impeccably hygienic, soothing clinical environment.',
-    image: '/svc_waxing_laser.jpg',
+    image: '/svc_waxing_laser.webp',
     alt: 'Professional laser and waxing beauty treatment room',
     spanClass: 'span-landscape'
   },
@@ -143,7 +143,7 @@ const GALLERY_ITEMS = [
     title: 'Haute Salon Styling',
     subtitle: 'Master cut & gloss finish',
     desc: 'Bespoke hair design, tailored color balayage, and luxurious blowout experiences that elevate your signature style.',
-    image: '/salon_hair_styling.jpg',
+    image: '/salon_hair_styling.webp',
     alt: 'Professional hair stylist creating an elegant blowout look',
     spanClass: 'span-landscape'
   },
@@ -154,7 +154,7 @@ const GALLERY_ITEMS = [
     title: 'Swedish Gentle Relaxation',
     subtitle: 'Long flowing restorative strokes',
     desc: 'A calming full-body massage designed to soothe the nervous system, stimulate circulation, and dissolve daily fatigue.',
-    image: '/rmt_relaxation.jpg',
+    image: '/rmt_relaxation.webp',
     alt: 'Relaxing Swedish massage therapy treatment at AVS',
     spanClass: 'span-square'
   },
@@ -165,7 +165,7 @@ const GALLERY_ITEMS = [
     title: 'Herbal Foot Spa & Pedicure',
     subtitle: 'Invigorating soak & acupressure',
     desc: 'Revitalize tired feet with warm organic herbal soaks, invigorating sugar scrub exfoliation, and targeted reflexology pressure.',
-    image: '/svc_foot_spa.jpg',
+    image: '/svc_foot_spa.webp',
     alt: 'Relaxing foot spa and pedicure treatment with natural florals',
     spanClass: 'span-landscape'
   },
@@ -176,7 +176,7 @@ const GALLERY_ITEMS = [
     title: 'Luminous Facial Glow',
     subtitle: 'Deep pore detox & peptide mask',
     desc: 'Advanced clinical esthetics infused with botanical peptides, visibly plumping and evening skin texture in a single ritual.',
-    image: '/salon_facial_glow.jpg',
+    image: '/salon_facial_glow.webp',
     alt: 'Glowing skin facial treatment with hydrating mask',
     spanClass: 'span-square'
   },
@@ -187,7 +187,7 @@ const GALLERY_ITEMS = [
     title: 'Modern Salon Studio',
     subtitle: 'Where style meets tranquility',
     desc: 'Our expansive salon floor combines modern minimalist lines with Italian styling chairs and soft warm lighting.',
-    image: '/salon_bg.jpg',
+    image: '/salon_bg.webp',
     alt: 'Interior of Aura Vital Star luxury hair salon and styling chairs',
     spanClass: 'span-landscape'
   },
@@ -198,7 +198,7 @@ const GALLERY_ITEMS = [
     title: 'Deep Tissue Release',
     subtitle: 'Chronic tension management',
     desc: 'Specialized deep muscular therapy targeting persistent neck, shoulder, and back tightness for long-term physical freedom.',
-    image: '/rmt_deep_tissue.jpg',
+    image: '/rmt_deep_tissue.webp',
     alt: 'Deep tissue therapy by certified massage professional',
     spanClass: 'span-square'
   },
@@ -209,19 +209,19 @@ const GALLERY_ITEMS = [
     title: 'Mind & Body Harmony',
     subtitle: 'A holistic wellness journey',
     desc: 'Curated wellness packages pairing massage, hydro-comfort, and peaceful meditation in an unhurried, restorative atmosphere.',
-    image: '/hero_wellness.jpg',
+    image: '/hero_wellness.webp',
     alt: 'Holistic wellness sanctuary experience with soft green accents',
     spanClass: 'span-landscape'
   }
 ];
 
 const SOCIAL_PHOTOS = [
-  { img: '/gallery_hot_stones.jpg', alt: 'Hot stone ritual' },
-  { img: '/hero_facial.jpg', alt: 'Facial rejuvenation' },
-  { img: '/gallery_lounge_interior.jpg', alt: 'AVS sanctuary lounge' },
-  { img: '/svc_bridal_makeup.jpg', alt: 'Haute beauty look' },
-  { img: '/svc_couple_retreat.jpg', alt: 'Couple retreat suite' },
-  { img: '/salon_nails_beauty.jpg', alt: 'Nail couture' }
+  { img: '/gallery_hot_stones.webp', alt: 'Hot stone ritual' },
+  { img: '/hero_facial.webp', alt: 'Facial rejuvenation' },
+  { img: '/gallery_lounge_interior.webp', alt: 'AVS sanctuary lounge' },
+  { img: '/svc_bridal_makeup.webp', alt: 'Haute beauty look' },
+  { img: '/svc_couple_retreat.webp', alt: 'Couple retreat suite' },
+  { img: '/salon_nails_beauty.webp', alt: 'Nail couture' }
 ];
 
 export default function GalleryPage({ onBookClick, onNavClick }) {
@@ -290,9 +290,8 @@ export default function GalleryPage({ onBookClick, onNavClick }) {
           ======================================================== */}
       <section className="gallery-hero" aria-labelledby="gallery-hero-heading">
         <div className="gallery-hero-bg">
-          <img
-            className="gallery-hero-img"
-            src="/hero_wellness.jpg"
+          <img loading="lazy" decoding="async" className="gallery-hero-img"
+            src="/hero_wellness.webp"
             alt="Aura Vital Star luxury wellness environment"
           />
         </div>
@@ -382,11 +381,9 @@ export default function GalleryPage({ onBookClick, onNavClick }) {
               aria-label={`View ${item.title}`}
             >
               <div className="masonry-img-wrap">
-                <img
-                  className="masonry-img"
+                <img loading="lazy" decoding="async" className="masonry-img"
                   src={item.image}
                   alt={item.alt}
-                  loading="lazy"
                 />
                 <div className="masonry-overlay">
                   <span className="masonry-badge">{item.category}</span>
@@ -448,8 +445,7 @@ export default function GalleryPage({ onBookClick, onNavClick }) {
             </button>
 
             <div className="lightbox-img-side">
-              <img
-                className="lightbox-img"
+              <img loading="lazy" decoding="async" className="lightbox-img"
                 src={activeItem.image}
                 alt={activeItem.alt}
               />
@@ -489,10 +485,8 @@ export default function GalleryPage({ onBookClick, onNavClick }) {
       <section className="gallery-editorial-section" aria-labelledby="editorial-heading">
         <div className="gallery-editorial-container">
           <div className="editorial-img-frame">
-            <img
-              src="/about_hero_interior.jpg"
+            <img loading="lazy" decoding="async" src="/about_hero_interior.webp"
               alt="Aura Vital Star private treatment suite interior"
-              loading="lazy"
             />
             <div className="editorial-img-badge">
               <span>AVS Sanctuary Experience</span>
@@ -571,11 +565,9 @@ export default function GalleryPage({ onBookClick, onNavClick }) {
           ======================================================== */}
       <section className="gallery-banner-section" aria-labelledby="banner-title">
         <div className="gallery-banner-card">
-          <img
-            className="banner-bg-img"
-            src="/hero_relaxation.jpg"
+          <img loading="lazy" decoding="async" className="banner-bg-img"
+            src="/hero_relaxation.webp"
             alt="Aura Vital Star Grand Opening wellness celebration"
-            loading="lazy"
           />
           <div className="banner-overlay" aria-hidden="true" />
           <div className="banner-content">
@@ -624,11 +616,9 @@ export default function GalleryPage({ onBookClick, onNavClick }) {
               className="social-item"
               aria-label={`View AVS Instagram moment: ${item.alt}`}
             >
-              <img
-                className="social-img"
+              <img loading="lazy" decoding="async" className="social-img"
                 src={item.img}
                 alt={item.alt}
-                loading="lazy"
               />
               <div className="social-overlay">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
