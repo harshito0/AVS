@@ -5,6 +5,7 @@ import BookingPage from './BookingPage';
 import SalonPage from './SalonPage';
 import RMTPage from './RMTPage';
 import ServicesPage from './ServicesPage';
+import GalleryPage from './GalleryPage';
 
 const announceItems = [
   '⭐ New Client Offer: Get 15% Off on Your First Visit',
@@ -206,6 +207,14 @@ function App() {
       }
       if (hash === '#packages' || hash === '#/packages') return 'packages';
       if (hash === '#about' || hash === '#/about') return 'about';
+      if (
+        hash === '#gallery' ||
+        hash === '#/gallery' ||
+        pathname === '/gallery' ||
+        pathname.startsWith('/gallery')
+      ) {
+        return 'gallery';
+      }
       if (hash === '#rmt' || hash === '#/rmt' || pathname.includes('/rmt')) return 'rmt';
       if (
         hash === '#booking' ||
@@ -254,6 +263,14 @@ function App() {
     } else if (href === '#about') {
       window.location.hash = '#about';
       setCurrentPage('about');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else if (href === '#gallery' || href === '/gallery' || href === '#/gallery') {
+      if (window.location.pathname !== '/gallery') {
+        window.history.pushState(null, '', '/gallery');
+      } else {
+        window.location.hash = '#gallery';
+      }
+      setCurrentPage('gallery');
       window.scrollTo({ top: 0, behavior: 'instant' });
     } else if (href === '#booking') {
       handleBookRedirect(e, 'Navigation Menu');
@@ -322,6 +339,14 @@ function App() {
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (hash === '#about' || hash === '#/about') {
         setCurrentPage('about');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else if (
+        hash === '#gallery' ||
+        hash === '#/gallery' ||
+        pathname === '/gallery' ||
+        pathname.startsWith('/gallery')
+      ) {
+        setCurrentPage('gallery');
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (
         hash === '#booking' ||
@@ -572,6 +597,13 @@ function App() {
             navTicking = false;
             return;
           }
+          if (currentPageRef.current === 'gallery') {
+            navLinksGroup.forEach((link) => {
+              link.classList.toggle('active', link.getAttribute('href') === '#gallery');
+            });
+            navTicking = false;
+            return;
+          }
           if (currentPageRef.current === 'rmt') {
             navLinksGroup.forEach((link) => {
               link.classList.toggle('active', link.getAttribute('href') === '#rmt');
@@ -664,6 +696,10 @@ function App() {
       navLinksGroup.forEach((link) => {
         link.classList.toggle('active', link.getAttribute('href') === '#about');
       });
+    } else if (currentPage === 'gallery') {
+      navLinksGroup.forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === '#gallery');
+      });
     } else if (currentPage === 'rmt') {
       navLinksGroup.forEach((link) => {
         link.classList.toggle('active', link.getAttribute('href') === '#rmt');
@@ -715,6 +751,8 @@ function App() {
                 ? link.href === '#packages'
                 : currentPage === 'about'
                 ? link.href === '#about'
+                : currentPage === 'gallery'
+                ? link.href === '#gallery'
                 : link.href === '#home';
               return (
                 <li key={link.href}>
@@ -765,6 +803,8 @@ function App() {
                 ? link.href === '#packages'
                 : currentPage === 'about'
                 ? link.href === '#about'
+                : currentPage === 'gallery'
+                ? link.href === '#gallery'
                 : link.href === '#home';
               return (
                 <li key={link.href + '-mobile'}>
@@ -825,6 +865,11 @@ function App() {
         <AboutPage onBookClick={handleBookRedirect} />
       ) : currentPage === 'services' ? (
         <ServicesPage
+          onBookClick={handleBookRedirect}
+          onNavClick={(e, href) => handleNavClick(e, href)}
+        />
+      ) : currentPage === 'gallery' ? (
+        <GalleryPage
           onBookClick={handleBookRedirect}
           onNavClick={(e, href) => handleNavClick(e, href)}
         />
