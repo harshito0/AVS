@@ -148,6 +148,18 @@ export default function BookingPage({
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
   const [selectedCategory, setSelectedCategory] = useState('ALL SERVICES');
   const [selectedService, setSelectedService] = useState(null);
+
+  // Horizontal Scroll Refs
+  const servicesScrollRef = useRef(null);
+  const modalServicesScrollRef = useRef(null);
+
+  const handleServicesScroll = (direction, isModal = false) => {
+    const targetRef = isModal ? modalServicesScrollRef : servicesScrollRef;
+    if (targetRef.current) {
+      const scrollAmount = direction === 'left' ? -320 : 320;
+      targetRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
   
   // Date & Calendar State
   const today = new Date();
@@ -635,46 +647,68 @@ export default function BookingPage({
                   ))}
                 </div>
 
-                <div className="avs-services-grid">
-                  {filteredServices.map((svc) => {
-                    const isSelected = selectedService?.id === svc.id;
-                    return (
-                      <div
-                        key={svc.id}
-                        className={`avs-service-card ${isSelected ? 'selected' : ''}`}
-                        onClick={() => setSelectedService(svc)}
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={isSelected}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <div className="avs-service-card-img-wrap">
-                          <img
-                            src={svc.image}
-                            alt={svc.title}
-                            className="avs-service-card-img"
-                          />
-                          <span className="avs-service-card-badge">{svc.category}</span>
-                          <span className="avs-service-card-check" aria-hidden="true">
-                            {isSelected ? '✓' : ''}
-                          </span>
-                        </div>
+                <div className="avs-services-scroll-wrapper">
+                  <button
+                    type="button"
+                    className="avs-services-nav-arrow prev"
+                    onClick={() => handleServicesScroll('left', false)}
+                    aria-label="Scroll services left"
+                  >
+                    &#8249;
+                  </button>
 
-                        <div className="avs-service-card-body">
-                          <div>
-                            <h3 className="avs-service-card-title">{svc.title}</h3>
-                            <p className="avs-service-card-desc">{svc.desc}</p>
-                          </div>
-                          <div className="avs-service-card-meta">
-                            <span>⏱ {svc.duration}</span>
-                            <span style={{ fontWeight: 600, color: isSelected ? '#062C22' : '#8C734B' }}>
-                              {isSelected ? '✓ SELECTED' : 'SELECT SERVICE'}
+                  <div className="avs-services-grid" ref={servicesScrollRef}>
+                    {filteredServices.map((svc) => {
+                      const isSelected = selectedService?.id === svc.id;
+                      return (
+                        <div
+                          key={svc.id}
+                          className={`avs-service-card ${isSelected ? 'selected' : ''}`}
+                          onClick={() => setSelectedService(svc)}
+                          role="button"
+                          tabIndex={0}
+                          aria-pressed={isSelected}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className="avs-service-card-img-wrap">
+                            <img
+                              src={svc.image}
+                              alt={svc.title}
+                              className="avs-service-card-img"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span className="avs-service-card-badge">{svc.category}</span>
+                            <span className="avs-service-card-check" aria-hidden="true">
+                              {isSelected ? '✓' : ''}
                             </span>
                           </div>
+
+                          <div className="avs-service-card-body">
+                            <div>
+                              <h3 className="avs-service-card-title">{svc.title}</h3>
+                              <p className="avs-service-card-desc">{svc.desc}</p>
+                            </div>
+                            <div className="avs-service-card-meta">
+                              <span>⏱ {svc.duration}</span>
+                              <span style={{ fontWeight: 600, color: isSelected ? '#062C22' : '#8C734B' }}>
+                                {isSelected ? '✓ SELECTED' : 'SELECT SERVICE'}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="avs-services-nav-arrow next"
+                    onClick={() => handleServicesScroll('right', false)}
+                    aria-label="Scroll services right"
+                  >
+                    &#8250;
+                  </button>
                 </div>
 
                 <div className="avs-step-action-bar">
@@ -1595,44 +1629,66 @@ export default function BookingPage({
                       ))}
                     </div>
 
-                    {/* Services Grid */}
-                    <div className="avs-services-grid">
-                      {filteredServices.map((svc) => {
-                        const isSelected = selectedService?.id === svc.id;
-                        return (
-                          <div
-                            key={svc.id}
-                            className={`avs-service-card ${isSelected ? 'selected' : ''}`}
-                            onClick={() => setSelectedService(svc)}
-                            role="button"
-                            tabIndex={0}
-                            aria-pressed={isSelected}
-                          >
-                            <div className="avs-service-card-img-wrap">
-                              <img
-                                src={svc.image}
-                                alt={svc.title}
-                                className="avs-service-card-img"
-                              />
-                              <span className="avs-service-card-badge">{svc.category}</span>
-                              <span className="avs-service-card-check" aria-hidden="true">
-                                {isSelected ? '✓' : ''}
-                              </span>
-                            </div>
+                    {/* Services Horizontal Scroll Track */}
+                    <div className="avs-services-scroll-wrapper">
+                      <button
+                        type="button"
+                        className="avs-services-nav-arrow prev"
+                        onClick={() => handleServicesScroll('left', true)}
+                        aria-label="Scroll services left"
+                      >
+                        &#8249;
+                      </button>
 
-                            <div className="avs-service-card-body">
-                              <div>
-                                <h3 className="avs-service-card-title">{svc.title}</h3>
-                                <p className="avs-service-card-desc">{svc.desc}</p>
+                      <div className="avs-services-grid" ref={modalServicesScrollRef}>
+                        {filteredServices.map((svc) => {
+                          const isSelected = selectedService?.id === svc.id;
+                          return (
+                            <div
+                              key={svc.id}
+                              className={`avs-service-card ${isSelected ? 'selected' : ''}`}
+                              onClick={() => setSelectedService(svc)}
+                              role="button"
+                              tabIndex={0}
+                              aria-pressed={isSelected}
+                            >
+                              <div className="avs-service-card-img-wrap">
+                                <img
+                                  src={svc.image}
+                                  alt={svc.title}
+                                  className="avs-service-card-img"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                                <span className="avs-service-card-badge">{svc.category}</span>
+                                <span className="avs-service-card-check" aria-hidden="true">
+                                  {isSelected ? '✓' : ''}
+                                </span>
                               </div>
-                              <div className="avs-service-card-meta">
-                                <span>{svc.duration}</span>
-                                <span>{isSelected ? '✓ Selected' : 'Select Service'}</span>
+
+                              <div className="avs-service-card-body">
+                                <div>
+                                  <h3 className="avs-service-card-title">{svc.title}</h3>
+                                  <p className="avs-service-card-desc">{svc.desc}</p>
+                                </div>
+                                <div className="avs-service-card-meta">
+                                  <span>{svc.duration}</span>
+                                  <span>{isSelected ? '✓ Selected' : 'Select Service'}</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        type="button"
+                        className="avs-services-nav-arrow next"
+                        onClick={() => handleServicesScroll('right', true)}
+                        aria-label="Scroll services right"
+                      >
+                        &#8250;
+                      </button>
                     </div>
                   </div>
                 )}

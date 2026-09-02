@@ -2670,6 +2670,156 @@
 }
 
 /* ==========================================================================
+   STEP 02 — SELECT SERVICE
+   ========================================================================== */
+.avs-category-pills,
+.avs-service-category-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 4px 14px 4px;
+  margin-bottom: 22px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(197, 154, 63, 0.4) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.avs-category-pills::-webkit-scrollbar,
+.avs-service-category-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.avs-category-pills::-webkit-scrollbar-thumb,
+.avs-service-category-tabs::-webkit-scrollbar-thumb {
+  background: rgba(197, 154, 63, 0.4);
+  border-radius: 4px;
+}
+
+.avs-cat-pill,
+.avs-service-tab {
+  background: #F5EFE6;
+  border: 1px solid rgba(197, 154, 63, 0.25);
+  color: #55625B;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 24px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.22s ease;
+  flex-shrink: 0;
+}
+
+.avs-cat-pill:hover,
+.avs-service-tab:hover {
+  background: #ECE3D7;
+  color: #062C22;
+  border-color: #C59A3F;
+}
+
+.avs-cat-pill.active,
+.avs-service-tab.active {
+  background: #062C22;
+  color: #FAF5EA;
+  border-color: #C59A3F;
+  box-shadow: 0 4px 14px rgba(6, 44, 34, 0.2);
+}
+
+/* Horizontal Service Scroll Track */
+.avs-services-scroll-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.avs-services-grid {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 20px;
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 10px 4px 22px 4px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #C59A3F rgba(6, 44, 34, 0.08);
+}
+
+.avs-services-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.avs-services-grid::-webkit-scrollbar-track {
+  background: rgba(6, 44, 34, 0.06);
+  border-radius: 6px;
+}
+
+.avs-services-grid::-webkit-scrollbar-thumb {
+  background: #C59A3F;
+  border-radius: 6px;
+}
+
+.avs-services-grid::-webkit-scrollbar-thumb:hover {
+  background: #A67D2E;
+}
+
+.avs-services-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #062C22;
+  color: #FAF5EA;
+  border: 1.5px solid #C59A3F;
+  font-size: 26px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(6, 44, 34, 0.28);
+  transition: all 0.22s ease;
+  padding: 0;
+  user-select: none;
+}
+
+.avs-services-nav-arrow:hover {
+  background: #C59A3F;
+  color: #062C22;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.avs-services-nav-arrow.prev {
+  left: -16px;
+}
+
+.avs-services-nav-arrow.next {
+  right: -16px;
+}
+
+.avs-service-card {
+  flex: 0 0 280px;
+  min-width: 280px;
+  max-width: 280px;
+  position: relative;
+  background: #FFFFFF;
+  border: 1.5px solid #E2DCcf;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.28s var(--avs-ease-luxury);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
    PREMIUM AVS CONCIERGE BOOKING MODAL (FULL EXPERIENCE)
    ========================================================================== */
 
@@ -2875,8 +3025,17 @@
   }
 
   .avs-services-grid {
-    grid-template-columns: 1fr;
     gap: 14px;
+  }
+
+  .avs-services-nav-arrow {
+    display: none;
+  }
+
+  .avs-service-card {
+    flex: 0 0 250px;
+    min-width: 250px;
+    max-width: 250px;
   }
 
   .avs-datetime-container {
