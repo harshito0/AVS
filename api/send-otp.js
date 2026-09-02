@@ -1,23 +1,29 @@
 import nodemailer from 'nodemailer';
 
-const GMAIL_USER = (process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
-const GMAIL_PASS = (process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
+const SMTP_HOST = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
+const SMTP_SECURE = process.env.SMTP_SECURE === 'true' || SMTP_PORT === 465;
+const SMTP_USER = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
+const SMTP_PASS = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
+const FROM_NAME = (process.env.FROM_NAME || 'Aura Vital Star Concierge').trim();
+const FROM_EMAIL = (process.env.FROM_EMAIL || SMTP_USER).trim();
 
 function getTransporter() {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // TLS via STARTTLS for high serverless & local compatibility
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
     auth: {
-      user: GMAIL_USER,
-      pass: GMAIL_PASS
+      user: SMTP_USER,
+      pass: SMTP_PASS
     },
     tls: {
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      servername: SMTP_HOST
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000
+    connectionTimeout: 25000,
+    greetingTimeout: 25000,
+    socketTimeout: 25000
   });
 }
 

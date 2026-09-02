@@ -62,6 +62,7 @@ export default function ContactPage({ onBookClick, onNavClick }) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedInfo, setSubmittedInfo] = useState(null);
 
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -100,30 +101,32 @@ export default function ContactPage({ onBookClick, onNavClick }) {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    const submissionPayload = {
+      ...formData,
+      submittedAt: new Date().toISOString()
+    };
 
     try {
-      // Attempt backend dispatch
+      // Attempt backend dispatch (triggers admin email + user acknowledgement email)
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          submittedAt: new Date().toISOString()
-        })
+        body: JSON.stringify(submissionPayload)
       });
 
       if (!response.ok) {
         // Gracefully persist locally if server is offline or static deploy
         const stored = JSON.parse(localStorage.getItem('avs_contact_inquiries') || '[]');
-        stored.push({ ...formData, submittedAt: new Date().toISOString() });
+        stored.push(submissionPayload);
         localStorage.setItem('avs_contact_inquiries', JSON.stringify(stored));
       }
     } catch {
       // Offline fallback
       const stored = JSON.parse(localStorage.getItem('avs_contact_inquiries') || '[]');
-      stored.push({ ...formData, submittedAt: new Date().toISOString() });
+      stored.push(submissionPayload);
       localStorage.setItem('avs_contact_inquiries', JSON.stringify(stored));
     } finally {
+      setSubmittedInfo(submissionPayload);
       setIsSubmitting(false);
       setIsSubmitted(true);
     }
@@ -138,6 +141,7 @@ export default function ContactPage({ onBookClick, onNavClick }) {
       message: ''
     });
     setErrors({});
+    setSubmittedInfo(null);
     setIsSubmitted(false);
   };
 
@@ -428,17 +432,30 @@ export default function ContactPage({ onBookClick, onNavClick }) {
                     <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <h3 className="contact-success-title">Thank You.</h3>
+                <h3 className="contact-success-title">
+                  Thank You{submittedInfo?.name ? `, ${submittedInfo.name}` : ''}.
+                </h3>
                 <p className="contact-success-text">
-                  Your message has been received. Our AVS concierge team will review your inquiry
-                  and be in touch shortly.
+                  Your inquiry regarding{' '}
+                  <strong>
+                    {submittedInfo?.service && submittedInfo.service !== 'Select a service'
+                      ? submittedInfo.service
+                      : 'wellness services'}
+                  </strong>{' '}
+                  has been forwarded to our management team.
                 </p>
+                {submittedInfo?.email && (
+                  <p style={{ fontSize: '0.85rem', color: '#68706B', margin: '8px 0 18px', lineHeight: '1.5' }}>
+                    An acknowledgement confirmation has also been dispatched to{' '}
+                    <strong style={{ color: '#062C22' }}>{submittedInfo.email}</strong>.
+                  </p>
+                )}
                 <button
                   type="button"
                   className="contact-reset-btn"
                   onClick={handleResetForm}
                 >
-                  Back to Contact
+                  Send Another Message
                 </button>
               </div>
             )}

@@ -1,24 +1,30 @@
 import nodemailer from 'nodemailer';
 
-const GMAIL_USER = (process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
-const GMAIL_PASS = (process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || GMAIL_USER).trim();
+const SMTP_HOST = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
+const SMTP_SECURE = process.env.SMTP_SECURE === 'true' || SMTP_PORT === 465;
+const SMTP_USER = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
+const SMTP_PASS = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || SMTP_USER).trim();
+const FROM_NAME = (process.env.FROM_NAME || 'Aura Vital Star Concierge').trim();
+const FROM_EMAIL = (process.env.FROM_EMAIL || SMTP_USER).trim();
 
 function getTransporter() {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // TLS via STARTTLS
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
     auth: {
-      user: GMAIL_USER,
-      pass: GMAIL_PASS
+      user: SMTP_USER,
+      pass: SMTP_PASS
     },
     tls: {
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      servername: SMTP_HOST
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000
+    connectionTimeout: 25000,
+    greetingTimeout: 25000,
+    socketTimeout: 25000
   });
 }
 
@@ -185,9 +191,9 @@ export default async function handler(req, res) {
       </html>
     `;
 
-    // Send email to ADMIN (auravitalstar@gmail.com)
+    // Send email to ADMIN (registered mail id)
     await transporter.sendMail({
-      from: `"AVS Website Contact" <${GMAIL_USER}>`,
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to: ADMIN_EMAIL,
       replyTo: cleanEmail,
       subject: `✉️ New Contact Message: ${cleanName} - ${cleanService}`,
@@ -198,7 +204,7 @@ export default async function handler(req, res) {
     // Send courtesy confirmation to Guest
     try {
       await transporter.sendMail({
-        from: `"Aura Vital Star Concierge" <${GMAIL_USER}>`,
+        from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
         to: cleanEmail,
         subject: `Thank You for Contacting Aura Vital Star Rejuvenation Centre`,
         html: guestHtml

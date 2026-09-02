@@ -73,7 +73,7 @@ const heroSlides = [
 ];
 
 const whyPillars = [
-  { title: 'RMP Certified', desc: 'Registered Massage Professionals you can trust.', icon: 'check' },
+  { title: 'RMT Certified', desc: 'Registered Massage Professionals you can trust.', icon: 'check' },
   { title: 'Expert Team', desc: 'Skilled professionals dedicated to your care.', icon: 'person' },
   { title: 'Personalized Care', desc: 'Solutions designed around your needs.', icon: 'heart' },
   { title: 'Safe & Hygienic', desc: 'Top standards of cleanliness and safety always.', icon: 'shield' },
@@ -806,7 +806,7 @@ function App() {
           <div className="hero-badges reveal-item">
             <div className="hero-badge">
               <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.4C17.25 22.15 21 17.25 21 12V6L12 2z" stroke="#c49a3c" strokeWidth="1.5" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" stroke="#c49a3c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <div><strong>RMP</strong><span>Certified</span></div>
+              <div><strong>RMT</strong><span>Certified</span></div>
             </div>
             <div className="hero-badge">
               <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="12" cy="8" r="4" stroke="#c49a3c" strokeWidth="1.5"/><path d="M6 20c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#c49a3c" strokeWidth="1.5" strokeLinecap="round"/></svg>
@@ -893,7 +893,7 @@ function App() {
           </div>
           <div className="why-pillars">
             {whyPillars.map((pillar) => (
-              <div className="why-pillar reveal-up" key={pillar.title} id={pillar.title === 'RMP Certified' ? 'rmt' : undefined}>
+              <div className="why-pillar reveal-up" key={pillar.title} id={pillar.title === 'RMT Certified' ? 'rmt' : undefined}>
                 <div className="why-icon"><Icon name={pillar.icon} width={48} height={48} /></div>
                 <h3 className="why-title">{pillar.title}</h3>
                 <p className="why-desc">{pillar.desc}</p>

@@ -12,24 +12,28 @@ dotenv.config({ path: path.join(__dirname, '.env') });
  * Creates and verifies Gmail SMTP transporter with robust timeout options
  */
 function getTransporter() {
-  const user = (process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
-  const pass = (process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
+  const host = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+  const user = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
+  const pass = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
 
   if (!user || !pass || pass === 'your_16_char_app_password') {
     return null;
   }
 
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // TLS via STARTTLS
+    host,
+    port,
+    secure,
     auth: { user, pass },
     tls: {
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      servername: host
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000
+    connectionTimeout: 25000,
+    greetingTimeout: 25000,
+    socketTimeout: 25000
   });
 }
 
@@ -38,12 +42,14 @@ function getTransporter() {
  */
 export async function sendOtpEmail(email, name = 'Valued Guest', otp) {
   const transporter = getTransporter();
-  const gmailUser = process.env.GMAIL_USER || 'auravitalstar@gmail.com';
+  const hostUser = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
+  const fromName = (process.env.FROM_NAME || 'Aura Vital Star Concierge').trim();
+  const fromEmail = (process.env.FROM_EMAIL || hostUser).trim();
 
   if (!transporter) {
     return {
       success: false,
-      reason: 'Credentials not configured. Please add GMAIL_USER and GMAIL_APP_PASSWORD to server/.env'
+      reason: 'Credentials not configured. Please add SMTP or GMAIL credentials to server/.env'
     };
   }
 
@@ -58,28 +64,27 @@ export async function sendOtpEmail(email, name = 'Valued Guest', otp) {
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F7F3EC; margin: 0; padding: 24px; color: #1E2421; }
         .card { max-width: 540px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #E0D9CB; overflow: hidden; box-shadow: 0 8px 24px rgba(6,44,34,0.08); }
         .header { background: #062C22; color: #FAF5EA; padding: 28px 24px; text-align: center; border-bottom: 2px solid #B9975B; }
-        .header h1 { font-family: Georgia, serif; margin: 0 0 4px 0; font-size: 24px; color: #FAF5EA; }
-        .header p { margin: 0; color: #DFBE77; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
-        .content { padding: 28px; line-height: 1.6; text-align: center; }
-        .otp-badge { background: #062C22; color: #DFBE77; border: 1px solid #B9975B; padding: 18px 32px; border-radius: 10px; font-size: 32px; font-weight: 800; letter-spacing: 0.3em; display: inline-block; margin: 22px 0; }
-        .footer { background: #F6F1E8; padding: 16px 24px; font-size: 12px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; }
+        .header h1 { font-family: Georgia, serif; margin: 0 0 6px 0; font-size: 22px; color: #FAF5EA; }
+        .header p { margin: 0; color: #DFBE77; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
+        .content { padding: 32px 28px; line-height: 1.6; }
+        .otp-box { background: #062C22; color: #DFBE77; border: 1px solid #B9975B; padding: 18px 24px; border-radius: 8px; font-size: 32px; font-weight: 700; letter-spacing: 0.3em; text-align: center; margin: 24px 0; }
+        .footer { background: #F6F1E8; padding: 18px 24px; font-size: 12px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; }
       </style>
     </head>
     <body>
       <div class="card">
         <div class="header">
-          <p>AURA VITAL STAR</p>
-          <h1>Verification OTP</h1>
+          <p>AURA VITAL STAR REJUVENATION CENTRE</p>
+          <h1>Verification Code</h1>
         </div>
         <div class="content">
           <p>Dear <strong>${name}</strong>,</p>
-          <p>Here is your 6-digit One-Time Password (OTP) to complete your email registration:</p>
+          <p>Please enter the following 6-digit verification code to confirm your email and proceed with your reservation:</p>
           
-          <div class="otp-badge">${otpCode}</div>
-
-          <p style="font-size: 13px; color: #68706B;">This OTP is valid for 10 minutes. Please do not share this code with anyone.</p>
+          <div class="otp-box">${otpCode}</div>
           
-          <p style="margin-top: 24px; color: #062C22; font-weight: 600; text-align: left;">Warm regards,<br>The Aura Vital Star Team</p>
+          <p style="font-size: 13px; color: #555;">This code is valid for 10 minutes. If you did not initiate this request, please disregard this email.</p>
+          <p style="margin-top: 24px; color: #062C22; font-weight: 600;">Warm regards,<br>The Aura Vital Star Concierge Team</p>
         </div>
         <div class="footer">
           157 Queen Street West, Brampton, ON L6Y 1P9 &bull; <a href="https://www.auravitalstar.ca" style="color: #B9975B; text-decoration: none;">www.auravitalstar.ca</a>
@@ -91,9 +96,9 @@ export async function sendOtpEmail(email, name = 'Valued Guest', otp) {
 
   try {
     await transporter.sendMail({
-      from: `"Aura Vital Star Concierge" <${gmailUser}>`,
+      from: `"${fromName}" <${fromEmail}>`,
       to: email,
-      subject: `Your Aura Vital Star Verification OTP: ${otpCode}`,
+      subject: `Your Aura Vital Star Verification Code: ${otpCode}`,
       html: htmlContent
     });
     console.log(`✅ OTP email sent to: ${email}`);
@@ -105,19 +110,18 @@ export async function sendOtpEmail(email, name = 'Valued Guest', otp) {
 }
 
 /**
- * Dispatches confirmation emails to both Customer and Admin
+ * Dispatches both customer confirmation email and admin notification email for a booking
  */
 export async function sendBookingEmails(booking) {
   const transporter = getTransporter();
-  const gmailUser = process.env.GMAIL_USER || 'auravitalstar@gmail.com';
-  const adminEmail = process.env.ADMIN_EMAIL || gmailUser;
+  const hostUser = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
+  const adminEmail = (process.env.ADMIN_EMAIL || hostUser).trim();
+  const fromName = (process.env.FROM_NAME || 'Aura Vital Star Concierge').trim();
+  const fromEmail = (process.env.FROM_EMAIL || hostUser).trim();
 
   if (!transporter) {
-    console.warn('⚠️ GMAIL_USER or GMAIL_APP_PASSWORD not configured in server/.env. Skipping live email dispatch.');
-    return {
-      success: false,
-      reason: 'Credentials not configured. Please add GMAIL_USER and GMAIL_APP_PASSWORD to server/.env'
-    };
+    console.warn('⚠️ SMTP credentials not configured. Skipping live email dispatch.');
+    return { success: false, reason: 'Credentials not configured' };
   }
 
   const otpCode = booking.otp || Math.floor(100000 + Math.random() * 900000).toString();
@@ -178,22 +182,23 @@ export async function sendBookingEmails(booking) {
     <!DOCTYPE html>
     <html>
     <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-      <div style="max-width: 600px; margin: 0 auto; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 24px;">
-        <h2 style="color: #062C22; margin-top: 0;">✨ New Appointment Received — Aura Vital Star</h2>
-        <p>A new appointment has been requested through the website/QR booking portal:</p>
-        <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-          <tr><td style="padding: 6px; font-weight: bold; width: 140px;">Booking ID:</td><td>${booking.id}</td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">OTP Code:</td><td><strong>${otpCode}</strong></td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">Customer Name:</td><td>${booking.customerName}</td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">Phone:</td><td><a href="tel:${booking.phone}">${booking.phone}</a></td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">Email:</td><td><a href="mailto:${booking.email}">${booking.email}</a></td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">Service:</td><td>${booking.service}</td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">Location:</td><td>${booking.location}</td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">Date &amp; Time:</td><td>${booking.date} at ${booking.time}</td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">Channel / Source:</td><td><strong>${booking.source}</strong></td></tr>
-          <tr><td style="padding: 6px; font-weight: bold;">Notes:</td><td>${booking.notes || 'None'}</td></tr>
+      <div style="max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; border-left: 5px solid #062C22;">
+        <h2 style="color: #062C22; margin-top: 0;">✨ New Appointment Booking Received</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+          <tr><td style="padding: 8px; font-weight: bold; width: 140px;">Booking Ref:</td><td style="padding: 8px;">${booking.id}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Customer:</td><td style="padding: 8px;">${booking.customerName}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Email:</td><td style="padding: 8px;">${booking.email}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Phone:</td><td style="padding: 8px;">${booking.phone}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Service:</td><td style="padding: 8px;">${booking.service}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Date & Time:</td><td style="padding: 8px;">${booking.date} at ${booking.time}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Location:</td><td style="padding: 8px;">${booking.location}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Staff Pref:</td><td style="padding: 8px;">${booking.staff || 'Any available specialist'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Notes:</td><td style="padding: 8px;">${booking.notes || 'None'}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">OTP Code:</td><td style="padding: 8px; font-weight: bold; color: #062C22;">${otpCode}</td></tr>
         </table>
-        <p style="font-size: 12px; color: #888;">Recorded at ${new Date().toLocaleString()}</p>
+        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #888;">
+          Aura Vital Star Booking Management System
+        </div>
       </div>
     </body>
     </html>
@@ -203,7 +208,7 @@ export async function sendBookingEmails(booking) {
     // 1. Send confirmation to customer
     if (booking.email) {
       await transporter.sendMail({
-        from: `"Aura Vital Star Rejuvenation" <${gmailUser}>`,
+        from: `"${fromName}" <${fromEmail}>`,
         to: booking.email,
         subject: `Your Aura Vital Star Verification OTP: ${otpCode} [${booking.id}]`,
         html: customerHtml
@@ -213,7 +218,7 @@ export async function sendBookingEmails(booking) {
 
     // 2. Send notification to admin
     await transporter.sendMail({
-      from: `"AVS Booking Engine" <${gmailUser}>`,
+      from: `"${fromName}" <${fromEmail}>`,
       to: adminEmail,
       subject: `NEW APPOINTMENT: ${booking.customerName} - ${booking.service} [${booking.id}]`,
       html: adminHtml
@@ -222,21 +227,23 @@ export async function sendBookingEmails(booking) {
 
     return { success: true, otp: otpCode };
   } catch (err) {
-    console.error('❌ Failed to dispatch email via Gmail SMTP:', err);
+    console.error('❌ Failed to dispatch email via SMTP:', err);
     return { success: false, error: err.message };
   }
 }
 
 /**
- * Dispatches contact inquiry notification to Admin Gmail + courtesy auto-reply to Guest
+ * Dispatches contact inquiry notification to Admin registered mail ID + courtesy acknowledgement to Guest
  */
 export async function sendContactInquiryEmail(contact) {
   const transporter = getTransporter();
-  const gmailUser = (process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
-  const adminEmail = (process.env.ADMIN_EMAIL || gmailUser).trim();
+  const hostUser = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
+  const adminEmail = (process.env.ADMIN_EMAIL || hostUser).trim();
+  const fromName = (process.env.FROM_NAME || 'Aura Vital Star Concierge').trim();
+  const fromEmail = (process.env.FROM_EMAIL || hostUser).trim();
 
   if (!transporter) {
-    console.warn('⚠️ GMAIL_USER or GMAIL_APP_PASSWORD not configured. Skipping live email dispatch.');
+    console.warn('⚠️ SMTP credentials not configured. Skipping live email dispatch.');
     return { success: false, reason: 'Credentials not configured' };
   }
 
@@ -321,21 +328,87 @@ export async function sendContactInquiryEmail(contact) {
     </html>
   `;
 
+  // 2. Template for Guest Acknowledgement
+  const guestHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F7F3EC; margin: 0; padding: 24px; color: #1E2421; }
+        .card { max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #E0D9CB; overflow: hidden; box-shadow: 0 8px 24px rgba(6,44,34,0.08); }
+        .header { background: #062C22; color: #FAF5EA; padding: 32px 24px; text-align: center; border-bottom: 2px solid #C59A3F; }
+        .header h1 { font-family: Georgia, serif; margin: 0 0 6px 0; font-size: 24px; color: #FAF5EA; }
+        .header p { margin: 0; color: #DFBE77; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; }
+        .content { padding: 32px 28px; line-height: 1.7; }
+        .recap-box { background: #FAF7F2; border: 1px solid #E4DDD1; border-radius: 8px; padding: 18px 20px; margin: 20px 0; font-size: 14px; }
+        .footer { background: #F6F1E8; padding: 18px 24px; font-size: 12px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <p>AURA VITAL STAR REJUVENATION CENTRE</p>
+          <h1>Thank You for Reaching Out</h1>
+        </div>
+        <div class="content">
+          <p>Dear <strong>${cleanName}</strong>,</p>
+          <p>Thank you for contacting Aura Vital Star. We have received your message regarding <strong>${cleanService}</strong>, and our concierge team is currently reviewing your inquiry.</p>
+          
+          <div class="recap-box">
+            <div style="margin-bottom: 6px;"><strong>Inquiry Subject:</strong> ${cleanService}</div>
+            <div style="color: #666; font-style: italic;">"${cleanMessage}"</div>
+          </div>
+
+          <p>One of our wellness specialists will connect with you shortly. If your inquiry requires immediate assistance or you wish to schedule an appointment directly, feel free to call our reception at <strong>+1 647-987-5451</strong>.</p>
+
+          <p style="margin-top: 24px; color: #062C22; font-weight: 600;">Warm regards,<br>The Aura Vital Star Concierge Team</p>
+        </div>
+        <div class="footer">
+          157 Queen Street West, Brampton, ON L6Y 1P9 &bull; +1 647-987-5451 &bull; <a href="https://www.auravitalstar.ca" style="color: #C59A3F; text-decoration: none;">www.auravitalstar.ca</a>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  let adminSent = false;
+  let guestSent = false;
+
+  // 1. Dispatch full inquiry details to Admin registered mail ID
   try {
-    // 1. Dispatch to Admin Gmail
     await transporter.sendMail({
-      from: `"AVS Website Contact" <${gmailUser}>`,
+      from: `"${fromName}" <${fromEmail}>`,
       to: adminEmail,
       replyTo: cleanEmail,
       subject: `✉️ New Contact Message: ${cleanName} - ${cleanService}`,
       html: adminHtml
     });
+    adminSent = true;
     console.log(`✅ Admin email notification delivered to ${adminEmail}`);
-
-    return { success: true };
   } catch (err) {
-    console.error('❌ Failed to dispatch contact inquiry to Gmail:', err);
-    return { success: false, error: err.message };
+    console.error('❌ Failed to dispatch contact inquiry to Admin:', err);
   }
-}
 
+  // 2. Dispatch courtesy acknowledgement to the user
+  if (cleanEmail && cleanEmail.includes('@')) {
+    try {
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to: cleanEmail,
+        subject: `Thank You for Contacting Aura Vital Star Rejuvenation Centre`,
+        html: guestHtml
+      });
+      guestSent = true;
+      console.log(`✅ Courtesy acknowledgement delivered to guest: ${cleanEmail}`);
+    } catch (guestErr) {
+      console.warn('⚠️ Courtesy acknowledgement to guest failed:', guestErr?.message || guestErr);
+    }
+  }
+
+  return {
+    success: adminSent,
+    adminSent,
+    guestSent
+  };
+}
