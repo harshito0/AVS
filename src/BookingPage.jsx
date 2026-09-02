@@ -7,7 +7,9 @@ import {
   deleteBooking,
   detectBookingSource,
   formatPhoneNumber,
-  formatLuxuryDate
+  formatLuxuryDate,
+  sendOtpEmail,
+  verifyOtp
 } from './services/crmService';
 
 // Location definitions based on authentic project data
@@ -161,6 +163,19 @@ export default function BookingPage({ onBackToHome }) {
   // Confirmed booking record
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
+  // OTP Email Verification State
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [verifiedEmail, setVerifiedEmail] = useState('');
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpError, setOtpError] = useState(null);
+  const [otpSuccess, setOtpSuccess] = useState(null);
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const otpInputRefs = useRef([]);
+  const countdownTimerRef = useRef(null);
+
   // Modals
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailModalTab, setEmailModalTab] = useState('customer'); // 'customer' or 'admin'
@@ -168,82 +183,12 @@ export default function BookingPage({ onBackToHome }) {
   const [crmBookings, setCrmBookings] = useState([]);
   const [showQrModal, setShowQrModal] = useState(false);
 
-  // Parallax ref for Z-Depth background layers
-  const lightLayerRef = useRef(null);
-  const botanicalLayerRef = useRef(null);
-  const depthImageRef = useRef(null);
-  const foregroundLayerRef = useRef(null);
-
   // Initialize booking source & CRM records
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     const detected = detectBookingSource();
     setBookingSource(detected);
     setCrmBookings(getBookings());
-  }, []);
-
-  // Parallax mouse / scroll movement (Z-Depth Effect — Ultra-subtle & buttery smooth)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mediaQuery.matches) return;
-
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-    let targetScrollY = 0;
-    let currentScrollY = 0;
-    let animId = null;
-
-    const lerp = (start, end, factor) => start + (end - start) * factor;
-
-    const animate = () => {
-      currentX = lerp(currentX, targetX, 0.08);
-      currentY = lerp(currentY, targetY, 0.08);
-      currentScrollY = lerp(currentScrollY, targetScrollY, 0.08);
-
-      // LAYER 02 — Atmospheric Light Pools (max 1.5px)
-      if (lightLayerRef.current) {
-        lightLayerRef.current.style.transform = `translate3d(${(currentX * 1.5).toFixed(2)}px, ${(currentY * 1.5).toFixed(2)}px, 0)`;
-      }
-      // LAYER 03 — Botanical Elements (max 2px)
-      if (botanicalLayerRef.current) {
-        botanicalLayerRef.current.style.transform = `translate3d(${(currentX * -2).toFixed(2)}px, ${(currentY * -2).toFixed(2)}px, 0)`;
-      }
-      // LAYER 04 — Depth Image (max 2.5px)
-      if (depthImageRef.current) {
-        depthImageRef.current.style.transform = `translate3d(${(currentX * -2.5).toFixed(2)}px, ${(currentY * -2.5 + currentScrollY * 0.02).toFixed(2)}px, 0) scale(1.01)`;
-      }
-      // LAYER 05 — Foreground Accents (max 2.5px)
-      if (foregroundLayerRef.current) {
-        foregroundLayerRef.current.style.transform = `translate3d(${(currentX * 2.5).toFixed(2)}px, ${(currentY * 2.5).toFixed(2)}px, 0)`;
-      }
-
-      animId = requestAnimationFrame(animate);
-    };
-
-    const handleMouseMove = (e) => {
-      if (window.innerWidth < 992) return;
-      const xPercent = (e.clientX / window.innerWidth - 0.5) * 2; // -1 to 1
-      const yPercent = (e.clientY / window.innerHeight - 0.5) * 2; // -1 to 1
-      targetX = xPercent;
-      targetY = yPercent;
-    };
-
-    const handleScroll = () => {
-      targetScrollY = Math.min(window.scrollY, 250);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    animId = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
-      if (animId) cancelAnimationFrame(animId);
-    };
   }, []);
 
   // Calendar Helpers
@@ -299,6 +244,13 @@ export default function BookingPage({ onBackToHome }) {
     if (field === 'phone') {
       value = formatPhoneNumber(value);
     }
+    if (field === 'email') {
+      // Invalidate previous verification if email changes
+      if (isEmailVerified) {
+        setIsEmailVerified(false);
+        setVerifiedEmail('');
+      }
+    }
     setCustomerDetails((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
@@ -322,6 +274,145 @@ export default function BookingPage({ onBackToHome }) {
     return Object.keys(errs).length === 0;
   };
 
+  // Timer helper for OTP resend
+  const startResendCountdown = () => {
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    setResendCountdown(30);
+    countdownTimerRef.current = setInterval(() => {
+      setResendCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    };
+  }, []);
+
+  // Send OTP Email
+  const handleSendOtp = async (isResend = false) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!customerDetails.email || !emailRegex.test(customerDetails.email)) {
+      setErrors((prev) => ({ ...prev, email: 'Please provide a valid email address first.' }));
+      return;
+    }
+
+    setIsSendingOtp(true);
+    setOtpError(null);
+    setOtpSuccess(null);
+    setOtpDigits(['', '', '', '', '', '']);
+
+    const res = await sendOtpEmail(customerDetails.email.trim(), customerDetails.name.trim());
+    setIsSendingOtp(false);
+
+    if (res.success) {
+      setShowOtpModal(true);
+      setOtpSuccess(`A 6-digit verification code has been dispatched to ${customerDetails.email}`);
+      startResendCountdown();
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 150);
+    } else {
+      setShowOtpModal(true);
+      setOtpError(res.error || res.warning || 'Failed to dispatch verification email. Please check your email and try again.');
+    }
+  };
+
+  // Handle single digit changes with auto-advance
+  const handleOtpDigitChange = (index, value) => {
+    const char = value.replace(/\D/g, '').slice(-1);
+    const newDigits = [...otpDigits];
+    newDigits[index] = char;
+    setOtpDigits(newDigits);
+    setOtpError(null);
+
+    if (char && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-verify if 6 digits filled
+    if (char && index === 5 && newDigits.every((d) => d !== '')) {
+      handleVerifyOtp(newDigits.join(''));
+    }
+  };
+
+  // Handle backspace and navigation keys
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace') {
+      if (!otpDigits[index] && index > 0) {
+        const newDigits = [...otpDigits];
+        newDigits[index - 1] = '';
+        setOtpDigits(newDigits);
+        otpInputRefs.current[index - 1]?.focus();
+      } else {
+        const newDigits = [...otpDigits];
+        newDigits[index] = '';
+        setOtpDigits(newDigits);
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handle pasting full 6-digit code
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').trim().replace(/\D/g, '').slice(0, 6);
+    if (!pastedData) return;
+    const newDigits = [...otpDigits];
+    for (let i = 0; i < 6; i++) {
+      newDigits[i] = pastedData[i] || '';
+    }
+    setOtpDigits(newDigits);
+    setOtpError(null);
+
+    const nextEmptyIdx = newDigits.findIndex((d) => !d);
+    if (nextEmptyIdx !== -1) {
+      otpInputRefs.current[nextEmptyIdx]?.focus();
+    } else {
+      otpInputRefs.current[5]?.focus();
+      if (pastedData.length === 6) {
+        handleVerifyOtp(pastedData);
+      }
+    }
+  };
+
+  // Validate OTP code against backend
+  const handleVerifyOtp = async (codeToVerify) => {
+    const code = codeToVerify || otpDigits.join('');
+    if (code.length < 6) {
+      setOtpError('Please enter all 6 digits of the verification code.');
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    setOtpError(null);
+
+    const res = await verifyOtp(customerDetails.email.trim(), code);
+    setIsVerifyingOtp(false);
+
+    if (res.success) {
+      setIsEmailVerified(true);
+      setVerifiedEmail(customerDetails.email.trim().toLowerCase());
+      setOtpSuccess('Email verified successfully! ✓');
+      setTimeout(() => {
+        setShowOtpModal(false);
+        setStep(5); // Proceed smoothly to Review & Confirm
+        window.scrollTo({ top: 100, behavior: 'smooth' });
+      }, 700);
+    } else {
+      setOtpError(res.error || 'Incorrect verification code. Please check your inbox and try again.');
+    }
+  };
+
   // Step Navigation
   const goToNextStep = () => {
     if (step === 1 && !selectedLocation) return;
@@ -329,6 +420,12 @@ export default function BookingPage({ onBackToHome }) {
     if (step === 3 && (!selectedDate || !selectedTime)) return;
     if (step === 4) {
       if (!validateStep4()) return;
+      const cleanEmail = customerDetails.email.trim().toLowerCase();
+      // If email is not yet verified, send OTP and show verification modal
+      if (!isEmailVerified || verifiedEmail !== cleanEmail) {
+        handleSendOtp();
+        return;
+      }
     }
     setStep((prev) => Math.min(prev + 1, 5));
     window.scrollTo({ top: 100, behavior: 'smooth' });
@@ -411,7 +508,7 @@ export default function BookingPage({ onBackToHome }) {
       {/* ====================================================================
           Z-DEPTH LAYER 02 — ATMOSPHERIC LIGHT POOLS (SOFT BLURRED CHAMPAGNE)
           ==================================================================== */}
-      <div className="avs-z-light-layer" ref={lightLayerRef} aria-hidden="true">
+      <div className="avs-z-light-layer" aria-hidden="true">
         <div className="avs-light-pool avs-light-pool-1"></div>
         <div className="avs-light-pool avs-light-pool-2"></div>
         <div className="avs-light-pool avs-light-pool-3"></div>
@@ -420,7 +517,7 @@ export default function BookingPage({ onBackToHome }) {
       {/* ====================================================================
           Z-DEPTH LAYER 03 — BOTANICAL LEAF LINE-ART ELEMENTS (DIFFERENT DEPTHS)
           ==================================================================== */}
-      <div className="avs-z-botanical-layer" ref={botanicalLayerRef} aria-hidden="true">
+      <div className="avs-z-botanical-layer" aria-hidden="true">
         {/* Top-Left Branch Line-Art */}
         <svg className="avs-botanical-svg avs-botanical-top-left" viewBox="0 0 200 200">
           <path d="M20,180 Q60,120 120,80 T180,20" strokeWidth="1.2" strokeLinecap="round" />
@@ -458,7 +555,6 @@ export default function BookingPage({ onBackToHome }) {
           ==================================================================== */}
       <div className="avs-z-depth-image-layer" aria-hidden="true">
         <img
-          ref={depthImageRef}
           src="/hero_relaxation.jpg"
           alt=""
           className="avs-depth-image"
@@ -468,7 +564,7 @@ export default function BookingPage({ onBackToHome }) {
       {/* ====================================================================
           Z-DEPTH LAYER 05 — FOREGROUND GOLD DUST & FINE LINES
           ==================================================================== */}
-      <div className="avs-z-foreground-layer" ref={foregroundLayerRef} aria-hidden="true">
+      <div className="avs-z-foreground-layer" aria-hidden="true">
         <div className="avs-gold-particle gp-1"></div>
         <div className="avs-gold-particle gp-2"></div>
         <div className="avs-gold-particle gp-3"></div>
@@ -1013,18 +1109,50 @@ export default function BookingPage({ onBackToHome }) {
                       </div>
 
                       <div className="avs-form-field span-full">
-                        <label className="avs-form-label" htmlFor="cust-email">
-                          EMAIL ADDRESS <span className="required">*</span>
-                        </label>
-                        <input
-                          id="cust-email"
-                          type="email"
-                          className={`avs-form-input ${errors.email ? 'error' : ''}`}
-                          placeholder="jane.doe@example.com"
-                          value={customerDetails.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          autoComplete="email"
-                        />
+                        <div className="avs-email-label-row">
+                          <label className="avs-form-label" htmlFor="cust-email">
+                            EMAIL ADDRESS <span className="required">*</span>
+                          </label>
+                          {isEmailVerified && verifiedEmail === customerDetails.email.trim().toLowerCase() ? (
+                            <span className="avs-otp-status-badge verified">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              Email Verified
+                            </span>
+                          ) : (
+                            <span className="avs-otp-status-badge unverified">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2" />
+                                <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="2" />
+                              </svg>
+                              OTP Verification Required
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="avs-email-input-group">
+                          <input
+                            id="cust-email"
+                            type="email"
+                            className={`avs-form-input ${errors.email ? 'error' : ''}`}
+                            placeholder="jane.doe@example.com"
+                            value={customerDetails.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            autoComplete="email"
+                          />
+                          {customerDetails.email && (!isEmailVerified || verifiedEmail !== customerDetails.email.trim().toLowerCase()) && (
+                            <button
+                              type="button"
+                              className="avs-email-inline-verify-btn"
+                              onClick={() => handleSendOtp()}
+                              disabled={isSendingOtp}
+                              title="Click to receive verification code"
+                            >
+                              {isSendingOtp ? 'Sending...' : 'Verify OTP'}
+                            </button>
+                          )}
+                        </div>
                         {errors.email && <span className="avs-form-error-msg">{errors.email}</span>}
                       </div>
 
@@ -1047,7 +1175,7 @@ export default function BookingPage({ onBackToHome }) {
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.8" />
                       </svg>
-                      <span>We respect your privacy. Your information will strictly be used for appointment coordination.</span>
+                      <span>We respect your privacy. Your email will be verified via a 6-digit OTP code before confirmation.</span>
                     </div>
                   </div>
                 )}
@@ -1130,7 +1258,21 @@ export default function BookingPage({ onBackToHome }) {
                             <div className="avs-review-item-main">
                               <span className="avs-review-label">Customer Details</span>
                               <span className="avs-review-value">{customerDetails.name}</span>
-                              <span className="avs-review-subtext">{customerDetails.phone} &bull; {customerDetails.email}</span>
+                              <span className="avs-review-subtext">
+                                {customerDetails.phone} &bull; {customerDetails.email}
+                                <span
+                                  className="avs-otp-status-badge verified"
+                                  style={{
+                                    display: 'inline-flex',
+                                    verticalAlign: 'middle',
+                                    marginLeft: '8px',
+                                    fontSize: '0.68rem',
+                                    padding: '1px 8px'
+                                  }}
+                                >
+                                  ✓ Verified
+                                </span>
+                              </span>
                               {customerDetails.notes && (
                                 <span className="avs-review-subtext" style={{ marginTop: '4px', fontStyle: 'italic' }}>
                                   Note: "{customerDetails.notes}"
@@ -1614,6 +1756,125 @@ export default function BookingPage({ onBackToHome }) {
               >
                 SIMULATE QR CODE SCAN
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ====================================================================
+          MODAL 04: LUXURY EMAIL OTP VERIFICATION MODAL
+          ==================================================================== */}
+      {showOtpModal && (
+        <div className="avs-otp-modal-backdrop" onClick={() => setShowOtpModal(false)}>
+          <div className="avs-otp-modal-dialog" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="avs-otp-modal-top-bar">
+              <button
+                type="button"
+                className="avs-otp-close-x"
+                onClick={() => setShowOtpModal(false)}
+                aria-label="Close verification modal"
+              >
+                &times;
+              </button>
+
+              <div className="avs-otp-top-icon-circle">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+
+              <h3 className="avs-otp-modal-heading">Verify Your Email</h3>
+              <p className="avs-otp-modal-subheading">
+                We've dispatched a 6-digit verification code to<br />
+                <span className="avs-otp-email-highlight">{customerDetails.email}</span>
+              </p>
+            </div>
+
+            <div className="avs-otp-modal-content">
+              {otpError && (
+                <div className="avs-otp-feedback-msg error">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                    <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" strokeWidth="2" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                  <span>{otpError}</span>
+                </div>
+              )}
+
+              {otpSuccess && (
+                <div className="avs-otp-feedback-msg success">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>{otpSuccess}</span>
+                </div>
+              )}
+
+              {/* 6 Digit Input Boxes */}
+              <div className="avs-otp-boxes-grid" onPaste={handleOtpPaste}>
+                {otpDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => (otpInputRefs.current[idx] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    className={`avs-otp-input-box ${digit ? 'filled' : ''} ${otpError ? 'has-error' : ''}`}
+                    value={digit}
+                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    aria-label={`Digit ${idx + 1}`}
+                    autoComplete="one-time-code"
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="avs-otp-submit-btn"
+                onClick={() => handleVerifyOtp()}
+                disabled={isVerifyingOtp || otpDigits.some((d) => !d)}
+              >
+                {isVerifyingOtp ? (
+                  <>
+                    <div className="avs-gold-spinner-ring" style={{ width: 18, height: 18, borderWidth: 2, margin: 0 }}></div>
+                    <span>VERIFYING CODE...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>VERIFY &amp; PROCEED</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </>
+                )}
+              </button>
+
+              <div className="avs-otp-resend-section">
+                {resendCountdown > 0 ? (
+                  <span>Resend code in <strong>00:{resendCountdown < 10 ? `0${resendCountdown}` : resendCountdown}</strong></span>
+                ) : (
+                  <span>
+                    Didn't receive code?{' '}
+                    <button
+                      type="button"
+                      className="avs-otp-resend-link"
+                      onClick={() => handleSendOtp(true)}
+                      disabled={isSendingOtp}
+                    >
+                      {isSendingOtp ? 'Sending...' : 'Resend Code'}
+                    </button>
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  className="avs-otp-change-email-btn"
+                  onClick={() => setShowOtpModal(false)}
+                >
+                  Edit Email
+                </button>
+              </div>
             </div>
           </div>
         </div>

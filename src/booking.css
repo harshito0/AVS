@@ -49,10 +49,11 @@
   z-index: 1;
   pointer-events: none;
   background: radial-gradient(circle at 18% 25%, #0B352A 0%, #062C22 45%, #041712 100%);
-  transition: opacity 0.5s ease;
+  contain: strict;
+  transform: translateZ(0);
 }
 
-/* LAYER 02 — ATMOSPHERIC LIGHT POOLS */
+/* LAYER 02 — ATMOSPHERIC LIGHT POOLS (HIGH PERFORMANCE NATIVE RADIAL GLOWS) */
 .avs-z-light-layer {
   position: absolute;
   inset: 0;
@@ -61,51 +62,38 @@
   z-index: 2;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .avs-light-pool {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
   pointer-events: none;
-  opacity: 0.14;
-  animation: poolBreathe 14s ease-in-out infinite alternate;
 }
 
 .avs-light-pool-1 {
-  width: 520px;
-  height: 520px;
-  top: -80px;
+  width: 600px;
+  height: 600px;
+  top: -100px;
   right: -100px;
-  background: radial-gradient(circle, #DFBE77 0%, rgba(185, 151, 91, 0.4) 50%, transparent 75%);
+  background: radial-gradient(circle, rgba(223, 190, 119, 0.16) 0%, rgba(185, 151, 91, 0.08) 35%, rgba(6, 44, 34, 0) 70%);
 }
 
 .avs-light-pool-2 {
-  width: 680px;
-  height: 680px;
+  width: 750px;
+  height: 750px;
   bottom: -150px;
   left: -150px;
-  background: radial-gradient(circle, #B9975B 0%, rgba(11, 53, 42, 0.5) 60%, transparent 80%);
-  animation-duration: 18s;
-  animation-delay: -5s;
+  background: radial-gradient(circle, rgba(185, 151, 91, 0.12) 0%, rgba(11, 53, 42, 0.25) 45%, rgba(4, 23, 18, 0) 75%);
 }
 
 .avs-light-pool-3 {
-  width: 440px;
-  height: 440px;
-  top: 45%;
-  right: 25%;
-  background: radial-gradient(circle, #E8DCBE 0%, rgba(185, 151, 91, 0.25) 50%, transparent 75%);
-  opacity: 0.09;
-  animation-duration: 16s;
-  animation-delay: -9s;
-}
-
-@keyframes poolBreathe {
-  0% { transform: scale(1) translate3d(0, 0, 0); opacity: 0.12; }
-  50% { transform: scale(1.08) translate3d(15px, -15px, 0); opacity: 0.18; }
-  100% { transform: scale(0.96) translate3d(-12px, 12px, 0); opacity: 0.14; }
+  width: 500px;
+  height: 500px;
+  top: 40%;
+  right: 20%;
+  background: radial-gradient(circle, rgba(232, 220, 190, 0.09) 0%, rgba(185, 151, 91, 0.04) 40%, transparent 70%);
 }
 
 /* LAYER 03 — BOTANICAL ELEMENTS */
@@ -117,7 +105,8 @@
   z-index: 3;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .avs-botanical-svg {
@@ -125,7 +114,6 @@
   pointer-events: none;
   stroke: #B9975B;
   fill: none;
-  transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .avs-botanical-top-left {
@@ -173,20 +161,20 @@
   z-index: 4;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .avs-depth-image {
   position: absolute;
-  top: -5%;
-  left: -5%;
-  width: 110%;
-  height: 110%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  opacity: 0.06;
-  filter: blur(14px) saturate(1.1);
-  transform: translate3d(0, 0, 0);
-  transition: transform 0.25s ease-out;
+  opacity: 0.035;
+  mix-blend-mode: luminosity;
+  pointer-events: none;
 }
 
 /* LAYER 05 — FOREGROUND PARTICLES & FINE LINES */
@@ -198,7 +186,8 @@
   z-index: 5;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .avs-gold-particle {
@@ -206,21 +195,14 @@
   border-radius: 50%;
   background: radial-gradient(circle, #DFBE77 0%, rgba(185, 151, 91, 0.4) 60%, transparent 100%);
   pointer-events: none;
-  opacity: 0.35;
-  animation: particleDrift 10s ease-in-out infinite alternate;
+  opacity: 0.25;
 }
 
-.avs-gold-particle.gp-1 { width: 3px; height: 3px; top: 18%; left: 22%; animation-duration: 9s; }
-.avs-gold-particle.gp-2 { width: 2.5px; height: 2.5px; top: 34%; right: 19%; animation-duration: 13s; animation-delay: -3s; }
-.avs-gold-particle.gp-3 { width: 4px; height: 4px; bottom: 25%; left: 14%; animation-duration: 11s; animation-delay: -6s; }
-.avs-gold-particle.gp-4 { width: 2px; height: 2px; bottom: 35%; right: 28%; animation-duration: 8s; animation-delay: -2s; }
-.avs-gold-particle.gp-5 { width: 3.5px; height: 3.5px; top: 62%; left: 45%; animation-duration: 14s; animation-delay: -8s; }
-
-@keyframes particleDrift {
-  0% { transform: translate3d(0, 0, 0); opacity: 0.2; }
-  50% { transform: translate3d(8px, -12px, 0); opacity: 0.45; }
-  100% { transform: translate3d(-6px, 10px, 0); opacity: 0.25; }
-}
+.avs-gold-particle.gp-1 { width: 3px; height: 3px; top: 18%; left: 22%; }
+.avs-gold-particle.gp-2 { width: 2.5px; height: 2.5px; top: 34%; right: 19%; }
+.avs-gold-particle.gp-3 { width: 4px; height: 4px; bottom: 25%; left: 14%; }
+.avs-gold-particle.gp-4 { width: 2px; height: 2px; bottom: 35%; right: 28%; }
+.avs-gold-particle.gp-5 { width: 3.5px; height: 3.5px; top: 62%; left: 45%; }
 
 .avs-fine-hairline {
   position: absolute;
@@ -1970,3 +1952,330 @@
   color: #C49A3C !important;
   opacity: 0.038 !important;
 }
+
+/* ==========================================================================
+   AURA VITAL STAR — LUXURY OTP VERIFICATION COMPONENT
+   ========================================================================== */
+.avs-email-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.avs-otp-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  transition: all 0.25s ease;
+}
+
+.avs-otp-status-badge.verified {
+  background: rgba(14, 82, 59, 0.12);
+  color: #0E6245;
+  border: 1px solid rgba(14, 98, 69, 0.28);
+}
+
+.avs-otp-status-badge.unverified {
+  background: rgba(185, 151, 91, 0.12);
+  color: #937233;
+  border: 1px solid rgba(185, 151, 91, 0.25);
+}
+
+.avs-email-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.avs-email-inline-verify-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #062C22;
+  color: #FAF5EA;
+  border: 1px solid #B9975B;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avs-email-inline-verify-btn:hover {
+  background: #0B4234;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(6, 44, 34, 0.25);
+}
+
+.avs-email-inline-verify-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* OTP MODAL OVERLAY */
+.avs-otp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(4, 18, 14, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: avsModalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.avs-otp-modal-dialog {
+  background: #FFFFFF;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(185, 151, 91, 0.3);
+  overflow: hidden;
+  position: relative;
+  animation: avsModalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.avs-otp-modal-top-bar {
+  background: linear-gradient(135deg, #062C22 0%, #0B3B2F 100%);
+  padding: 28px 24px 22px;
+  text-align: center;
+  position: relative;
+  border-bottom: 2px solid #B9975B;
+}
+
+.avs-otp-top-icon-circle {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: rgba(185, 151, 91, 0.15);
+  border: 1.5px solid #B9975B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #DFBE77;
+  box-shadow: 0 0 20px rgba(185, 151, 91, 0.25);
+}
+
+.avs-otp-modal-heading {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: #FAF5EA;
+  font-size: 1.65rem;
+  font-weight: 600;
+  margin: 0 0 6px;
+  letter-spacing: 0.02em;
+}
+
+.avs-otp-modal-subheading {
+  color: #D3C4A7;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.avs-otp-email-highlight {
+  color: #FAF5EA;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #B9975B;
+}
+
+.avs-otp-close-x {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #FAF5EA;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+
+.avs-otp-close-x:hover {
+  opacity: 1;
+}
+
+/* MODAL BODY & 6 BOXES */
+.avs-otp-modal-content {
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+
+.avs-otp-boxes-grid {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0 24px;
+}
+
+.avs-otp-input-box {
+  width: 52px;
+  height: 60px;
+  background: #FAF7F2;
+  border: 2px solid #DCD3C5;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1.65rem;
+  font-weight: 700;
+  font-family: 'Inter', -apple-system, monospace;
+  color: #062C22;
+  transition: all 0.2s ease;
+  caret-color: #B9975B;
+}
+
+.avs-otp-input-box:focus {
+  outline: none;
+  border-color: #B9975B;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(185, 151, 91, 0.22), 0 4px 12px rgba(6, 44, 34, 0.08);
+  transform: translateY(-2px);
+}
+
+.avs-otp-input-box.filled {
+  border-color: #96763A;
+  background: #FFFDF9;
+}
+
+.avs-otp-input-box.has-error {
+  border-color: #C0392B;
+  background: #FFF6F5;
+}
+
+/* FEEDBACK MESSAGES */
+.avs-otp-feedback-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  margin-bottom: 18px;
+  animation: avsFadeIn 0.2s ease;
+}
+
+.avs-otp-feedback-msg.error {
+  background: #FDF1F0;
+  color: #A92619;
+  border: 1px solid rgba(192, 57, 43, 0.25);
+}
+
+.avs-otp-feedback-msg.success {
+  background: #EFF8F3;
+  color: #0E6245;
+  border: 1px solid rgba(14, 98, 69, 0.25);
+}
+
+/* ACTIONS */
+.avs-otp-submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #062C22 0%, #0B3F32 100%);
+  color: #FAF5EA;
+  border: 1px solid #B9975B;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 14px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(6, 44, 34, 0.25);
+}
+
+.avs-otp-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #08382C 0%, #0F4D3D 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(6, 44, 34, 0.35);
+  transform: translateY(-1px);
+}
+
+.avs-otp-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.avs-otp-resend-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #EBE4D8;
+  font-size: 0.82rem;
+  color: #5C6762;
+}
+
+.avs-otp-resend-link {
+  background: none;
+  border: none;
+  color: #062C22;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.82rem;
+  transition: color 0.2s;
+}
+
+.avs-otp-resend-link:hover {
+  color: #B9975B;
+}
+
+.avs-otp-change-email-btn {
+  background: none;
+  border: none;
+  color: #7A8680;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.avs-otp-change-email-btn:hover {
+  color: #062C22;
+}
+
+@keyframes avsModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes avsModalScaleUp {
+  from { transform: scale(0.92) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .avs-otp-boxes-grid {
+    gap: 6px;
+  }
+  .avs-otp-input-box {
+    width: 42px;
+    height: 52px;
+    font-size: 1.35rem;
+    border-radius: 8px;
+  }
+}
+

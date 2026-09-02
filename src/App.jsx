@@ -374,15 +374,23 @@ function App() {
     );
     observer.observe(locSection);
 
+    let locTicking = false;
     const handleLocScroll = () => {
-      if (!locSection) return;
-      const rect = locSection.getBoundingClientRect();
-      const windowH = window.innerHeight;
-      if (rect.top < windowH && rect.bottom > 0) {
-        const progress = (rect.top + rect.height / 2 - windowH / 2) / (windowH / 2);
-        const shiftY = Math.max(-10, Math.min(10, -progress * 7));
-        locSection.style.setProperty('--loc-scroll-y', `${shiftY}px`);
-        locSection.style.setProperty('--loc-wave-shift', `${-progress * 14}px`);
+      if (!locTicking) {
+        window.requestAnimationFrame(() => {
+          if (locSection) {
+            const rect = locSection.getBoundingClientRect();
+            const windowH = window.innerHeight;
+            if (rect.top < windowH && rect.bottom > 0) {
+              const progress = (rect.top + rect.height / 2 - windowH / 2) / (windowH / 2);
+              const shiftY = Math.max(-10, Math.min(10, -progress * 7));
+              locSection.style.setProperty('--loc-scroll-y', `${shiftY}px`);
+              locSection.style.setProperty('--loc-wave-shift', `${-progress * 14}px`);
+            }
+          }
+          locTicking = false;
+        });
+        locTicking = true;
       }
     };
 
@@ -486,31 +494,40 @@ function App() {
     const navLinksGroup = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('section[id]');
 
+    let navTicking = false;
     const handleScroll = () => {
-      if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 40);
-      if (currentPageRef.current === 'packages') {
-        navLinksGroup.forEach((link) => {
-          link.classList.toggle('active', link.getAttribute('href') === '#packages');
-        });
-        return;
-      }
-      if (currentPageRef.current === 'about') {
-        navLinksGroup.forEach((link) => {
-          link.classList.toggle('active', link.getAttribute('href') === '#about');
-        });
-        return;
-      }
-      const scrollPos = window.scrollY + 140;
-      sections.forEach((sec) => {
-        const top = sec.offsetTop;
-        const height = sec.offsetHeight;
-        const id = sec.getAttribute('id');
-        if (scrollPos >= top && scrollPos < top + height) {
-          navLinksGroup.forEach((link) => {
-            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+      if (!navTicking) {
+        window.requestAnimationFrame(() => {
+          if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 40);
+          if (currentPageRef.current === 'packages') {
+            navLinksGroup.forEach((link) => {
+              link.classList.toggle('active', link.getAttribute('href') === '#packages');
+            });
+            navTicking = false;
+            return;
+          }
+          if (currentPageRef.current === 'about') {
+            navLinksGroup.forEach((link) => {
+              link.classList.toggle('active', link.getAttribute('href') === '#about');
+            });
+            navTicking = false;
+            return;
+          }
+          const scrollPos = window.scrollY + 140;
+          sections.forEach((sec) => {
+            const top = sec.offsetTop;
+            const height = sec.offsetHeight;
+            const id = sec.getAttribute('id');
+            if (scrollPos >= top && scrollPos < top + height) {
+              navLinksGroup.forEach((link) => {
+                link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+              });
+            }
           });
-        }
-      });
+          navTicking = false;
+        });
+        navTicking = true;
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
