@@ -15,14 +15,14 @@ const announceItems = [
 ];
 
 const navLinks = [
-  { href: '#home', label: 'HOME' },
-  { href: '#salon', label: 'SALON' },
-  { href: '#rmt', label: 'RMT' },
-  { href: '#services', label: 'SERVICES' },
-  { href: '#packages', label: 'PACKAGES' },
-  { href: '#about', label: 'ABOUT AVS' },
-  { href: '#gallery', label: 'GALLERY' },
-  { href: '#contact', label: 'CONTACT' }
+  { href: '/', path: '/', page: 'home', label: 'HOME' },
+  { href: '/salon', path: '/salon', page: 'salon', label: 'SALON' },
+  { href: '/rmt', path: '/rmt', page: 'rmt', label: 'RMT' },
+  { href: '/services', path: '/services', page: 'services', label: 'SERVICES' },
+  { href: '/packages', path: '/packages', page: 'packages', label: 'PACKAGES' },
+  { href: '/about', path: '/about', page: 'about', label: 'ABOUT AVS' },
+  { href: '/gallery', path: '/gallery', page: 'gallery', label: 'GALLERY' },
+  { href: '/#contact', path: '/#contact', page: 'contact', label: 'CONTACT' }
 ];
 
 const heroSlides = [
@@ -192,105 +192,119 @@ function Icon({ name, width = 28, height = 28 }) {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const hash = window.location.hash;
-      const pathname = window.location.pathname;
-      const search = window.location.search;
+  const parseLocation = () => {
+    if (typeof window === 'undefined') return 'home';
 
-      // Prioritize hash if present
-      if (hash === '#services' || hash === '#/services') return 'services';
-      if (hash === '#salon' || hash === '#/salon') return 'salon';
-      if (hash === '#rmt' || hash === '#/rmt') return 'rmt';
-      if (hash === '#packages' || hash === '#/packages') return 'packages';
-      if (hash === '#about' || hash === '#/about') return 'about';
-      if (hash === '#gallery' || hash === '#/gallery') return 'gallery';
-      if (
-        hash === '#booking' ||
-        hash === '#/booking' ||
-        hash.includes('#booking') ||
-        search.includes('source=qr') ||
-        search.includes('page=booking')
-      ) {
-        return 'booking';
-      }
-      if (hash === '#home' || hash === '#contact' || hash === '#why-us') return 'home';
+    const hash = window.location.hash;
+    const pathname = window.location.pathname;
+    const search = window.location.search;
 
-      // Path-based fallback when no conflicting hash
-      if (pathname === '/services' || pathname.startsWith('/services')) return 'services';
-      if (pathname.includes('/salon')) return 'salon';
-      if (pathname.includes('/rmt')) return 'rmt';
-      if (pathname.includes('/packages')) return 'packages';
-      if (pathname.includes('/about')) return 'about';
-      if (pathname.includes('/gallery')) return 'gallery';
-      if (pathname.includes('/booking')) return 'booking';
+    // Detect and sanitize any dirty combined URLs like /services#about -> /about
+    if (hash === '#about' || hash === '#/about') {
+      if (pathname !== '/about' || hash) window.history.replaceState(null, '', '/about');
+      return 'about';
     }
+    if (hash === '#services' || hash === '#/services') {
+      if (pathname !== '/services' || hash) window.history.replaceState(null, '', '/services');
+      return 'services';
+    }
+    if (hash === '#salon' || hash === '#/salon') {
+      if (pathname !== '/salon' || hash) window.history.replaceState(null, '', '/salon');
+      return 'salon';
+    }
+    if (hash === '#rmt' || hash === '#/rmt') {
+      if (pathname !== '/rmt' || hash) window.history.replaceState(null, '', '/rmt');
+      return 'rmt';
+    }
+    if (hash === '#packages' || hash === '#/packages') {
+      if (pathname !== '/packages' || hash) window.history.replaceState(null, '', '/packages');
+      return 'packages';
+    }
+    if (hash === '#gallery' || hash === '#/gallery') {
+      if (pathname !== '/gallery' || hash) window.history.replaceState(null, '', '/gallery');
+      return 'gallery';
+    }
+    if (hash === '#booking' || hash === '#/booking' || search.includes('source=qr') || search.includes('page=booking')) {
+      return 'booking';
+    }
+    if (hash === '#home' || hash === '#/home') {
+      if (pathname !== '/' || hash) window.history.replaceState(null, '', '/');
+      return 'home';
+    }
+    if (hash === '#contact') {
+      return 'home';
+    }
+
+    // Clean path-based routing
+    if (pathname === '/about' || pathname.startsWith('/about')) return 'about';
+    if (pathname === '/services' || pathname.startsWith('/services')) return 'services';
+    if (pathname === '/salon' || pathname.startsWith('/salon')) return 'salon';
+    if (pathname === '/rmt' || pathname.startsWith('/rmt')) return 'rmt';
+    if (pathname === '/packages' || pathname.startsWith('/packages')) return 'packages';
+    if (pathname === '/gallery' || pathname.startsWith('/gallery')) return 'gallery';
+    if (pathname === '/booking' || pathname.startsWith('/booking')) return 'booking';
+
     return 'home';
-  });
+  };
+
+  const [currentPage, setCurrentPage] = useState(() => parseLocation());
   const currentPageRef = useRef(currentPage);
   useEffect(() => {
     currentPageRef.current = currentPage;
   }, [currentPage]);
 
-  const handleNavClick = (e, href) => {
-    if (e) e.preventDefault();
+  const handleNavClick = (e, target) => {
+    if (e && e.preventDefault) e.preventDefault();
     const mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu) {
       mobileMenu.classList.remove('open');
       document.body.style.overflow = '';
     }
 
-    const cleanHref = href.startsWith('/') && !href.startsWith('/#') ? '#' + href.replace(/^\//, '') : href;
+    const page = typeof target === 'string' ? target.replace(/^[/#]+/, '') : target?.page;
 
-    // Helper to safely transition URL without polluting path
-    const navigateTo = (targetPage, targetHash) => {
-      if (window.location.pathname !== '/') {
-        window.history.pushState(null, '', '/' + (targetHash === '#home' ? '' : targetHash));
-      } else {
-        window.location.hash = targetHash;
-      }
+    const navigateTo = (targetPage, targetPath) => {
+      window.history.pushState(null, '', targetPath);
       setCurrentPage(targetPage);
       window.scrollTo({ top: 0, behavior: 'instant' });
     };
 
-    if (cleanHref === '#services') {
-      navigateTo('services', '#services');
-    } else if (cleanHref === '#salon') {
-      navigateTo('salon', '#salon');
-    } else if (cleanHref === '#rmt') {
-      navigateTo('rmt', '#rmt');
-    } else if (cleanHref === '#packages') {
-      navigateTo('packages', '#packages');
-    } else if (cleanHref === '#about') {
-      navigateTo('about', '#about');
-    } else if (cleanHref === '#gallery') {
-      navigateTo('gallery', '#gallery');
-    } else if (cleanHref === '#booking') {
+    if (page === 'services') {
+      navigateTo('services', '/services');
+    } else if (page === 'salon') {
+      navigateTo('salon', '/salon');
+    } else if (page === 'rmt') {
+      navigateTo('rmt', '/rmt');
+    } else if (page === 'packages') {
+      navigateTo('packages', '/packages');
+    } else if (page === 'about') {
+      navigateTo('about', '/about');
+    } else if (page === 'gallery') {
+      navigateTo('gallery', '/gallery');
+    } else if (page === 'booking') {
       handleBookRedirect(e, 'Navigation Menu');
-    } else {
-      // Home or on-page anchor (e.g. #contact, #home)
-      if (window.location.pathname !== '/') {
-        window.history.pushState(null, '', '/' + (cleanHref === '#home' ? '' : cleanHref));
-      } else {
-        window.location.hash = cleanHref;
-      }
+    } else if (page === 'contact') {
+      window.history.pushState(null, '', '/#contact');
       if (currentPageRef.current !== 'home') {
         setCurrentPage('home');
         setTimeout(() => {
-          if (cleanHref === '#home' || cleanHref === '/' || !cleanHref) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else {
-            const target = document.querySelector(cleanHref);
-            if (target) target.scrollIntoView({ behavior: 'smooth' });
-          }
+          const el = document.querySelector('#contact');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
         }, 80);
       } else {
-        if (cleanHref === '#home' || cleanHref === '/' || !cleanHref) {
+        const el = document.querySelector('#contact');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Home
+      window.history.pushState(null, '', '/');
+      if (currentPageRef.current !== 'home') {
+        setCurrentPage('home');
+        setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          const target = document.querySelector(cleanHref);
-          if (target) target.scrollIntoView({ behavior: 'smooth' });
-        }
+        }, 80);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   };
@@ -311,82 +325,15 @@ function App() {
 
   useEffect(() => {
     const handleLocationChange = () => {
-      const hash = window.location.hash;
-      const pathname = window.location.pathname;
-      const search = window.location.search;
-
-      // Check explicit hash first
-      if (hash === '#services' || hash === '#/services') {
-        setCurrentPage('services');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (hash === '#salon' || hash === '#/salon') {
-        setCurrentPage('salon');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (hash === '#rmt' || hash === '#/rmt') {
-        setCurrentPage('rmt');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (hash === '#packages' || hash === '#/packages') {
-        setCurrentPage('packages');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (hash === '#about' || hash === '#/about') {
-        setCurrentPage('about');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (hash === '#gallery' || hash === '#/gallery') {
-        setCurrentPage('gallery');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (
-        hash === '#booking' ||
-        hash === '#/booking' ||
-        hash.includes('#booking') ||
-        search.includes('source=qr') ||
-        search.includes('page=booking')
-      ) {
-        setCurrentPage('booking');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (
-        hash === '#home' ||
-        hash === '#/home' ||
-        hash === '#contact' ||
-        hash === '#why-us' ||
-        hash === '#testimonials' ||
-        hash === '#hours'
-      ) {
-        setCurrentPage('home');
-        if (hash && hash !== '#home') {
-          setTimeout(() => {
-            const target = document.querySelector(hash);
-            if (target) target.scrollIntoView({ behavior: 'smooth' });
-          }, 60);
-        }
-      } else if (pathname === '/services' || pathname.startsWith('/services')) {
-        setCurrentPage('services');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (pathname.includes('/salon')) {
-        setCurrentPage('salon');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (pathname.includes('/rmt')) {
-        setCurrentPage('rmt');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (pathname.includes('/packages')) {
-        setCurrentPage('packages');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (pathname.includes('/about')) {
-        setCurrentPage('about');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (pathname.includes('/gallery')) {
-        setCurrentPage('gallery');
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      } else if (pathname.includes('/booking')) {
-        setCurrentPage('booking');
-        window.scrollTo({ top: 0, behavior: 'instant' });
+      const page = parseLocation();
+      setCurrentPage(page);
+      if (window.location.hash === '#contact') {
+        setTimeout(() => {
+          const target = document.querySelector('#contact');
+          if (target) target.scrollIntoView({ behavior: 'smooth' });
+        }, 80);
       } else {
-        setCurrentPage('home');
-        if (hash && hash !== '#home') {
-          setTimeout(() => {
-            const target = document.querySelector(hash);
-            if (target) target.scrollIntoView({ behavior: 'smooth' });
-          }, 60);
-        }
+        window.scrollTo({ top: 0, behavior: 'instant' });
       }
     };
 
@@ -597,37 +544,9 @@ function App() {
       if (!navTicking) {
         window.requestAnimationFrame(() => {
           if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 40);
-          if (currentPageRef.current === 'services') {
+          if (currentPageRef.current !== 'home') {
             navLinksGroup.forEach((link) => {
-              link.classList.toggle('active', link.getAttribute('href') === '#services');
-            });
-            navTicking = false;
-            return;
-          }
-          if (currentPageRef.current === 'packages') {
-            navLinksGroup.forEach((link) => {
-              link.classList.toggle('active', link.getAttribute('href') === '#packages');
-            });
-            navTicking = false;
-            return;
-          }
-          if (currentPageRef.current === 'about') {
-            navLinksGroup.forEach((link) => {
-              link.classList.toggle('active', link.getAttribute('href') === '#about');
-            });
-            navTicking = false;
-            return;
-          }
-          if (currentPageRef.current === 'gallery') {
-            navLinksGroup.forEach((link) => {
-              link.classList.toggle('active', link.getAttribute('href') === '#gallery');
-            });
-            navTicking = false;
-            return;
-          }
-          if (currentPageRef.current === 'rmt') {
-            navLinksGroup.forEach((link) => {
-              link.classList.toggle('active', link.getAttribute('href') === '#rmt');
+              link.classList.toggle('active', link.getAttribute('data-page') === currentPageRef.current);
             });
             navTicking = false;
             return;
@@ -705,27 +624,9 @@ function App() {
 
   useEffect(() => {
     const navLinksGroup = document.querySelectorAll('.nav-link');
-    if (currentPage === 'services') {
-      navLinksGroup.forEach((link) => {
-        link.classList.toggle('active', link.getAttribute('href') === '#services');
-      });
-    } else if (currentPage === 'packages') {
-      navLinksGroup.forEach((link) => {
-        link.classList.toggle('active', link.getAttribute('href') === '#packages');
-      });
-    } else if (currentPage === 'about') {
-      navLinksGroup.forEach((link) => {
-        link.classList.toggle('active', link.getAttribute('href') === '#about');
-      });
-    } else if (currentPage === 'gallery') {
-      navLinksGroup.forEach((link) => {
-        link.classList.toggle('active', link.getAttribute('href') === '#gallery');
-      });
-    } else if (currentPage === 'rmt') {
-      navLinksGroup.forEach((link) => {
-        link.classList.toggle('active', link.getAttribute('href') === '#rmt');
-      });
-    }
+    navLinksGroup.forEach((link) => {
+      link.classList.toggle('active', link.getAttribute('data-page') === currentPage);
+    });
   }, [currentPage]);
 
   return (
@@ -762,24 +663,13 @@ function App() {
           </a>
           <ul className="nav-links" role="list">
             {navLinks.map((link) => {
-              const isActive = currentPage === 'services'
-                ? link.href === '#services' || link.href === '/services'
-                : currentPage === 'salon'
-                ? link.href === '#salon'
-                : currentPage === 'rmt'
-                ? link.href === '#rmt'
-                : currentPage === 'packages'
-                ? link.href === '#packages'
-                : currentPage === 'about'
-                ? link.href === '#about'
-                : currentPage === 'gallery'
-                ? link.href === '#gallery'
-                : link.href === '#home';
+              const isActive = currentPage === link.page;
               return (
-                <li key={link.href}>
+                <li key={link.page}>
                   <a
                     href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
+                    data-page={link.page}
+                    onClick={(e) => handleNavClick(e, link.page)}
                     className={`nav-link ${isActive ? 'active' : ''}`}
                   >
                     {link.label}
@@ -814,24 +704,13 @@ function App() {
         <nav aria-label="Mobile navigation">
           <ul role="list">
             {navLinks.map((link) => {
-              const isMobileActive = currentPage === 'services'
-                ? link.href === '#services' || link.href === '/services'
-                : currentPage === 'salon'
-                ? link.href === '#salon'
-                : currentPage === 'rmt'
-                ? link.href === '#rmt'
-                : currentPage === 'packages'
-                ? link.href === '#packages'
-                : currentPage === 'about'
-                ? link.href === '#about'
-                : currentPage === 'gallery'
-                ? link.href === '#gallery'
-                : link.href === '#home';
+              const isMobileActive = currentPage === link.page;
               return (
-                <li key={link.href + '-mobile'}>
+                <li key={link.page + '-mobile'}>
                   <a
                     href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
+                    data-page={link.page}
+                    onClick={(e) => handleNavClick(e, link.page)}
                     className={`mobile-link ${isMobileActive ? 'active' : ''}`}
                   >
                     {link.label}
