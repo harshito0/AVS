@@ -61,6 +61,32 @@ export function insertBooking(bookingData) {
 
   // Write atomically
   fs.writeFileSync(DB_FILE, JSON.stringify(bookings, null, 2), 'utf-8');
+
+  // Forward to CRM Backend Database
+  try {
+    fetch('http://localhost:4000/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: newRecord.customerName,
+        phone: newRecord.phone,
+        email: newRecord.email,
+        service: newRecord.service,
+        serviceCategory: newRecord.serviceCategory,
+        locationName: newRecord.location,
+        date: newRecord.date,
+        time: newRecord.time,
+        duration: newRecord.duration,
+        notes: newRecord.notes,
+        source: newRecord.source || 'Website'
+      })
+    }).catch(err => {
+      // Backend might be offline in standalone test mode
+    });
+  } catch (err) {
+    // Ignore fetch error in older node environments
+  }
+
   return newRecord;
 }
 

@@ -1,0 +1,364 @@
+// ============================================================
+// AURA VITAL STAR CRM — Prisma Schema
+// Supports both SQLite (dev) and PostgreSQL (production)
+// Change provider and DATABASE_URL in .env for production
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ADMIN USERS
+// ============================================================
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("STAFF") // ADMIN | MANAGER | STAFF
+  locationId   String?
+  location     Location? @relation(fields: [locationId], references: [id])
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  auditLogs    AuditLog[]
+
+  @@index([email])
+}
+
+// ============================================================
+// LOCATIONS
+// ============================================================
+model Location {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  shortName    String
+  address      String
+  phone        String
+  email        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  users        User[]
+  clients      Client[]
+  leads        Lead[]
+  appointments Appointment[]
+  invoices     Invoice[]
+  giftCards    GiftCard[]
+  staff        Staff[]
+}
+
+// ============================================================
+// STAFF / THERAPISTS
+// ============================================================
+model Staff {
+  id         String   @id @default(cuid())
+  name       String
+  role       String   // e.g. RMT, Esthetician, Nail Tech
+  email      String?
+  phone      String?
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id])
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  appointments Appointment[]
+}
+
+// ============================================================
+// CLIENTS
+// ============================================================
+model Client {
+  id           String    @id @default(cuid())
+  firstName    String
+  lastName     String
+  fullName     String
+  phone        String
+  email        String?
+  gender       String?   // Female | Male | Other | Prefer not to say
+  dob          String?
+  locationId   String?
+  location     Location? @relation(fields: [locationId], references: [id])
+  notes        String?
+  status       String    @default("Active") // Active | Inactive
+  totalVisits  Int       @default(0)
+  totalSpent   Float     @default(0)
+  lastVisit    String?
+  lastService  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  appointments Appointment[]
+  invoices     Invoice[]
+  leads        Lead[]
+  notes_list   Note[]
+
+  @@index([phone])
+  @@index([email])
+  @@index([fullName])
+}
+
+// ============================================================
+// CLIENT NOTES
+// ============================================================
+model Note {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  content   String
+  author    String
+  createdAt DateTime @default(now())
+}
+
+// ============================================================
+// LEADS
+// ============================================================
+model Lead {
+  id              String    @id @default(cuid())
+  name            String
+  phone           String
+  email           String?
+  source          String    // Instagram | Website | Facebook | Referral | Google | Walk In | QR | Manual
+  locationId      String?
+  location        Location? @relation(fields: [locationId], references: [id])
+  interestService String?
+  status          String    @default("Follow Up") // Follow Up | Converted | Dead
+  notes           String?
+  clientId        String?   // set when converted to client
+  client          Client?   @relation(fields: [clientId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([phone])
+  @@index([status])
+}
+
+// ============================================================
+// SERVICES
+// ============================================================
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // Massage Therapy | Facial & Skincare | Hair Spa | Nail Care | Body Rituals | Laser & Waxing | RMT | Orthotics
+  description String?
+  price       Float    @default(0)
+  duration    String   @default("60 min")
+  imageUrl    String?
+  status      String   @default("Active") // Active | Inactive
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments Appointment[]
+}
+
+// ============================================================
+// PACKAGES
+// ============================================================
+model Package {
+  id            String   @id @default(cuid())
+  name          String
+  category      String
+  description   String?
+  price         Float
+  originalPrice Float
+  discount      Float    @default(0)
+  sessions      Int      @default(1)
+  validity      String?  // e.g. "3 months"
+  imageUrl      String?
+  status        String   @default("Active") // Active | Inactive
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  servicesIncluded PackageService[]
+}
+
+model PackageService {
+  id          String  @id @default(cuid())
+  packageId   String
+  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  serviceName String
+
+  @@unique([packageId, serviceName])
+}
+
+// ============================================================
+// APPOINTMENTS
+// ============================================================
+model Appointment {
+  id          String    @id @default(cuid())
+  clientId    String?
+  client      Client?   @relation(fields: [clientId], references: [id])
+  serviceId   String?
+  service     Service?  @relation(fields: [serviceId], references: [id])
+  staffId     String?
+  staff       Staff?    @relation(fields: [staffId], references: [id])
+  locationId  String?
+  location    Location? @relation(fields: [locationId], references: [id])
+
+  // Guest fields (when client not yet in system)
+  guestName   String?
+  guestPhone  String?
+  guestEmail  String?
+
+  // Booking details
+  serviceName     String   // denormalized for display
+  serviceCategory String?
+  date            String   // YYYY-MM-DD
+  time            String   // e.g. 10:00 AM
+  duration        String   @default("60 min")
+  amount          Float    @default(0)
+  status          String   @default("Pending") // Pending | Confirmed | Completed | Cancelled | No Show
+  source          String   @default("Website") // QR | Website | Manual | Phone | Walk In | Other
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  invoices     Invoice[]
+
+  @@index([date])
+  @@index([status])
+  @@index([clientId])
+}
+
+// ============================================================
+// INVOICES
+// ============================================================
+model Invoice {
+  id            String    @id @default(cuid())
+  invoiceNumber String    @unique
+  clientId      String?
+  client        Client?   @relation(fields: [clientId], references: [id])
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  locationId    String?
+  location      Location?    @relation(fields: [locationId], references: [id])
+
+  // Client snapshot (in case client record changes)
+  clientName    String
+  clientEmail   String?
+  clientPhone   String?
+  clientAddress String?
+
+  invoiceDate   String
+  dueDate       String
+  subtotal      Float    @default(0)
+  tax           Float    @default(0)
+  discount      Float    @default(0)
+  total         Float    @default(0)
+  paymentMethod String?  // Credit Card | Debit | Cash | Gift Card | E-Transfer
+  status        String   @default("Pending") // Paid | Partially Paid | Pending | Overdue | Cancelled
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items         InvoiceItem[]
+
+  @@index([clientId])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  serviceName String
+  quantity    Int     @default(1)
+  price       Float
+  amount      Float
+}
+
+// ============================================================
+// GIFT CARDS
+// ============================================================
+model GiftCard {
+  id             String    @id @default(cuid())
+  cardNumber     String    @unique // e.g. GC-AVS-100124
+  recipientName  String
+  buyerName      String
+  recipientEmail String?
+  buyerEmail     String?
+  value          Float
+  balance        Float
+  expiryDate     String    // YYYY-MM-DD
+  locationId     String?
+  location       Location? @relation(fields: [locationId], references: [id])
+  status         String    @default("Active") // Active | Partially Used | Redeemed | Expired
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  transactions   GiftCardTransaction[]
+
+  @@index([cardNumber])
+  @@index([status])
+}
+
+model GiftCardTransaction {
+  id          String   @id @default(cuid())
+  giftCardId  String
+  giftCard    GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+  description String
+  reference   String?
+  debit       Float    @default(0)
+  credit      Float    @default(0)
+  balance     Float
+  performedBy String
+  createdAt   DateTime @default(now())
+}
+
+// ============================================================
+// GALLERY
+// ============================================================
+model GalleryImage {
+  id        String   @id @default(cuid())
+  title     String
+  altText   String?
+  imageUrl  String
+  category  String   @default("General") // Lounge | Treatments | Spa Suites | Products | General
+  sortOrder Int      @default(0)
+  status    String   @default("Published") // Published | Draft
+  createdAt DateTime @default(now())
+
+  @@index([category])
+  @@index([status])
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   // appointment | invoice | lead | giftCard | system
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+}
+
+// ============================================================
+// AUDIT LOG
+// ============================================================
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String   // CREATED | UPDATED | DELETED | STATUS_CHANGED | REDEEMED | LOGIN
+  entity    String   // Client | Appointment | Invoice | GiftCard | Lead | etc.
+  entityId  String?
+  details   String?  // JSON string of changes
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}

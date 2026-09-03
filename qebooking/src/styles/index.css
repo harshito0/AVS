@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    -webkit-tap-highlight-color: transparent;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  input, select, textarea, button {
+    font-family: inherit;
+  }
+}
+
+/* Luxury custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F2F7F4;
+}
+::-webkit-scrollbar-thumb {
+  background: #C4DCD0;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0F5B47;
+}
+
+/* Mobile input touch target enhancements */
+.form-input-luxury {
+  @apply w-full bg-white border border-[#D9E3DD] rounded-xl px-4 py-3.5 text-[15px] sm:text-sm text-slate-800 placeholder-slate-400 transition-all duration-200 outline-none;
+}
+
+.form-input-luxury:focus {
+  @apply border-[#0F5B47] ring-2 ring-[#0F5B47]/15 bg-white shadow-sm;
+}
+
+.form-input-luxury.has-error {
+  @apply border-rose-400 ring-2 ring-rose-100 bg-rose-50/20;
+}

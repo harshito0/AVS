@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-forest: #0F291E;
+    --brand-forest-dark: #0B1F17;
+    --brand-gold: #C5A880;
+    --brand-cream: #FAF7F2;
+    --brand-surface: #FFFFFF;
+    --brand-border: #E5ECE7;
+  }
+
+  body {
+    background-color: #F5F7F5;
+    color: #1E293B;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom Luxury Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+}
+
+/* Luxury Card & Glass Utilities */
+@layer components {
+  .crm-card {
+    @apply bg-white border border-[#E5ECE7] rounded-xl shadow-[0_2px_8px_-2px_rgba(15,41,30,0.04)] transition-all duration-200;
+  }
+
+  .crm-card-hover {
+    @apply hover:shadow-[0_8px_20px_-4px_rgba(15,41,30,0.08)] hover:border-[#D1DED5];
+  }
+
+  .crm-badge-green {
+    @apply bg-emerald-50 text-emerald-800 border border-emerald-200/70 font-medium;
+  }
+
+  .crm-badge-gold {
+    @apply bg-amber-50 text-amber-900 border border-amber-200/80 font-medium;
+  }
+
+  .crm-badge-blue {
+    @apply bg-sky-50 text-sky-800 border border-sky-200/70 font-medium;
+  }
+
+  .crm-badge-purple {
+    @apply bg-purple-50 text-purple-800 border border-purple-200/70 font-medium;
+  }
+
+  .crm-badge-gray {
+    @apply bg-slate-50 text-slate-700 border border-slate-200 font-medium;
+  }
+
+  .crm-badge-red {
+    @apply bg-rose-50 text-rose-800 border border-rose-200/70 font-medium;
+  }
+}
+
+/* Keyframes for drawers, modals, toasts */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slideLeft {
+  animation: slideLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scaleUp {
+  animation: scaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Print layout for invoice */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #invoice-print-area, #invoice-print-area * {
+    visibility: visible;
+  }
+  #invoice-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 24px;
+  }
+}
