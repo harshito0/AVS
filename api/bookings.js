@@ -160,7 +160,7 @@ export default async function handler(req, res) {
     if (fullBooking.email) {
       try {
         await transporter.sendMail({
-          from: `"Aura Vital Star Rejuvenation" <${GMAIL_USER}>`,
+          from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
           to: fullBooking.email,
           subject: `Your Aura Vital Star Verification OTP: ${otpCode} [${fullBooking.id}]`,
           html: customerHtml
@@ -175,7 +175,7 @@ export default async function handler(req, res) {
     // 2. Send alert to Admin
     try {
       await transporter.sendMail({
-        from: `"AVS Booking Engine" <${GMAIL_USER}>`,
+        from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
         to: ADMIN_EMAIL,
         subject: `NEW APPOINTMENT: ${customerName} - ${fullBooking.service} [${fullBooking.id}]`,
         html: adminHtml

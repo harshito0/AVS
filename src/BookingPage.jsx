@@ -326,11 +326,7 @@ export default function BookingPage({
       }
       setResendTimer(30);
       setIsTimerActive(true);
-      if (res.isLocalFallback) {
-        setOtpSuccessMsg(`[Local Test Mode] Backend offline. Test OTP: ${res.otp}`);
-      } else {
-        setOtpSuccessMsg(`A 6-digit verification code has been dispatched to ${customerDetails.email}`);
-      }
+      setOtpSuccessMsg(`A 6-digit verification code has been dispatched to ${customerDetails.email}. Please check your Inbox and Spam/Junk folder.`);
       setErrors((prev) => ({ ...prev, email: null }));
     } else {
       setOtpError(res.error || res.reason || 'No active OTP found for this email. Please click "Resend Code".');

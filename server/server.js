@@ -63,13 +63,10 @@ app.post('/api/send-otp', async (req, res) => {
       otp: result.otp
     });
   } else {
-    // If SMTP has issue or credentials missing, log and return response
-    console.warn(`SMTP notification warning: ${result.error || result.reason}`);
-    return res.json({ 
-      success: true, 
-      message: `Verification code generated for ${cleanEmail}`,
-      otp: generatedOtp,
-      warning: result.error || result.reason
+    console.error(`❌ SMTP dispatch failed for ${cleanEmail}:`, result.error || result.reason);
+    return res.status(500).json({ 
+      success: false, 
+      error: `Failed to dispatch OTP email: ${result.error || result.reason || 'Check SMTP configuration'}`
     });
   }
 });

@@ -64,6 +64,16 @@ export default async function handler(req, res) {
 
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
   const recipientName = name || 'Valued Guest';
+  const cleanEmail = email.toLowerCase().trim();
+
+  // Store in global cache for verify-otp
+  if (!global.__avs_otp_cache) {
+    global.__avs_otp_cache = new Map();
+  }
+  global.__avs_otp_cache.set(cleanEmail, {
+    otp: otpCode,
+    expiresAt: Date.now() + 10 * 60 * 1000
+  });
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -108,7 +118,7 @@ export default async function handler(req, res) {
   try {
     const transporter = getTransporter();
     await transporter.sendMail({
-      from: `"Aura Vital Star Concierge" <${GMAIL_USER}>`,
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to: email,
       subject: `Your Aura Vital Star Verification OTP: ${otpCode}`,
       html: htmlContent
