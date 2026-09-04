@@ -1411,6 +1411,8 @@ function App() {
               <a href="#privacy" className="footer-legal-link">Privacy Policy</a>
               <span className="footer-legal-sep" aria-hidden="true">|</span>
               <a href="#terms" className="footer-legal-link">Terms &amp; Conditions</a>
+              <span className="footer-legal-sep" aria-hidden="true">|</span>
+              <a href="/crm" className="footer-legal-link" style={{ color: '#D4AF37', fontWeight: 600 }}>Staff &amp; CRM Portal &rarr;</a>
             </div>
           </div>
         </div>

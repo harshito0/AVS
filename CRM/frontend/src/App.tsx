@@ -17,9 +17,10 @@ import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 export const App: React.FC = () => {
+  const baseName = import.meta.env.BASE_URL ? import.meta.env.BASE_URL.replace(/\/$/, '') : undefined;
   return (
     <ToastProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={baseName}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route

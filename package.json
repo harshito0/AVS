@@ -11,7 +11,7 @@
     "crm:backend": "npm --prefix CRM/backend run dev",
     "crm:frontend": "npm --prefix CRM/frontend run dev",
     "crm": "concurrently -n \"CRM-API,CRM-UI\" -c \"magenta,cyan\" \"npm run crm:backend\" \"npm run crm:frontend\"",
-    "build": "vite build",
+    "build": "vite build && npm --prefix CRM/frontend run build",
     "preview": "vite preview"
   },
   "dependencies": {

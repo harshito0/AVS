@@ -1,8 +1,32 @@
 {
   "rewrites": [
     {
+      "source": "/crm/:match*",
+      "destination": "/crm/index.html"
+    },
+    {
+      "source": "/crm",
+      "destination": "/crm/index.html"
+    },
+    {
+      "source": "/api/bookings",
+      "destination": "/api/bookings"
+    },
+    {
+      "source": "/api/contact",
+      "destination": "/api/contact"
+    },
+    {
+      "source": "/api/send-otp",
+      "destination": "/api/send-otp"
+    },
+    {
+      "source": "/api/verify-otp",
+      "destination": "/api/verify-otp"
+    },
+    {
       "source": "/api/:match*",
-      "destination": "/api/:match*"
+      "destination": "/api/crm"
     },
     {
       "source": "/(.*)",

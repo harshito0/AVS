@@ -75,7 +75,8 @@ async function request<T>(
     // Handle 401 — redirect to login
     if (res.status === 401) {
       clearToken();
-      window.location.href = '/login';
+      const base = import.meta.env.BASE_URL || '/';
+      window.location.href = base.endsWith('/') ? `${base}login` : `${base}/login`;
       return { success: false, error: { code: 'UNAUTHORIZED', message: 'Session expired. Please login again.' } };
     }
 

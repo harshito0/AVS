@@ -1368,13 +1368,23 @@ export default function BookingPage({
             >
               Scan QR Code
             </button>
+            <a
+              href="/crm"
+              target="_blank"
+              rel="noreferrer"
+              className="avs-crm-quick-link"
+              title="Open Full CRM Portal"
+              style={{ textDecoration: 'none', background: '#0F291E', color: '#D4AF37' }}
+            >
+              CRM Portal &rarr;
+            </a>
             <button
               type="button"
               className="avs-crm-quick-link"
               onClick={() => setShowCrmModal(true)}
               title="View CRM Records"
             >
-              CRM ({crmBookings.length})
+              CRM Records ({crmBookings.length})
             </button>
           </div>
         </div>
@@ -2444,6 +2454,15 @@ export default function BookingPage({
                   Showing <strong>{crmBookings.length}</strong> total appointment records stored.
                 </p>
                 <div style={{ display: 'flex', gap: '8px' }}>
+                  <a
+                    href="/crm"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="avs-crm-quick-link"
+                    style={{ textDecoration: 'none', background: '#0F291E', color: '#D4AF37', fontWeight: 600 }}
+                  >
+                    Open Full CRM Dashboard &rarr;
+                  </a>
                   <button
                     type="button"
                     className="avs-crm-quick-link"

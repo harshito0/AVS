@@ -1,8 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
+  base: command === 'build' ? '/crm/' : '/',
+  build: {
+    outDir: '../../dist/crm',
+    emptyOutDir: true,
+  },
   server: {
     port: 5174,
     open: false,
@@ -14,4 +19,5 @@ export default defineConfig({
       },
     },
   },
-});
+}));
+
