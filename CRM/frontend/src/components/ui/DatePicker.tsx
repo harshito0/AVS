@@ -16,13 +16,19 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const [selected, setSelected] = useState(currentRange);
   const ref = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (currentRange) {
+      setSelected(currentRange);
+    }
+  }, [currentRange]);
+
   const presets = [
+    'May 1 – May 31, 2025',
     'Today',
     'Yesterday',
     'Last 7 Days',
-    'This Month (May 1 – May 31, 2025)',
-    'Last Month (Apr 1 – Apr 30, 2025)',
-    'Q1 2025 (Jan – Mar)',
+    'Last 30 Days',
+    'This Month',
     'Year to Date (2025)'
   ];
 

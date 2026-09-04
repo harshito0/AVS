@@ -4,11 +4,13 @@
 
 @layer base {
   :root {
-    --brand-forest: #0F291E;
-    --brand-forest-dark: #0B1F17;
-    --brand-gold: #C5A880;
-    --brand-cream: #FAF7F2;
-    --brand-surface: #FFFFFF;
+    --brand-deep-green: #0F5B47;
+    --brand-forest: #1B6F56;
+    --brand-gold: #C9A227;
+    --brand-gold-light: #E1BE5A;
+    --brand-cream: #F7F4ED;
+    --brand-white: #FFFFFF;
+    --brand-charcoal: #1F1F1F;
     --brand-border: #E5ECE7;
   }
 

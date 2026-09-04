@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MapPin, ChevronDown, Check } from 'lucide-react';
 import { Location } from '../../types';
+import { locationsApi } from '../../services/apiClient';
 
 export interface LocationSelectorProps {
   currentLocation: Location;
@@ -14,13 +15,37 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   className = ''
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  const locations: { label: Location; sub: string }[] = [
+  const [locations, setLocations] = useState<{ label: Location; sub: string }[]>([
     { label: 'All Locations', sub: 'Brampton & Mississauga' },
     { label: 'Brampton', sub: 'Queen St Rejuvenation Hub' },
     { label: 'Mississauga', sub: 'City Centre Wellness Suites' }
-  ];
+  ]);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadLocations() {
+      try {
+        const res = await locationsApi.getAll();
+        if (res.success && Array.isArray(res.data) && res.data.length > 0 && isMounted) {
+          const list: { label: Location; sub: string }[] = [
+            { label: 'All Locations', sub: 'Combined Facility Overview' }
+          ];
+          res.data.forEach((loc: any) => {
+            list.push({
+              label: (loc.shortName || loc.name) as Location,
+              sub: loc.address || loc.name
+            });
+          });
+          setLocations(list);
+        }
+      } catch {
+        // preserve fallback list
+      }
+    }
+    loadLocations();
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {

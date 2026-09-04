@@ -73,16 +73,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           key={item.path}
           to={item.path}
           onClick={onCloseMobile}
-          className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 relative ${
+          className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 relative ${
             isActive
-              ? 'bg-[#184232] text-white font-semibold shadow-[0_2px_10px_-2px_rgba(0,0,0,0.3)] border border-[#275E48]'
+              ? 'bg-[#0F5B47] text-white font-semibold shadow-[0_2px_10px_-2px_rgba(15,91,71,0.4)] border border-[#1B6F56]'
               : 'text-[#A3B8AF] hover:text-white hover:bg-[#123124]'
           }`}
         >
-          <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#E5C583]' : 'text-[#7D9A8D] group-hover:text-[#C5A880]'}`} />
+          <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#E1BE5A]' : 'text-[#7D9A8D] group-hover:text-[#C9A227]'}`} />
           <span>{item.label}</span>
           {isActive && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E5C583] ml-auto shadow-[0_0_8px_#E5C583]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E1BE5A] ml-auto shadow-[0_0_8px_#E1BE5A]" />
           )}
         </NavLink>
       );
@@ -109,9 +109,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-4 border-b border-[#15382A]">
           <div
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-3 cursor-pointer select-none group bg-[#081811] hover:bg-[#0c2319] p-2.5 rounded-xl border border-[#C5A880]/30 hover:border-[#C5A880]/70 transition-all"
+            className="flex items-center gap-3 cursor-pointer select-none group bg-[#081811] hover:bg-[#0c2319] p-2.5 rounded-xl border border-[#C9A227]/30 hover:border-[#C9A227]/70 transition-all"
           >
-            <div className="w-12 h-12 rounded-xl bg-white p-1 shadow-md shrink-0 flex items-center justify-center overflow-hidden border border-[#C5A880]/50 group-hover:scale-105 transition-transform">
+            <div className="w-11 h-11 rounded-xl bg-white p-1 shadow-md shrink-0 flex items-center justify-center overflow-hidden border border-[#C9A227]/40 group-hover:scale-105 transition-transform">
               <img
                 src="/avs_logo.png"
                 alt="Aura Vital Star"
@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="text-[12px] font-bold tracking-wider text-white leading-tight">
                 AURA VITAL STAR
               </div>
-              <p className="text-[9px] font-semibold tracking-widest uppercase text-[#E5C583] leading-tight mt-1">
+              <p className="text-[9px] font-semibold tracking-widest uppercase text-[#E1BE5A] leading-tight mt-1">
                 Rejuvenation Centre
               </p>
               <p className="text-[8px] text-emerald-400 font-medium tracking-tight">
@@ -164,9 +164,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* System Navigation */}
           <div className="pt-2">
             <div className="px-3 pb-2 flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B897C]">
-                Analytics & System
-              </span>
               <div className="flex-1 h-[1px] bg-[#173A2B]" />
             </div>
             <div className="space-y-1">

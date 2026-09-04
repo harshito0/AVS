@@ -7,7 +7,16 @@ import { authenticate, requireManagerOrAdmin } from '../middleware/auth';
 
 // Controllers
 import { login, me, changePassword } from '../controllers/authController';
-import { getSummary, getDashboardOverview } from '../controllers/dashboardController';
+import {
+  getSummary,
+  getDashboardOverview,
+  getRevenueOverview,
+  getAppointmentOverview,
+  getLocationPerformance,
+  getTopServices,
+  getRecentAppointments,
+  getLeadSources,
+} from '../controllers/dashboardController';
 import { getClients, getClient, createClient, updateClient, getClientAppointments, getClientInvoices, addClientNote } from '../controllers/clientController';
 import { getLeads, createLead, updateLead, deleteLead } from '../controllers/leadController';
 import {
@@ -71,6 +80,12 @@ router.post('/auth/change-password', authenticate, changePassword);
 // ---- Dashboard ----
 router.get('/dashboard/summary', authenticate, getSummary);
 router.get('/dashboard/overview', authenticate, getDashboardOverview);
+router.get('/dashboard/revenue', authenticate, getRevenueOverview);
+router.get('/dashboard/appointments', authenticate, getAppointmentOverview);
+router.get('/dashboard/locations', authenticate, getLocationPerformance);
+router.get('/dashboard/top-services', authenticate, getTopServices);
+router.get('/dashboard/recent-appointments', authenticate, getRecentAppointments);
+router.get('/dashboard/lead-sources', authenticate, getLeadSources);
 
 // ---- Locations (public) ----
 router.get('/locations', getLocations);

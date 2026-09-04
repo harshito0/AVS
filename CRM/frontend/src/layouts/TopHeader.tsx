@@ -104,26 +104,17 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </div>
 
         {/* Right Side Controls */}
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-          {/* Quick Search */}
-          <div className="w-48 sm:w-60">
-            <SearchInput
-              value={searchQuery}
-              onChange={onSearchChange}
-              placeholder="Search records..."
-            />
-          </div>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Date Range Selector */}
+          <DatePicker
+            currentRange={dateRange}
+            onChange={onDateRangeChange}
+          />
 
           {/* Location Selector */}
           <LocationSelector
             currentLocation={currentLocation}
             onChange={onLocationChange}
-          />
-
-          {/* Date Range Selector */}
-          <DatePicker
-            currentRange={dateRange}
-            onChange={onDateRangeChange}
           />
 
           <div className="h-6 w-[1px] bg-slate-200 hidden sm:block mx-0.5" />

@@ -133,69 +133,15 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
-      {/* 1. Welcome / Facility Status Header */}
-      <div className="rounded-2xl p-6 bg-gradient-to-r from-[#0B1F17] via-[#0F291E] to-[#163D2D] text-white border border-[#1E4D38] shadow-sm relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-white p-2 shadow-lg border border-[#C5A880]/50 shrink-0 flex items-center justify-center">
-              <img
-                src="/avs_logo.png"
-                alt="Aura Vital Star"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            </div>
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold tracking-wide">
-                <Sparkles className="w-3 h-3 text-[#E5C583]" />
-                Executive Dashboard • {currentLocation}
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white font-serif">
-                Aura Vital Star Rejuvenation Centre
-              </h2>
-              <p className="text-xs text-emerald-100/70 max-w-xl leading-relaxed">
-                Active operational overview for clinical treatments, client acquisition, and Ontario practice billing.
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Header Actions */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={fetchDashboardData}
-              title="Refresh dashboard metrics"
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors flex items-center justify-center cursor-pointer"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowAddAppointment(true)}
-              className="px-4 py-2 rounded-xl bg-[#C9A227] hover:bg-[#B38F1E] text-forest-950 text-xs font-bold tracking-wide transition-colors shadow-sm cursor-pointer"
-            >
-              Book Treatment
-            </button>
-          </div>
-        </div>
-
-        {/* Botanical leaf watermark */}
-        <div className="absolute right-4 -bottom-6 text-emerald-900/20 text-9xl pointer-events-none select-none font-serif">
-          🌿
-        </div>
-      </div>
-
-      {/* 2. Four KPI Cards */}
+      {/* 1. Four KPI Cards (Immediately Below Header) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
         {/* Card 1: TOTAL CLIENTS */}
         <KpiCard
           label="TOTAL CLIENTS"
           value={kpis?.totalClients.value ?? 0}
-          icon={<Users className="w-5 h-5 text-forest-800" />}
-          iconBgColor="bg-forest-50"
-          iconColor="text-forest-800"
+          icon={<Users className="w-5 h-5 text-[#0F5B47]" />}
+          iconBgColor="bg-[#F7F4ED]"
+          iconColor="text-[#0F5B47]"
           change={kpis?.totalClients.change}
           trend={kpis?.totalClients.trend}
           comparisonText={kpis?.totalClients.comparisonText}
@@ -217,9 +163,9 @@ export const DashboardPage: React.FC = () => {
         <KpiCard
           label="TODAY'S SALES"
           value={kpis?.todaySales.value ?? '$0.00'}
-          icon={<DollarSign className="w-5 h-5 text-emerald-700" />}
-          iconBgColor="bg-emerald-50"
-          iconColor="text-emerald-700"
+          icon={<DollarSign className="w-5 h-5 text-[#1B6F56]" />}
+          iconBgColor="bg-[#F2F8F5]"
+          iconColor="text-[#1B6F56]"
           change={kpis?.todaySales.change}
           trend={kpis?.todaySales.trend}
           comparisonText={kpis?.todaySales.comparisonText}
@@ -229,56 +175,51 @@ export const DashboardPage: React.FC = () => {
         <KpiCard
           label="MONTHLY SALES"
           value={kpis?.monthlySales.value ?? '$0.00'}
-          icon={<TrendingUp className="w-5 h-5 text-forest-900" />}
-          iconBgColor="bg-forest-100/60"
-          iconColor="text-forest-900"
+          icon={<TrendingUp className="w-5 h-5 text-[#0F5B47]" />}
+          iconBgColor="bg-[#F7F4ED]"
+          iconColor="text-[#0F5B47]"
           change={kpis?.monthlySales.change}
           trend={kpis?.monthlySales.trend}
           comparisonText={kpis?.monthlySales.comparisonText}
         />
       </div>
 
-      {/* 3. Analytics Grid: Revenue Overview (2 cols) & Appointment Overview (1 col) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      {/* 2. Analytics Row: Revenue Overview, Appointment Overview, Location Performance */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-12 xl:col-span-6">
           <RevenueOverview
             data={data?.revenueOverview}
             onPeriodChange={() => fetchDashboardData()}
           />
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-6 xl:col-span-3">
           <AppointmentOverview
             data={data?.appointmentOverview}
           />
         </div>
+        <div className="lg:col-span-6 xl:col-span-3">
+          <LocationPerformance
+            locations={data?.locationPerformance}
+          />
+        </div>
       </div>
 
-      {/* 4. Three Operational Columns: Location Performance, Top Services, Lead Acquisition */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Column 1: Location Performance */}
-        <LocationPerformance
-          locations={data?.locationPerformance}
-        />
-
-        {/* Column 2: Top Services */}
+      {/* 3. Operational Row: Top Services, Recent Appointments, Lead Acquisition Source */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <TopServices
           services={data?.topServices}
         />
-
-        {/* Column 3: Lead Acquisition Source */}
-        <LeadSourceChart
-          data={data?.leadSources}
-        />
-      </div>
-
-      {/* 5. Recent Appointments (Full Width / Highlight) */}
-      <div className="grid grid-cols-1 gap-6">
         <RecentAppointments
           appointments={data?.recentAppointments}
         />
+        <div className="md:col-span-2 xl:col-span-1">
+          <LeadSourceChart
+            data={data?.leadSources}
+          />
+        </div>
       </div>
 
-      {/* 6. Quick Actions (Exact 5 Actions) */}
+      {/* 4. Quick Actions (Exact 5 Actions) */}
       <QuickActions
         onNewAppointment={() => setShowAddAppointment(true)}
         onNewClient={() => setShowAddClient(true)}
