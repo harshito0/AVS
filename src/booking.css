@@ -1907,7 +1907,8 @@
   .avs-services-scroll-wrapper {
     margin-left: -12px;
     margin-right: -12px;
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
     position: relative;
   }
 
@@ -1934,6 +1935,19 @@
   }
 
   .avs-services-nav-arrow { display: none; }
+
+  /* Swipe hint label under the service grid */
+  .avs-services-scroll-wrapper::after {
+    content: '← Swipe to explore →';
+    display: block;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #987739;
+    opacity: 0.72;
+    padding: 6px 0 0 0;
+  }
 }
 
 /* ==========================================================================
@@ -3721,7 +3735,9 @@
     /* Negative margin so carousel bleeds to screen edge */
     margin-left: -16px;
     margin-right: -16px;
-    overflow: hidden;
+    /* FIX: overflow:hidden clips child overflow-x:auto → use clip only on Y */
+    overflow-x: clip;
+    overflow-y: visible;
     padding: 0;
     position: relative;
   }

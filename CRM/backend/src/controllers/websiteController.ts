@@ -8,8 +8,12 @@ export async function getServices(req: Request, res: Response) {
   try {
     const { status, category } = req.query as Record<string, string>;
     const where: any = {};
-    if (status) where.status = status;
-    if (category) where.category = category;
+    if (status && status !== 'all') {
+      where.status = status;
+    } else if (!status) {
+      where.status = 'Active';
+    }
+    if (category && category !== 'All') where.category = category;
     const services = await prisma.service.findMany({ where, orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] });
     return ok(res, services);
   } catch { return serverError(res); }
@@ -35,7 +39,7 @@ export async function updateService(req: AuthRequest, res: Response) {
         data[f] = f === 'price' ? parseFloat(req.body[f]) : f === 'sortOrder' ? parseInt(req.body[f]) : req.body[f];
       }
     }
-    const service = await prisma.service.update({ where: { id: req.params.id }, data });
+    const service = await prisma.service.update({ where: { id: req.params.id as string }, data });
     return ok(res, service);
   } catch (err: any) {
     if (err.code === 'P2025') return notFound(res, 'Service');
@@ -45,8 +49,13 @@ export async function updateService(req: AuthRequest, res: Response) {
 
 export async function deleteService(req: AuthRequest, res: Response) {
   try {
-    await prisma.service.update({ where: { id: req.params.id }, data: { status: 'Inactive' } });
-    return ok(res, { deleted: true });
+    const id = req.params.id as string;
+    try {
+      await prisma.service.delete({ where: { id } });
+    } catch {
+      await prisma.service.update({ where: { id }, data: { status: 'Inactive' } });
+    }
+    return ok(res, { deleted: true, id });
   } catch (err: any) {
     if (err.code === 'P2025') return notFound(res, 'Service');
     return serverError(res);
@@ -108,8 +117,12 @@ export async function getGallery(req: Request, res: Response) {
   try {
     const { status, category } = req.query as Record<string, string>;
     const where: any = {};
-    if (status) where.status = status;
-    if (category) where.category = category;
+    if (status && status !== 'all') {
+      where.status = status;
+    } else if (!status) {
+      where.status = 'Published';
+    }
+    if (category && category !== 'All' && category !== 'ALL') where.category = category;
     const images = await prisma.galleryImage.findMany({ where, orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }] });
     return ok(res, images);
   } catch { return serverError(res); }
@@ -128,8 +141,9 @@ export async function addGalleryImage(req: AuthRequest, res: Response) {
 
 export async function deleteGalleryImage(req: AuthRequest, res: Response) {
   try {
-    await prisma.galleryImage.delete({ where: { id: req.params.id } });
-    return ok(res, { deleted: true });
+    const id = req.params.id as string;
+    await prisma.galleryImage.delete({ where: { id } });
+    return ok(res, { deleted: true, id });
   } catch (err: any) {
     if (err.code === 'P2025') return notFound(res, 'Gallery image');
     return serverError(res);

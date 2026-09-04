@@ -406,6 +406,35 @@ function App() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState(null);
 
+  const [whyMarqueePaused, setWhyMarqueePaused] = useState(false);
+  const [testimonialsMarqueePaused, setTestimonialsMarqueePaused] = useState(false);
+  const whyPauseTimerRef = useRef(null);
+  const testimonialsPauseTimerRef = useRef(null);
+
+  const handleWhyTouchStart = () => {
+    if (whyPauseTimerRef.current) clearTimeout(whyPauseTimerRef.current);
+    setWhyMarqueePaused(true);
+  };
+
+  const handleWhyTouchEnd = () => {
+    if (whyPauseTimerRef.current) clearTimeout(whyPauseTimerRef.current);
+    whyPauseTimerRef.current = setTimeout(() => {
+      setWhyMarqueePaused(false);
+    }, 1500);
+  };
+
+  const handleTestimonialsTouchStart = () => {
+    if (testimonialsPauseTimerRef.current) clearTimeout(testimonialsPauseTimerRef.current);
+    setTestimonialsMarqueePaused(true);
+  };
+
+  const handleTestimonialsTouchEnd = () => {
+    if (testimonialsPauseTimerRef.current) clearTimeout(testimonialsPauseTimerRef.current);
+    testimonialsPauseTimerRef.current = setTimeout(() => {
+      setTestimonialsMarqueePaused(false);
+    }, 1500);
+  };
+
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
     if (!newsletterEmail || !newsletterEmail.includes('@')) {
@@ -891,14 +920,31 @@ function App() {
               <line x1="50" y1="7" x2="80" y2="7" stroke="#c49a3c" strokeWidth="1"/>
             </svg>
           </div>
-          <div className="why-pillars">
-            {whyPillars.map((pillar) => (
-              <div className="why-pillar reveal-up" key={pillar.title} id={pillar.title === 'RMT Certified' ? 'rmt' : undefined}>
-                <div className="why-icon"><Icon name={pillar.icon} width={48} height={48} /></div>
-                <h3 className="why-title">{pillar.title}</h3>
-                <p className="why-desc">{pillar.desc}</p>
+          <div className="why-pillars-marquee-wrap">
+            <div
+              className={`why-marquee-track ${whyMarqueePaused ? 'is-paused' : ''}`}
+              onTouchStart={handleWhyTouchStart}
+              onTouchEnd={handleWhyTouchEnd}
+            >
+              <div className="why-pillars">
+                {whyPillars.map((pillar) => (
+                  <div className="why-pillar reveal-up" key={pillar.title} id={pillar.title === 'RMT Certified' ? 'rmt' : undefined}>
+                    <div className="why-icon"><Icon name={pillar.icon} width={48} height={48} /></div>
+                    <h3 className="why-title">{pillar.title}</h3>
+                    <p className="why-desc">{pillar.desc}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+              <div className="why-pillars why-pillars--clone" aria-hidden="true">
+                {whyPillars.map((pillar, idx) => (
+                  <div className="why-pillar" key={`why-clone-${pillar.title}-${idx}`}>
+                    <div className="why-icon"><Icon name={pillar.icon} width={48} height={48} /></div>
+                    <h3 className="why-title">{pillar.title}</h3>
+                    <p className="why-desc">{pillar.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1031,15 +1077,33 @@ function App() {
       <section className="testimonials" aria-labelledby="testimonials-heading">
         <div className="container">
           <h2 className="testimonials-heading reveal-up" id="testimonials-heading">What Our Clients Say</h2>
-          <div className="testimonials-grid">
-            {testimonials.map((testimonial) => (
-              <div className="t-card reveal-up" key={testimonial.author}>
-                <div className="t-quote-mark">&ldquo;</div>
-                <div className="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="t-quote">"{testimonial.quote}"</p>
-                <p className="t-name">&ndash; {testimonial.author}</p>
+          <div className="testimonials-marquee-wrap">
+            <div
+              className={`testimonials-marquee-track ${testimonialsMarqueePaused ? 'is-paused' : ''}`}
+              onTouchStart={handleTestimonialsTouchStart}
+              onTouchEnd={handleTestimonialsTouchEnd}
+            >
+              <div className="testimonials-grid">
+                {testimonials.map((testimonial) => (
+                  <div className="t-card reveal-up" key={testimonial.author}>
+                    <div className="t-quote-mark">&ldquo;</div>
+                    <div className="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p className="t-quote">"{testimonial.quote}"</p>
+                    <p className="t-name">&ndash; {testimonial.author}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+              <div className="testimonials-grid testimonials-grid--clone" aria-hidden="true">
+                {testimonials.map((testimonial, idx) => (
+                  <div className="t-card" key={`t-clone-${testimonial.author}-${idx}`}>
+                    <div className="t-quote-mark">&ldquo;</div>
+                    <div className="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p className="t-quote">"{testimonial.quote}"</p>
+                    <p className="t-name">&ndash; {testimonial.author}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="t-dots-row">
             <span className="t-dot-sm active"></span>

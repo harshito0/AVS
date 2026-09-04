@@ -1,4 +1,8 @@
 import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import env from '../config/env';
 import { authenticate, requireManagerOrAdmin } from '../middleware/auth';
 
 // Controllers
@@ -21,6 +25,40 @@ import {
 import { getNotifications, markRead, markAllRead } from '../controllers/notificationController';
 
 const router = Router();
+
+// Configure image file uploads
+const uploadDir = path.resolve(env.UPLOAD_DIR);
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadDir),
+  filename: (_req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname) || '.jpg';
+    cb(null, `avs-${unique}${ext}`);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: (env.MAX_FILE_SIZE_MB || 10) * 1024 * 1024 }
+});
+
+// File upload endpoint for images
+router.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'No file provided' });
+  }
+  const fileUrl = `/uploads/${req.file.filename}`;
+  return res.json({
+    success: true,
+    data: {
+      url: fileUrl,
+      filename: req.file.filename,
+      size: req.file.size,
+      mimetype: req.file.mimetype
+    }
+  });
+});
 
 // ---- Health Check ----
 router.get('/health', (_req, res) => res.json({ success: true, status: 'ok', service: 'AVS CRM API', timestamp: new Date().toISOString() }));
