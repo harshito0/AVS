@@ -3593,12 +3593,73 @@ button {
   .hero-badges {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* -----------------------------------------------------------------------
+     WHY CHOOSE AVS — Horizontal swipe carousel on tablet/mobile
+     Shows ~2 cards at a time with peek, scroll-snap for smooth swipe
+     ----------------------------------------------------------------------- */
   .why-pillars {
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 8px 4px 16px 4px;
+    /* Compensate for container padding to bleed to edge */
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
+
+  .why-pillars::-webkit-scrollbar {
+    display: none;
+  }
+
+  .why-pillar {
+    /* Show ~2 cards + peek of 3rd */
+    flex: 0 0 calc(48% - 7px);
+    min-width: calc(48% - 7px);
+    scroll-snap-align: start;
+  }
+
+  /* -----------------------------------------------------------------------
+     TESTIMONIALS — Horizontal swipe carousel
+     Shows 1 card at a time with peek of next
+     ----------------------------------------------------------------------- */
   .testimonials-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 8px 4px 16px 4px;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: none;
   }
+
+  .testimonials-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .t-card {
+    /* Show ~1.15 cards — clear peek effect */
+    flex: 0 0 calc(85% - 8px);
+    min-width: calc(85% - 8px);
+    scroll-snap-align: start;
+  }
+
   .footer-columns-grid {
     grid-template-columns: 1fr 1fr;
     gap: 40px 24px;
@@ -3609,9 +3670,33 @@ button {
 }
 
 @media (max-width: 600px) {
+  /* Why pillars: 1 card at a time on small screens */
   .why-pillars {
-    grid-template-columns: 1fr;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
+
+  .why-pillar {
+    /* Show 1 card + peek of next */
+    flex: 0 0 calc(78vw);
+    min-width: calc(78vw);
+  }
+
+  /* Testimonials: 1 card at a time on small screens */
+  .testimonials-grid {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .t-card {
+    flex: 0 0 calc(88vw);
+    min-width: calc(88vw);
+  }
+
   .hero-left {
     padding: 40px 24px;
   }
@@ -3702,3 +3787,63 @@ button {
     transform: none !important;
   }
 }
+
+/* ==========================================================================
+   HORIZONTAL CAROUSEL \u2014 SWIPE HINTS & POLISH (mobile only)
+   ========================================================================== */
+@media (max-width: 980px) {
+  /* Allow carousel bleed on both sections */
+  .why-avs .container,
+  .testimonials .container {
+    overflow: visible;
+  }
+
+  /* Trailing spacer so last card snaps properly */
+  .why-pillars::after {
+    content: '';
+    flex: 0 0 4px;
+    min-width: 4px;
+  }
+
+  .testimonials-grid::after {
+    content: '';
+    flex: 0 0 4px;
+    min-width: 4px;
+  }
+
+  /* Swipe dots become a horizontal indicator */
+  .t-dots-row {
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .t-dot-sm {
+    width: 22px;
+    height: 4px;
+    border-radius: 4px;
+    background: #E2D8C5;
+    display: inline-block;
+    transition: all 0.3s ease;
+  }
+
+  .t-dot-sm.active {
+    background: #C59A3F;
+    width: 36px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Swipe hint label below Why Choose section */
+  .why-pillars {
+    padding-bottom: 8px;
+  }
+
+  /* Swipe hint label below testimonials */
+  .testimonials-grid {
+    padding-bottom: 8px;
+  }
+}
+
