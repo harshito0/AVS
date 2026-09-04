@@ -5,19 +5,40 @@ import {
   Copy,
   Check,
   ExternalLink,
-  Smartphone,
   Printer,
   Sparkles,
-  QrCode
+  QrCode,
+  Wifi,
+  Globe,
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 
 export const QRGenerator: React.FC = () => {
-  const targetUrl = 'https://auravitalstar.ca/book';
+  const [targetUrl, setTargetUrl] = useState('https://auravitalstar.ca/book');
+  const [urlMode, setUrlMode] = useState<'production' | 'wifi' | 'custom'>('production');
+  const [customInput, setCustomInput] = useState('');
   const [copied, setCopied] = useState(false);
   const [qrPngUrl, setQrPngUrl] = useState<string>('');
   const [qrSvgString, setQrSvgString] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(true);
+  const [showSslHelp, setShowSslHelp] = useState(true);
   const printCardRef = useRef<HTMLDivElement>(null);
+
+  // Local Wi-Fi endpoint for immediate phone scanning without SSL alerts
+  const localWifiUrl = 'http://192.168.29.148:5175/book';
+  const productionUrl = 'https://auravitalstar.ca/book';
+
+  const handleModeChange = (mode: 'production' | 'wifi' | 'custom') => {
+    setUrlMode(mode);
+    if (mode === 'production') {
+      setTargetUrl(productionUrl);
+    } else if (mode === 'wifi') {
+      setTargetUrl(localWifiUrl);
+    } else if (mode === 'custom') {
+      setTargetUrl(customInput || 'https://');
+    }
+  };
 
   // Generate crisp, high-contrast QR codes (PNG 1200px and Vector SVG)
   useEffect(() => {
@@ -65,7 +86,6 @@ export const QRGenerator: React.FC = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      // Fallback
       const input = document.createElement('input');
       input.value = targetUrl;
       document.body.appendChild(input);
@@ -163,7 +183,8 @@ export const QRGenerator: React.FC = () => {
       // 4. Footer URL
       ctx.fillStyle = '#0F5B47';
       ctx.font = 'bold 48px sans-serif';
-      ctx.fillText('auravitalstar.ca/book', canvas.width / 2, 1820);
+      const displayUrl = targetUrl.replace(/^https?:\/\//, '');
+      ctx.fillText(displayUrl, canvas.width / 2, 1820);
 
       ctx.fillStyle = '#9CA3AF';
       ctx.font = '32px sans-serif';
@@ -183,7 +204,7 @@ export const QRGenerator: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Top Utility Header */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-forest-50 border border-forest-200/80 text-forest-850 text-xs font-bold uppercase tracking-wider">
           <QrCode className="w-3.5 h-3.5 text-gold-500" />
           AVS Marketing Utility
@@ -195,6 +216,51 @@ export const QRGenerator: React.FC = () => {
           High-resolution scannable QR code linking directly to the mobile booking portal for flyers, standees, business cards, and reception desks.
         </p>
       </div>
+
+      {/* SSL Advisory Banner */}
+      {showSslHelp && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 shadow-sm animate-fade-in">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-xs sm:text-sm text-amber-950 flex items-center gap-1.5">
+                  SSL Certificate & Phone Scanning Notice
+                </p>
+                <p className="text-xs text-amber-900/90 mt-1 leading-relaxed">
+                  If scanning <code className="bg-amber-100/70 px-1 py-0.5 rounded text-amber-950 font-mono text-[11px]">https://auravitalstar.ca/book</code> shows <strong className="font-semibold">"Your connection is not private (NET::ERR_CERT_AUTHORITY_INVALID)"</strong>, the remote hosting server has an internal self-signed certificate.
+                </p>
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleModeChange('wifi')}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-forest-900 text-white font-bold hover:bg-forest-800 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <Wifi className="w-3.5 h-3.5 text-gold-400" />
+                    <span>Switch to Local Wi-Fi QR (Instant Phone Scan)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleModeChange('production')}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-semibold hover:bg-amber-100/50 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Live Domain URL</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSslHelp(false)}
+              className="text-amber-700 hover:text-amber-900 text-xs font-bold p-1 shrink-0 cursor-pointer"
+              title="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Branded QR Card Preview */}
@@ -253,8 +319,8 @@ export const QRGenerator: React.FC = () => {
 
             {/* Bottom URL */}
             <div className="mt-4 pt-3 border-t border-slate-100">
-              <span className="text-xs font-bold text-forest-900 tracking-wide block">
-                auravitalstar.ca/book
+              <span className="text-xs font-bold text-forest-900 tracking-wide block truncate max-w-[280px] mx-auto">
+                {targetUrl.replace(/^https?:\/\//, '')}
               </span>
               <span className="text-[10px] text-slate-400 mt-0.5 block">
                 Point your phone camera to open booking form
@@ -265,13 +331,69 @@ export const QRGenerator: React.FC = () => {
 
         {/* Right Column: Actions & Production Formats */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Target URL Card */}
+          {/* Target URL Selector Card */}
           <div className="p-5 rounded-2xl bg-white border border-[#E3EAE5] shadow-sm space-y-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Direct Booking Destination URL
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+              Destination URL Selector
             </span>
+
+            {/* Quick Switch Tabs */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl">
+              <button
+                type="button"
+                onClick={() => handleModeChange('production')}
+                className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer truncate ${
+                  urlMode === 'production'
+                    ? 'bg-white text-forest-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Live Domain
+              </button>
+              <button
+                type="button"
+                onClick={() => handleModeChange('wifi')}
+                className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer truncate flex items-center justify-center gap-1 ${
+                  urlMode === 'wifi'
+                    ? 'bg-forest-900 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Wifi className="w-3 h-3" />
+                <span>Wi-Fi Test</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleModeChange('custom')}
+                className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer truncate ${
+                  urlMode === 'custom'
+                    ? 'bg-white text-forest-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Custom URL
+              </button>
+            </div>
+
+            {/* Custom URL Input if selected */}
+            {urlMode === 'custom' && (
+              <div className="space-y-1.5 pt-1">
+                <input
+                  type="url"
+                  placeholder="https://your-custom-url.com/book"
+                  value={customInput}
+                  onChange={(e) => {
+                    setCustomInput(e.target.value);
+                    setTargetUrl(e.target.value);
+                  }}
+                  className="w-full text-xs font-mono py-2.5 px-3 rounded-xl border border-slate-300 outline-none focus:border-forest-800 focus:ring-2 focus:ring-forest-800/20"
+                />
+              </div>
+            )}
+
+            {/* Display Active Target URL */}
             <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between gap-2">
-              <span className="text-xs font-mono font-semibold text-slate-800 truncate">
+              <span className="text-xs font-mono font-semibold text-slate-800 truncate" title={targetUrl}>
                 {targetUrl}
               </span>
               <a
@@ -365,15 +487,18 @@ export const QRGenerator: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Guidance Box */}
-          <div className="p-4 rounded-xl bg-forest-50/70 border border-forest-100 text-xs text-forest-900 space-y-1.5">
-            <p className="font-bold flex items-center gap-1.5 text-forest-950">
-              <Sparkles className="w-3.5 h-3.5 text-gold-600" />
-              Optimal Print Specifications
+          {/* Quick SSL Resolution Instructions Box */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
+            <p className="font-bold flex items-center gap-1.5 text-slate-900">
+              <Info className="w-4 h-4 text-forest-800" />
+              How to enable green SSL on auravitalstar.ca:
             </p>
-            <p className="text-[11px] leading-relaxed text-slate-600">
-              Tested for high contrast readability. Suitable for counter acrylic stands, table tents, service menus, window stickers, and direct mail flyers.
-            </p>
+            <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-600 leading-relaxed">
+              <li>Open your cPanel hosting account.</li>
+              <li>Go to <strong className="text-slate-800">Security &rarr; SSL/TLS Status</strong>.</li>
+              <li>Check <code className="text-[10px] font-mono bg-slate-200/70 px-1 py-0.5 rounded">auravitalstar.ca</code> and click <strong className="text-slate-800">"Run AutoSSL"</strong>.</li>
+              <li>A free trusted Let's Encrypt / Sectigo certificate will be installed automatically.</li>
+            </ol>
           </div>
         </div>
       </div>

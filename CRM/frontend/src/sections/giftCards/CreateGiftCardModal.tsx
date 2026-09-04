@@ -123,14 +123,14 @@ export const CreateGiftCardModal: React.FC<CreateGiftCardModalProps> = ({
             label="Recipient Name *"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
-            placeholder="e.g. Simran Khurana"
+            placeholder="Recipient full name"
             error={errors.recipient}
           />
           <Input
             label="Buyer / Purchaser Name *"
             value={buyer}
             onChange={(e) => setBuyer(e.target.value)}
-            placeholder="e.g. Rajesh Khurana"
+            placeholder="Buyer full name"
             error={errors.buyer}
           />
         </div>

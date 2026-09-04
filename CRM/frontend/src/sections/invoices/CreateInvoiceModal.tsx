@@ -180,7 +180,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 label="Client Name *"
                 value={manualClientName}
                 onChange={(e) => setManualClientName(e.target.value)}
-                placeholder="e.g. Guest Client"
+                placeholder="Enter client name"
                 required
               />
               <Input
@@ -188,7 +188,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 type="email"
                 value={manualClientEmail}
                 onChange={(e) => setManualClientEmail(e.target.value)}
-                placeholder="guest@example.ca"
+                placeholder="Enter client email"
               />
             </div>
           )}

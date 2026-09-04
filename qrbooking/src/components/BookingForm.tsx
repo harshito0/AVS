@@ -9,7 +9,8 @@ import {
   Mail,
   FileText,
   AlertCircle,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-react';
 import { BookingRequest, ValidationErrors } from '../types';
 import { validateBookingForm } from '../utils/validation';
@@ -143,20 +144,23 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
 
         {/* 1. Full Name */}
         <div id="field-fullName" className="space-y-1.5">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+          <label htmlFor="input-fullName" className="block text-xs font-bold uppercase tracking-wider text-slate-700">
             Full Name <span className="text-gold-600 font-bold">*</span>
           </label>
-          <div className="relative">
+          <div className={`form-input-box ${errors.fullName ? 'has-error' : ''}`}>
+            <div className="w-12 h-12 flex items-center justify-center text-slate-400 shrink-0 select-none">
+              <User className="w-5 h-5" />
+            </div>
             <input
+              id="input-fullName"
               type="text"
               name="fullName"
               autoComplete="name"
-              placeholder="e.g. Sarah Jenkins"
+              placeholder="Enter your full name"
               value={formData.fullName}
               onChange={(e) => handleChange('fullName', e.target.value)}
-              className={`form-input-luxury pl-11 ${errors.fullName ? 'has-error' : ''}`}
+              className="w-full py-3.5 pr-4 bg-transparent outline-none text-slate-800 placeholder-slate-400 text-sm font-medium"
             />
-            <User className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
           {errors.fullName && (
             <p className="text-xs text-rose-600 font-medium pl-1 flex items-center gap-1">
@@ -165,24 +169,27 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
           )}
         </div>
 
-        {/* 2. Phone Number & Email Address (Grid on desktop, stacked on mobile) */}
+        {/* 2. Phone Number & Email Address */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Phone */}
           <div id="field-phone" className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label htmlFor="input-phone" className="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Phone Number <span className="text-gold-600 font-bold">*</span>
             </label>
-            <div className="relative">
+            <div className={`form-input-box ${errors.phone ? 'has-error' : ''}`}>
+              <div className="w-12 h-12 flex items-center justify-center text-slate-400 shrink-0 select-none">
+                <Phone className="w-5 h-5" />
+              </div>
               <input
+                id="input-phone"
                 type="tel"
                 name="phone"
                 autoComplete="tel"
-                placeholder="(647) 000-0000"
+                placeholder="Enter your phone number"
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
-                className={`form-input-luxury pl-11 ${errors.phone ? 'has-error' : ''}`}
+                className="w-full py-3.5 pr-4 bg-transparent outline-none text-slate-800 placeholder-slate-400 text-sm font-medium"
               />
-              <Phone className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
             {errors.phone && (
               <p className="text-xs text-rose-600 font-medium pl-1 flex items-center gap-1">
@@ -193,20 +200,23 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
 
           {/* Email */}
           <div id="field-email" className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label htmlFor="input-email" className="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Email Address <span className="text-gold-600 font-bold">*</span>
             </label>
-            <div className="relative">
+            <div className={`form-input-box ${errors.email ? 'has-error' : ''}`}>
+              <div className="w-12 h-12 flex items-center justify-center text-slate-400 shrink-0 select-none">
+                <Mail className="w-5 h-5" />
+              </div>
               <input
+                id="input-email"
                 type="email"
                 name="email"
                 autoComplete="email"
-                placeholder="sarah@example.com"
+                placeholder="Enter your email address"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                className={`form-input-luxury pl-11 ${errors.email ? 'has-error' : ''}`}
+                className="w-full py-3.5 pr-4 bg-transparent outline-none text-slate-800 placeholder-slate-400 text-sm font-medium"
               />
-              <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
             {errors.email && (
               <p className="text-xs text-rose-600 font-medium pl-1 flex items-center gap-1">
@@ -218,15 +228,19 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
 
         {/* 3. Service Selection */}
         <div id="field-service" className="space-y-1.5">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+          <label htmlFor="select-service" className="block text-xs font-bold uppercase tracking-wider text-slate-700">
             Service / Treatment <span className="text-gold-600 font-bold">*</span>
           </label>
-          <div className="relative">
+          <div className={`form-input-box relative ${errors.service ? 'has-error' : ''}`}>
+            <div className="w-12 h-12 flex items-center justify-center text-slate-400 shrink-0 select-none">
+              <Sparkles className="w-5 h-5" />
+            </div>
             <select
+              id="select-service"
               name="service"
               value={formData.service}
               onChange={(e) => handleChange('service', e.target.value)}
-              className={`form-input-luxury pl-11 appearance-none pr-10 cursor-pointer ${errors.service ? 'has-error' : ''}`}
+              className="w-full py-3.5 pr-10 bg-transparent outline-none text-slate-800 text-sm font-medium cursor-pointer appearance-none"
             >
               <option value="">Select a service or treatment...</option>
               {SERVICES_LIST.map((svc) => (
@@ -235,9 +249,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
                 </option>
               ))}
             </select>
-            <Sparkles className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
-              ▼
+            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 flex items-center">
+              <ChevronDown className="w-4 h-4" />
             </div>
           </div>
           {errors.service && (
@@ -260,14 +273,15 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
                   type="button"
                   key={loc}
                   onClick={() => handleChange('location', loc)}
-                  className={`py-3.5 px-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
+                  className={`py-3.5 px-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2.5 transition-all duration-200 cursor-pointer select-none active:scale-[0.98] ${
                     isSelected
-                      ? 'bg-forest-900 border-forest-900 text-white shadow-sm'
+                      ? 'bg-forest-900 border-forest-900 text-white shadow-md shadow-forest-900/10'
                       : 'bg-white border-[#D9E3DD] text-slate-700 hover:border-forest-700 hover:bg-forest-50/50'
                   }`}
                 >
-                  <MapPin className={`w-4 h-4 ${isSelected ? 'text-gold-400' : 'text-slate-400'}`} />
+                  <MapPin className={`w-4 h-4 shrink-0 ${isSelected ? 'text-gold-400' : 'text-slate-400'}`} />
                   <span>{loc}</span>
+                  {isSelected && <span className="w-2 h-2 rounded-full bg-gold-400 ml-0.5"></span>}
                 </button>
               );
             })}
@@ -283,19 +297,22 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Preferred Date */}
           <div id="field-date" className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label htmlFor="input-date" className="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Preferred Date <span className="text-gold-600 font-bold">*</span>
             </label>
-            <div className="relative">
+            <div className={`form-input-box ${errors.date ? 'has-error' : ''}`}>
+              <div className="w-12 h-12 flex items-center justify-center text-slate-400 shrink-0 select-none">
+                <Calendar className="w-5 h-5" />
+              </div>
               <input
+                id="input-date"
                 type="date"
                 name="date"
                 min={todayStr}
                 value={formData.date}
                 onChange={(e) => handleChange('date', e.target.value)}
-                className={`form-input-luxury pl-11 cursor-pointer ${errors.date ? 'has-error' : ''}`}
+                className="w-full py-3.5 pr-4 bg-transparent outline-none text-slate-800 text-sm font-medium cursor-pointer"
               />
-              <Calendar className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
             {errors.date && (
               <p className="text-xs text-rose-600 font-medium pl-1 flex items-center gap-1">
@@ -306,15 +323,19 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
 
           {/* Preferred Time */}
           <div id="field-time" className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label htmlFor="select-time" className="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Preferred Time <span className="text-gold-600 font-bold">*</span>
             </label>
-            <div className="relative">
+            <div className={`form-input-box relative ${errors.time ? 'has-error' : ''}`}>
+              <div className="w-12 h-12 flex items-center justify-center text-slate-400 shrink-0 select-none">
+                <Clock className="w-5 h-5" />
+              </div>
               <select
+                id="select-time"
                 name="time"
                 value={formData.time}
                 onChange={(e) => handleChange('time', e.target.value)}
-                className={`form-input-luxury pl-11 appearance-none pr-10 cursor-pointer ${errors.time ? 'has-error' : ''}`}
+                className="w-full py-3.5 pr-10 bg-transparent outline-none text-slate-800 text-sm font-medium cursor-pointer appearance-none"
               >
                 <option value="">Select time...</option>
                 {TIME_SLOTS.map((t) => (
@@ -323,9 +344,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
                   </option>
                 ))}
               </select>
-              <Clock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
-                ▼
+              <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 flex items-center">
+                <ChevronDown className="w-4 h-4" />
               </div>
             </div>
             {errors.time && (
@@ -339,21 +359,24 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
         {/* 6. Message / Notes (Optional) */}
         <div id="field-notes" className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label htmlFor="input-notes" className="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Message / Notes
             </label>
             <span className="text-[11px] text-slate-400 font-medium">Optional</span>
           </div>
-          <div className="relative">
+          <div className="form-input-box items-start">
+            <div className="w-12 pt-3.5 flex items-center justify-center text-slate-400 shrink-0 select-none">
+              <FileText className="w-5 h-5" />
+            </div>
             <textarea
+              id="input-notes"
               rows={3}
               name="notes"
               placeholder="Any specific requests, health conditions, or areas of focus..."
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
-              className="form-input-luxury resize-none pl-11 text-sm"
+              className="w-full py-3 pr-4 bg-transparent outline-none text-slate-800 placeholder-slate-400 text-sm font-medium resize-none leading-relaxed"
             />
-            <FileText className="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
           </div>
         </div>
 

@@ -22,7 +22,8 @@ const LOCATIONS = [
     phone: '+1 647-987-5451',
     mapUrl: 'https://maps.google.com/?q=157+Queen+Street+West+Brampton+ON',
     isAvailable: true,
-    badge: 'ACTIVE & BOOKING'
+    badge: 'ACTIVE & BOOKING',
+    hours: 'Mon–Sat: 10:00 AM – 8:00 PM | Sun: 11:00 AM – 6:00 PM'
   },
   {
     id: 'mississauga',
@@ -34,9 +35,26 @@ const LOCATIONS = [
     mapUrl: 'https://maps.google.com/?q=Mississauga+ON',
     isAvailable: false,
     badge: 'COMING SOON',
+    hours: 'Opening Soon • VIP Priority List',
     comingSoonNote: 'Opening soon! You may book at our Brampton location today or join the Mississauga opening VIP list.'
   }
 ];
+
+export const SLOT_WINDOW_MAP = {
+  '9:30 AM': '9:30 AM – 11:00 AM',
+  '10:30 AM': '10:30 AM – 12:00 PM',
+  '11:30 AM': '11:30 AM – 1:00 PM',
+  '1:00 PM': '1:00 PM – 2:30 PM',
+  '2:00 PM': '2:00 PM – 3:30 PM',
+  '3:30 PM': '3:30 PM – 5:00 PM',
+  '4:30 PM': '4:30 PM – 6:00 PM',
+  '5:30 PM': '5:30 PM – 7:00 PM',
+  '6:30 PM': '6:30 PM – 8:00 PM'
+};
+
+export const getSlotWindow = (timeStr) => {
+  return SLOT_WINDOW_MAP[timeStr] || `${timeStr} Window`;
+};
 
 // Service catalog matching actual AVS website services & imagery
 const SERVICE_CATEGORIES = [
@@ -252,15 +270,15 @@ export default function BookingPage({
     // Deterministic realistic slot generator based on date hash
     const dateNum = dateStr.split('-').reduce((acc, part) => acc + parseInt(part), 0);
     const slots = [
-      { time: '9:30 AM', period: 'Morning', booked: dateNum % 3 === 0 },
-      { time: '10:30 AM', period: 'Morning', booked: false },
-      { time: '11:30 AM', period: 'Morning', booked: dateNum % 4 === 0 },
-      { time: '1:00 PM', period: 'Afternoon', booked: false },
-      { time: '2:00 PM', period: 'Afternoon', booked: false },
-      { time: '3:30 PM', period: 'Afternoon', booked: dateNum % 5 === 0 },
-      { time: '4:30 PM', period: 'Afternoon', booked: false },
-      { time: '5:30 PM', period: 'Evening', booked: false },
-      { time: '6:30 PM', period: 'Evening', booked: dateNum % 2 === 0 }
+      { time: '9:30 AM', range: '9:30 AM – 11:00 AM', period: 'Morning', booked: dateNum % 3 === 0 },
+      { time: '10:30 AM', range: '10:30 AM – 12:00 PM', period: 'Morning', booked: false },
+      { time: '11:30 AM', range: '11:30 AM – 1:00 PM', period: 'Morning', booked: dateNum % 4 === 0 },
+      { time: '1:00 PM', range: '1:00 PM – 2:30 PM', period: 'Afternoon', booked: false },
+      { time: '2:00 PM', range: '2:00 PM – 3:30 PM', period: 'Afternoon', booked: false },
+      { time: '3:30 PM', range: '3:30 PM – 5:00 PM', period: 'Afternoon', booked: dateNum % 5 === 0 },
+      { time: '4:30 PM', range: '4:30 PM – 6:00 PM', period: 'Afternoon', booked: false },
+      { time: '5:30 PM', range: '5:30 PM – 7:00 PM', period: 'Evening', booked: false },
+      { time: '6:30 PM', range: '6:30 PM – 8:00 PM', period: 'Evening', booked: dateNum % 2 === 0 }
     ];
     return slots;
   };
@@ -580,7 +598,7 @@ export default function BookingPage({
             {step === 1 && (
               <section className="avs-step-card avs-step-transition-enter">
                 <div className="avs-step-card-header">
-                  <span className="avs-step-tag">STEP 01</span>
+                  <span className="avs-step-tag">STEP 01 OF 05</span>
                   <h2 className="avs-step-title">Select Your Preferred Location</h2>
                   <p className="avs-step-desc">Choose which Aura Vital Star rejuvenation sanctuary you would like to visit.</p>
                 </div>
@@ -588,20 +606,43 @@ export default function BookingPage({
                 <div className="avs-location-grid">
                   {LOCATIONS.map((loc) => {
                     const isSelected = selectedLocation?.id === loc.id;
+                    const isAvailable = loc.isAvailable;
                     return (
                       <div
                         key={loc.id}
-                        className={`avs-location-card ${isSelected ? 'selected' : ''}`}
-                        onClick={() => setSelectedLocation(loc)}
+                        className={`avs-location-card ${isSelected ? 'selected' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                        onClick={() => {
+                          if (isAvailable) setSelectedLocation(loc);
+                        }}
+                        role="button"
+                        tabIndex={isAvailable ? 0 : -1}
+                        aria-pressed={isSelected}
                       >
                         <div className="avs-location-card-header">
-                          <h3 className="avs-location-name">{loc.name}</h3>
-                          {loc.badge && <span className="avs-location-badge">{loc.badge}</span>}
+                          <div>
+                            <span className="avs-location-tag">{loc.tag}</span>
+                            <h3 className="avs-location-name">{loc.name}</h3>
+                          </div>
+                          {loc.badge && (
+                            <span className={`avs-location-badge ${isAvailable ? 'active' : 'soon'}`}>
+                              {loc.badge}
+                            </span>
+                          )}
                         </div>
                         <p className="avs-location-address">{loc.address}</p>
                         <div className="avs-location-hours">
                           <span>Hours: {loc.hours}</span>
                         </div>
+                        {isSelected && (
+                          <div className="avs-location-selected-indicator">
+                            <span>✓ Selected Sanctuary</span>
+                          </div>
+                        )}
+                        {!isAvailable && (
+                          <p className="avs-location-soon-note">
+                            {loc.comingSoonNote || 'Opening soon! Join our VIP priority list.'}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -613,7 +654,7 @@ export default function BookingPage({
                     type="button"
                     className="avs-btn-continue"
                     onClick={goToNextStep}
-                    disabled={!selectedLocation}
+                    disabled={!selectedLocation || !selectedLocation.isAvailable}
                   >
                     <span>CONTINUE</span> &rarr;
                   </button>
@@ -625,7 +666,7 @@ export default function BookingPage({
             {step === 2 && (
               <section className="avs-step-card avs-step-transition-enter">
                 <div className="avs-step-card-header">
-                  <span className="avs-step-tag">STEP 02</span>
+                  <span className="avs-step-tag">STEP 02 OF 05</span>
                   <h2 className="avs-step-title">Select Your Wellness Service</h2>
                   <p className="avs-step-desc">Explore our curated offerings tailored to your health, beauty, and relaxation.</p>
                 </div>
@@ -644,15 +685,6 @@ export default function BookingPage({
                 </div>
 
                 <div className="avs-services-scroll-wrapper">
-                  <button
-                    type="button"
-                    className="avs-services-nav-arrow prev"
-                    onClick={() => handleServicesScroll('left', false)}
-                    aria-label="Scroll services left"
-                  >
-                    &#8249;
-                  </button>
-
                   <div className="avs-services-grid" ref={servicesScrollRef}>
                     {filteredServices.map((svc) => {
                       const isSelected = selectedService?.id === svc.id;
@@ -686,8 +718,8 @@ export default function BookingPage({
                               <p className="avs-service-card-desc">{svc.desc}</p>
                             </div>
                             <div className="avs-service-card-meta">
-                              <span>⏱ {svc.duration}</span>
-                              <span style={{ fontWeight: 600, color: isSelected ? '#062C22' : '#8C734B' }}>
+                              <span className="avs-service-card-tag-pill">{svc.category}</span>
+                              <span className="avs-service-card-cta-text" style={{ fontWeight: 600, color: isSelected ? '#062C22' : '#8C734B' }}>
                                 {isSelected ? '✓ SELECTED' : 'SELECT SERVICE'}
                               </span>
                             </div>
@@ -696,15 +728,6 @@ export default function BookingPage({
                       );
                     })}
                   </div>
-
-                  <button
-                    type="button"
-                    className="avs-services-nav-arrow next"
-                    onClick={() => handleServicesScroll('right', false)}
-                    aria-label="Scroll services right"
-                  >
-                    &#8250;
-                  </button>
                 </div>
 
                 <div className="avs-step-action-bar">
@@ -720,9 +743,9 @@ export default function BookingPage({
             {step === 3 && (
               <section className="avs-step-card avs-step-transition-enter">
                 <div className="avs-step-card-header">
-                  <span className="avs-step-tag">STEP 03</span>
-                  <h2 className="avs-step-title">Choose Date &amp; Time Slot</h2>
-                  <p className="avs-step-desc">Select your preferred date on our live calendar and pick an available time slot.</p>
+                  <span className="avs-step-tag">STEP 03 OF 05</span>
+                  <h2 className="avs-step-title">Choose Date &amp; Time Window</h2>
+                  <p className="avs-step-desc">Select your date on the calendar and choose an available arrival window.</p>
                 </div>
 
                 <div className="avs-datetime-container">
@@ -776,35 +799,54 @@ export default function BookingPage({
                     </div>
                   </div>
 
-                  {/* Right: Available Times */}
+                  {/* Right: Available Times / Windows */}
                   <div className="avs-times-card">
-                    <h3 className="avs-times-header">Available Time Slots</h3>
-                    {!selectedDate ? (
-                      <p style={{ fontSize: '0.88rem', color: '#5C6762', marginTop: '12px' }}>
-                        Please select a date on the calendar to view available time slots.
+                    <div className="avs-times-card-header">
+                      <span className="avs-times-eyebrow">AVAILABLE TIMES</span>
+                      <h3 className="avs-times-header">
+                        {selectedDate ? formatLuxuryDate(selectedDate) : 'Select a Date'}
+                      </h3>
+                      <p className="avs-times-subtext">
+                        {selectedDate 
+                          ? 'Select your preferred arrival window for this visit:' 
+                          : 'Please choose an available date on the calendar.'}
                       </p>
+                    </div>
+
+                    {!selectedDate ? (
+                      <div className="avs-times-empty-state">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#B9975B" strokeWidth="1.5">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                          <line x1="16" y1="2" x2="16" y2="6" />
+                          <line x1="8" y1="2" x2="8" y2="6" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        <p>Select any date on the calendar to view available appointment windows.</p>
+                      </div>
                     ) : (
-                      <>
-                        <p style={{ fontSize: '0.84rem', color: '#5C6762', marginBottom: '12px' }}>
-                          Slots for <strong>{formatLuxuryDate(selectedDate)}</strong>:
-                        </p>
-                        <div className="avs-time-slots-grid">
-                          {availableSlots.map((slot) => {
-                            const isSelected = selectedTime === slot.time;
-                            return (
-                              <button
-                                key={slot.time}
-                                type="button"
-                                className={`avs-time-btn ${isSelected ? 'selected' : ''}`}
-                                disabled={slot.booked}
-                                onClick={() => setSelectedTime(slot.time)}
-                              >
-                                {slot.time}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </>
+                      <div className="avs-time-ranges-grid">
+                        {availableSlots.map((slot) => {
+                          const isSelected = selectedTime === slot.time;
+                          return (
+                            <button
+                              key={slot.time}
+                              type="button"
+                              className={`avs-time-range-card ${isSelected ? 'selected' : ''}`}
+                              disabled={slot.booked}
+                              onClick={() => setSelectedTime(slot.time)}
+                              aria-pressed={isSelected}
+                            >
+                              <div className="avs-time-range-primary">
+                                <span className="avs-time-range-text">{slot.range || `${slot.time} – Window`}</span>
+                                {isSelected && <span className="avs-time-range-badge">✓ SELECTED</span>}
+                              </div>
+                              <span className="avs-time-range-note">
+                                {slot.booked ? 'Unavailable' : `Arrival window • Starts at ${slot.time}`}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -822,9 +864,9 @@ export default function BookingPage({
             {step === 4 && (
               <section className="avs-step-card avs-step-transition-enter">
                 <div className="avs-step-card-header">
-                  <span className="avs-step-tag">STEP 04</span>
-                  <h2 className="avs-step-title">Your Contact &amp; Email Verification</h2>
-                  <p className="avs-step-desc">Please fill in your contact information. Email verification is required to guarantee your spot.</p>
+                  <span className="avs-step-tag">STEP 04 OF 05</span>
+                  <h2 className="avs-step-title">Your Details</h2>
+                  <p className="avs-step-desc">Please provide your contact information to verify and reserve your appointment.</p>
                 </div>
 
                 <div className="avs-details-form-grid">
@@ -833,7 +875,7 @@ export default function BookingPage({
                     <input
                       type="text"
                       className={`avs-form-input ${errors.name ? 'error' : ''}`}
-                      placeholder="e.g. Harshit Singh"
+                      placeholder="Enter your full name"
                       value={customerDetails.name}
                       onChange={(e) => setCustomerDetails({ ...customerDetails, name: e.target.value })}
                     />
@@ -845,7 +887,7 @@ export default function BookingPage({
                     <input
                       type="tel"
                       className={`avs-form-input ${errors.phone ? 'error' : ''}`}
-                      placeholder="e.g. +1 647-987-5451"
+                      placeholder="Enter your phone number"
                       value={customerDetails.phone}
                       onChange={(e) => setCustomerDetails({ ...customerDetails, phone: e.target.value })}
                     />
@@ -858,7 +900,7 @@ export default function BookingPage({
                       <input
                         type="email"
                         className={`avs-form-input ${errors.email ? 'error' : ''} ${isEmailVerified ? 'verified' : ''}`}
-                        placeholder="e.g. harshitsingh19622@gmail.com"
+                        placeholder="Enter your email address"
                         value={customerDetails.email}
                         onChange={(e) => {
                           setCustomerDetails({ ...customerDetails, email: e.target.value });
@@ -878,40 +920,34 @@ export default function BookingPage({
                     </div>
                     {errors.email && <span className="avs-form-error">{errors.email}</span>}
                     {isEmailVerified && (
-                      <p className="avs-verified-badge-line">✓ Email verified successfully! You may proceed with booking.</p>
+                      <p className="avs-verified-badge-line">✓ Email verified successfully! You may proceed to review.</p>
                     )}
 
                     {/* Inline 6-Digit OTP Verification Card */}
                     {otpSent && !isEmailVerified && (
-                      <div className="avs-inline-otp-card" style={{ marginTop: '16px', background: '#062C22', padding: '18px 20px', borderRadius: '12px', border: '1px solid #B9975B', color: '#FAF5EA' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(185, 151, 91, 0.2)', border: '1px solid #B9975B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DFBE77" strokeWidth="2">
-                              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                              <path d="M9 12l2 2 4-4" stroke="#DFBE77" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </div>
-                          <div>
-                            <h4 style={{ margin: 0, fontSize: '0.95rem', fontFamily: 'Cormorant Garamond, serif', color: '#FAF5EA' }}>Enter 6-Digit Verification Code</h4>
-                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#D3C4A7' }}>Dispatched to <u>{customerDetails.email}</u></p>
-                          </div>
+                      <div className="avs-inline-otp-card">
+                        <div className="avs-otp-card-header">
+                          <h4 className="avs-otp-card-title">VERIFY YOUR EMAIL</h4>
+                          <p className="avs-otp-card-subtitle">
+                            A 6-digit verification code was sent to: <strong>{customerDetails.email}</strong>
+                          </p>
                         </div>
 
                         {otpError && (
-                          <div className="avs-otp-alert-box avs-otp-alert-error" style={{ margin: '8px 0', fontSize: '0.82rem', padding: '8px 12px' }}>
+                          <div className="avs-otp-alert-box avs-otp-alert-error">
                             <span className="avs-otp-alert-icon">!</span>
                             <span>{otpError}</span>
                           </div>
                         )}
 
                         {otpSuccessMsg && !otpError && (
-                          <div className="avs-otp-alert-box avs-otp-alert-success" style={{ margin: '8px 0', fontSize: '0.82rem', padding: '8px 12px' }}>
+                          <div className="avs-otp-alert-box avs-otp-alert-success">
                             <span className="avs-otp-alert-icon">✓</span>
                             <span>{otpSuccessMsg}</span>
                           </div>
                         )}
 
-                        <div className="avs-otp-digit-row" onPaste={handleOtpPaste} style={{ margin: '14px 0', justifyContent: 'center', gap: '8px' }}>
+                        <div className="avs-otp-digit-row" onPaste={handleOtpPaste}>
                           {otpDigits.map((digit, idx) => (
                             <input
                               key={idx}
@@ -924,23 +960,21 @@ export default function BookingPage({
                               onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
                               onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                               autoFocus={idx === 0}
-                              style={{ width: '42px', height: '48px', fontSize: '1.4rem' }}
                             />
                           ))}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
+                        <div className="avs-otp-card-footer">
                           <button
                             type="button"
                             className="avs-btn-verify-proceed"
                             onClick={() => handleVerifyOtp()}
                             disabled={otpDigits.join('').length < 6 && (!otpInput || otpInput.length < 6)}
-                            style={{ width: 'auto', padding: '8px 20px', fontSize: '0.82rem' }}
                           >
-                            VERIFY CODE &rarr;
+                            VERIFY EMAIL &rarr;
                           </button>
 
-                          <span className="avs-otp-resend-status" style={{ fontSize: '0.8rem', color: '#D3C4A7' }}>
+                          <span className="avs-otp-resend-status">
                             {isTimerActive ? (
                               <>Resend in <strong>00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong></>
                             ) : (
@@ -949,7 +983,6 @@ export default function BookingPage({
                                 className="avs-otp-resend-btn"
                                 onClick={handleSendOtp}
                                 disabled={otpSending}
-                                style={{ color: '#DFBE77' }}
                               >
                                 {otpSending ? 'Sending...' : 'Resend Code'}
                               </button>
@@ -974,7 +1007,12 @@ export default function BookingPage({
 
                 <div className="avs-step-action-bar">
                   <button type="button" className="avs-btn-back" onClick={goToPrevStep}>&larr; BACK</button>
-                  <button type="button" className="avs-btn-continue" onClick={goToNextStep}>
+                  <button
+                    type="button"
+                    className="avs-btn-continue"
+                    onClick={goToNextStep}
+                    disabled={!customerDetails.name.trim() || !customerDetails.phone.trim() || !isEmailVerified}
+                  >
                     <span>CONTINUE TO REVIEW</span> &rarr;
                   </button>
                 </div>
@@ -985,34 +1023,57 @@ export default function BookingPage({
             {step === 5 && (
               <section className="avs-step-card avs-step-transition-enter">
                 <div className="avs-step-card-header">
-                  <span className="avs-step-tag">STEP 05</span>
-                  <h2 className="avs-step-title">Review &amp; Confirm Your Appointment</h2>
-                  <p className="avs-step-desc">Please verify all details before submitting your reservation.</p>
+                  <span className="avs-step-tag">STEP 05 OF 05</span>
+                  <h2 className="avs-step-title">Review &amp; Confirm</h2>
+                  <p className="avs-step-desc">Please verify your appointment details before confirming.</p>
                 </div>
 
-                <div className="avs-review-cards-grid">
-                  <div className="avs-review-card">
-                    <h4 className="avs-review-card-title">1. Location &amp; Service</h4>
-                    <p className="avs-review-detail-line"><strong>Location:</strong> {selectedLocation?.name}</p>
-                    <p className="avs-review-detail-line"><strong>Address:</strong> {selectedLocation?.address}</p>
-                    <p className="avs-review-detail-line"><strong>Service:</strong> {selectedService?.title}</p>
-                    <p className="avs-review-detail-line"><strong>Duration:</strong> {selectedService?.duration}</p>
-                    <p className="avs-review-detail-line"><strong>Price:</strong> {selectedService?.price}</p>
+                <div className="avs-review-stacked-card">
+                  {/* 1. SERVICE (Highest Visual Priority) */}
+                  <div className="avs-review-stacked-row priority-service">
+                    <span className="avs-review-stacked-label">SERVICE</span>
+                    <div className="avs-review-service-title-row">
+                      <h3 className="avs-review-service-name">{selectedService?.title}</h3>
+                      <span className="avs-review-service-tag">{selectedService?.category}</span>
+                    </div>
                   </div>
 
-                  <div className="avs-review-card">
-                    <h4 className="avs-review-card-title">2. Date &amp; Time</h4>
-                    <p className="avs-review-detail-line"><strong>Date:</strong> {formatLuxuryDate(selectedDate)}</p>
-                    <p className="avs-review-detail-line"><strong>Time Slot:</strong> {selectedTime}</p>
-                    <p className="avs-review-detail-line"><strong>Channel:</strong> {bookingSource}</p>
+                  {/* 2. DATE & TIME (Strong Scannability) */}
+                  <div className="avs-review-stacked-row highlight-datetime">
+                    <div className="avs-review-datetime-grid">
+                      <div className="avs-review-date-col">
+                        <span className="avs-review-stacked-label">DATE</span>
+                        <p className="avs-review-date-main">{formatLuxuryDate(selectedDate)}</p>
+                      </div>
+                      <div className="avs-review-time-col">
+                        <span className="avs-review-stacked-label">ARRIVAL WINDOW / TIME</span>
+                        <p className="avs-review-time-main">{SLOT_WINDOW_MAP[selectedTime] || selectedTime}</p>
+                        <span className="avs-review-time-sub">Appointment starts at {selectedTime}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="avs-review-card avs-full-width">
-                    <h4 className="avs-review-card-title">3. Customer Information</h4>
-                    <p className="avs-review-detail-line"><strong>Name:</strong> {customerDetails.name}</p>
-                    <p className="avs-review-detail-line"><strong>Phone:</strong> {customerDetails.phone}</p>
-                    <p className="avs-review-detail-line"><strong>Email:</strong> {customerDetails.email} (Verified ✓)</p>
-                    {customerDetails.notes && <p className="avs-review-detail-line"><strong>Notes:</strong> {customerDetails.notes}</p>}
+                  {/* 3. LOCATION */}
+                  <div className="avs-review-stacked-row">
+                    <span className="avs-review-stacked-label">LOCATION</span>
+                    <p className="avs-review-value-bold">{selectedLocation?.name}</p>
+                    <p className="avs-review-value-sub">{selectedLocation?.address}</p>
+                  </div>
+
+                  {/* 4. CONTACT / GUEST */}
+                  <div className="avs-review-stacked-row">
+                    <span className="avs-review-stacked-label">CONTACT &amp; GUEST</span>
+                    <p className="avs-review-value-bold">{customerDetails.name}</p>
+                    <p className="avs-review-value-sub">{customerDetails.phone}</p>
+                    <div className="avs-review-email-verified-line">
+                      <span>{customerDetails.email}</span>
+                      <span className="avs-verified-mini-badge">✓ Verified</span>
+                    </div>
+                    {customerDetails.notes && (
+                      <p className="avs-review-notes-line">
+                        <em>Special Requests: "{customerDetails.notes}"</em>
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -1020,11 +1081,11 @@ export default function BookingPage({
                   <button type="button" className="avs-btn-back" onClick={goToPrevStep}>&larr; BACK</button>
                   <button
                     type="button"
-                    className="avs-btn-continue"
+                    className="avs-btn-continue avs-btn-confirm-final"
                     onClick={handleConfirmAppointment}
                     disabled={isSubmitting}
                   >
-                    <span>{isSubmitting ? 'CONFIRMING...' : 'CONFIRM APPOINTMENT'}</span> &rarr;
+                    <span>{isSubmitting ? 'CONFIRMING APPOINTMENT...' : 'CONFIRM APPOINTMENT'}</span> &rarr;
                   </button>
                 </div>
               </section>
@@ -1755,12 +1816,14 @@ export default function BookingPage({
                         </div>
                       </div>
 
-                      {/* Right: Available Times */}
+                      {/* Right: Available Times / Windows */}
                       <div className="avs-times-card">
-                        <h3 className="avs-times-header">Available Times</h3>
-                        <p style={{ fontSize: '0.84rem', color: '#5C6762', marginBottom: '8px' }}>
-                          {formatLuxuryDate(selectedDate)}
-                        </p>
+                        <div className="avs-times-card-header">
+                          <span className="avs-times-eyebrow">AVAILABLE TIMES</span>
+                          <h3 className="avs-times-header">
+                            {selectedDate ? formatLuxuryDate(selectedDate) : 'Select a Date'}
+                          </h3>
+                        </div>
 
                         {availableSlots.length === 0 ? (
                           <div className="avs-no-times-box">
@@ -1774,18 +1837,25 @@ export default function BookingPage({
                             </button>
                           </div>
                         ) : (
-                          <div className="avs-time-slots-grid">
+                          <div className="avs-time-ranges-grid">
                             {availableSlots.map((slot) => {
                               const isSelected = selectedTime === slot.time;
                               return (
                                 <button
                                   key={slot.time}
                                   type="button"
-                                  className={`avs-time-btn ${isSelected ? 'selected' : ''}`}
+                                  className={`avs-time-range-card ${isSelected ? 'selected' : ''}`}
                                   disabled={slot.booked}
                                   onClick={() => setSelectedTime(slot.time)}
+                                  aria-pressed={isSelected}
                                 >
-                                  {slot.time}
+                                  <div className="avs-time-range-primary">
+                                    <span className="avs-time-range-text">{slot.range || `${slot.time} – Window`}</span>
+                                    {isSelected && <span className="avs-time-range-badge">✓ SELECTED</span>}
+                                  </div>
+                                  <span className="avs-time-range-note">
+                                    {slot.booked ? 'Unavailable' : `Arrival window • Starts at ${slot.time}`}
+                                  </span>
                                 </button>
                               );
                             })}
@@ -1804,7 +1874,7 @@ export default function BookingPage({
                     <div className="avs-step-header">
                       <span className="avs-step-badge-eyebrow">STEP 04 OF 05</span>
                       <h2 className="avs-step-heading">
-                        Tell us a little<br />about you.
+                        Tell us a little<br />about yourself.
                       </h2>
                       <p className="avs-step-subtext">
                         We'll use these details to confirm your appointment and tailor your visit.
@@ -1820,7 +1890,7 @@ export default function BookingPage({
                           id="cust-name"
                           type="text"
                           className={`avs-form-input ${errors.name ? 'error' : ''}`}
-                          placeholder="e.g. Jane Doe"
+                          placeholder="Enter your full name"
                           value={customerDetails.name}
                           onChange={(e) => handleInputChange('name', e.target.value)}
                           autoComplete="name"
@@ -1836,7 +1906,7 @@ export default function BookingPage({
                           id="cust-phone"
                           type="tel"
                           className={`avs-form-input ${errors.phone ? 'error' : ''}`}
-                          placeholder="(647) 000-0000"
+                          placeholder="Enter your phone number"
                           value={customerDetails.phone}
                           onChange={(e) => handleInputChange('phone', e.target.value)}
                           autoComplete="tel"
@@ -1849,36 +1919,6 @@ export default function BookingPage({
                           <label className="avs-form-label" htmlFor="cust-email" style={{ margin: 0 }}>
                             EMAIL ADDRESS <span className="required">*</span>
                           </label>
-                          {isEmailVerified ? (
-                            <span className="avs-verified-badge">
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                              EMAIL VERIFIED
-                            </span>
-                          ) : (
-                            <span className="avs-otp-status-badge unverified">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                                <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2" />
-                                <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="2" />
-                              </svg>
-                              OTP Verification Required
-                            </span>
-                          )}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                          <input
-                            id="cust-email"
-                            type="email"
-                            className={`avs-form-input ${errors.email ? 'error' : ''}`}
-                            placeholder="jane.doe@example.com"
-                            value={customerDetails.email}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
-                            disabled={isEmailVerified}
-                            autoComplete="email"
-                            style={{ flex: 1 }}
-                          />
                           {!isEmailVerified ? (
                             <button
                               type="button"
@@ -1886,84 +1926,79 @@ export default function BookingPage({
                               onClick={handleSendOtp}
                               disabled={otpSending || !customerDetails.email}
                             >
-                              {otpSending ? 'SENDING...' : otpSent ? 'RESEND OTP' : 'SEND OTP'}
+                              {otpSending ? 'Sending...' : 'Send OTP Code'}
                             </button>
                           ) : (
-                            <button
-                              type="button"
-                              className="avs-btn-change-email"
-                              onClick={() => {
-                                setIsEmailVerified(false);
-                                setOtpSent(false);
-                                setOtpInput('');
-                              }}
-                            >
-                              CHANGE
-                            </button>
+                            <span style={{ fontSize: '0.82rem', color: '#0E6245', fontWeight: 600 }}>✓ Verified</span>
                           )}
                         </div>
                         {errors.email && <span className="avs-form-error-msg">{errors.email}</span>}
 
-                        {/* OTP Verification Input Box */}
+                        {/* Inline OTP Verification Area */}
                         {otpSent && !isEmailVerified && (
-                          <div className="avs-otp-box">
+                          <div className="avs-otp-inline-box">
                             <div className="avs-otp-header">
-                              <span className="avs-otp-title">ENTER 6-DIGIT OTP VERIFICATION CODE</span>
+                              <span className="avs-otp-title">Enter 6-Digit Code</span>
                               <span className="avs-otp-subtitle">A verification code has been dispatched to <strong>{customerDetails.email}</strong>.</span>
                             </div>
-                            <div className="avs-otp-input-row">
-                              <input
-                                type="text"
-                                maxLength={6}
-                                className={`avs-form-input avs-otp-input ${otpError ? 'error' : ''}`}
-                                placeholder="0 0 0 0 0 0"
-                                value={otpInput}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                                  setOtpInput(val);
-                                  if (val.length === 6 && sentOtpCode && val === sentOtpCode.trim()) {
-                                    handleVerifyOtp(val);
-                                  }
-                                }}
-                              />
+
+                            <div className="avs-otp-inputs" onPaste={handleOtpPaste}>
+                              {otpDigits.map((digit, idx) => (
+                                <input
+                                  key={idx}
+                                  id={`avs-otp-digit-${idx}`}
+                                  type="text"
+                                  inputMode="numeric"
+                                  maxLength={1}
+                                  className={`avs-otp-digit ${otpError ? 'error' : ''} ${digit ? 'filled' : ''}`}
+                                  value={digit}
+                                  onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                                  onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                                  placeholder="0 0 0 0 0 0"
+                                  autoFocus={idx === 0}
+                                />
+                              ))}
+                            </div>
+
+                            {otpError && <p className="avs-otp-error-msg">{otpError}</p>}
+                            {otpSuccessMsg && <p className="avs-otp-success-msg">{otpSuccessMsg}</p>}
+
+                            <div className="avs-otp-actions">
                               <button
                                 type="button"
                                 className="avs-btn-verify-otp"
                                 onClick={() => handleVerifyOtp()}
+                                disabled={otpDigits.join('').length < 6}
                               >
-                                VERIFY OTP
+                                Verify &amp; Continue
+                              </button>
+
+                              <button
+                                type="button"
+                                className="avs-btn-resend-otp"
+                                onClick={handleSendOtp}
+                                disabled={isTimerActive || otpSending}
+                              >
+                                {isTimerActive ? `Resend code in ${resendTimer}s` : 'Resend Code'}
                               </button>
                             </div>
-                            {otpSuccessMsg && <p className="avs-otp-msg-success">{otpSuccessMsg}</p>}
-                            {otpError && <p className="avs-otp-msg-error">{otpError}</p>}
                           </div>
-                        )}
-
-                        {isEmailVerified && otpSuccessMsg && (
-                          <p className="avs-otp-msg-success" style={{ marginTop: '8px' }}>{otpSuccessMsg}</p>
                         )}
                       </div>
 
                       <div className="avs-form-field span-full">
                         <label className="avs-form-label" htmlFor="cust-notes">
-                          ADDITIONAL NOTES <span style={{ textTransform: 'none', color: '#7E8B84' }}>(optional)</span>
+                          PERSONAL PREFERENCES OR HEALTH NOTES (OPTIONAL)
                         </label>
                         <textarea
                           id="cust-notes"
-                          rows="3"
                           className="avs-form-textarea"
+                          rows={3}
                           placeholder="Any physical preferences, pressure level, focus areas, or special health accommodations..."
                           value={customerDetails.notes}
                           onChange={(e) => handleInputChange('notes', e.target.value)}
-                        ></textarea>
+                        />
                       </div>
-                    </div>
-
-                    <div className="avs-form-privacy-assurance">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.8" />
-                      </svg>
-                      <span>We respect your privacy. Your email will be verified via a 6-digit OTP code before confirmation.</span>
                     </div>
                   </div>
                 )}
@@ -1973,25 +2008,25 @@ export default function BookingPage({
                     -------------------------------------------------------- */}
                 {step === 5 && (
                   <div className="avs-step-transition-enter">
+                    <div className="avs-step-header">
+                      <span className="avs-step-badge-eyebrow">STEP 05 OF 05</span>
+                      <h2 className="avs-step-heading">
+                        Review your<br />reservation details.
+                      </h2>
+                      <p className="avs-step-subtext">
+                        Everything looks in order. Please take a moment to verify your visit details before final confirmation.
+                      </p>
+                    </div>
+
                     {isSubmitting ? (
-                      <div className="avs-submitting-container">
-                        <div className="avs-gold-spinner-ring"></div>
-                        <h3 className="avs-submitting-title">CONFIRMING YOUR APPOINTMENT...</h3>
-                        <p className="avs-submitting-subtitle">Connecting with Aura Vital Star reservation concierge.</p>
+                      <div className="avs-submitting-state">
+                        <div className="avs-submitting-spinner"></div>
+                        <h3>Coordinating your appointment...</h3>
+                        <p>Locking in your requested slot and dispatching verification details.</p>
                       </div>
                     ) : (
                       <>
-                        <div className="avs-step-header">
-                          <span className="avs-step-badge-eyebrow">STEP 05 OF 05</span>
-                          <h2 className="avs-step-heading">
-                            Almost there.
-                          </h2>
-                          <p className="avs-step-subtext">
-                            Review your appointment details before confirming.
-                          </p>
-                        </div>
-
-                        <div className="avs-review-summary-grid">
+                        <div className="avs-review-card-group">
                           {/* Location */}
                           <div className="avs-review-item-card">
                             <div className="avs-review-item-main">
@@ -2013,7 +2048,7 @@ export default function BookingPage({
                             <div className="avs-review-item-main">
                               <span className="avs-review-label">Service</span>
                               <span className="avs-review-value">{selectedService?.title}</span>
-                              <span className="avs-review-subtext">{selectedService?.duration} &bull; {selectedService?.category}</span>
+                              <span className="avs-review-subtext">{selectedService?.category}</span>
                             </div>
                             <button
                               type="button"
@@ -2027,9 +2062,9 @@ export default function BookingPage({
                           {/* Date & Time */}
                           <div className="avs-review-item-card">
                             <div className="avs-review-item-main">
-                              <span className="avs-review-label">Date &amp; Time</span>
+                              <span className="avs-review-label">Date &amp; Arrival Window</span>
                               <span className="avs-review-value">
-                                {formatLuxuryDate(selectedDate)} at {selectedTime}
+                                {formatLuxuryDate(selectedDate)} &bull; {SLOT_WINDOW_MAP[selectedTime] || selectedTime}
                               </span>
                             </div>
                             <button

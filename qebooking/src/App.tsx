@@ -25,9 +25,9 @@ export const App: React.FC = () => {
     if (typeof window !== 'undefined' && window.location.search.includes('preview=success')) {
       return {
         data: {
-          fullName: 'Harshit Sharma',
-          phone: '(647) 987-5451',
-          email: 'harshit@auravitalstar.ca',
+          fullName: 'Jane Doe',
+          phone: '(647) 555-0100',
+          email: 'jane.doe@example.com',
           service: 'RMT Massage Therapy',
           location: 'Brampton',
           date: '2026-09-10',

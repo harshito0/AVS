@@ -2974,20 +2974,652 @@
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Modal Body Content Container */
+/* ==========================================================================
+   MODAL BODY & REFINED MOBILE-FIRST LAYOUT SYSTEM
+   ========================================================================== */
+
 .avs-booking-modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: 32px 36px;
+  padding: 28px 32px 40px 32px;
   background: #FAF7F2;
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Mobile Responsive full-screen modal (320px–768px) */
+/* STEP CARD CONTAINER & HEADER */
+.avs-step-card {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.avs-step-card-header {
+  margin-bottom: 24px;
+}
+
+.avs-step-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: #987739;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.avs-step-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.85rem;
+  font-weight: 600;
+  color: #062C22;
+  margin: 0 0 6px 0;
+  line-height: 1.25;
+}
+
+.avs-step-desc {
+  font-size: 0.9rem;
+  color: #5C6762;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   STEP 01: LOCATION CARDS
+   -------------------------------------------------------------------------- */
+.avs-location-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.avs-location-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 1.5px solid #E0D9CB;
+  border-radius: 16px;
+  padding: 22px 20px;
+  cursor: pointer;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.avs-location-card:hover:not(.disabled) {
+  border-color: #B9975B;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(6, 44, 34, 0.1);
+}
+
+.avs-location-card.selected {
+  background: rgba(6, 44, 34, 0.03);
+  border-color: #B9975B;
+  box-shadow: 0 0 0 2px #B9975B, 0 12px 28px -6px rgba(6, 44, 34, 0.14);
+}
+
+.avs-location-card.disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  background: #F8F5EE;
+}
+
+.avs-location-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.avs-location-tag {
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #987739;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.avs-location-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #062C22;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.avs-location-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.avs-location-badge.active {
+  background: #062C22;
+  color: #DFBE77;
+  border: 1px solid #B9975B;
+}
+
+.avs-location-badge.soon {
+  background: #E8E2D8;
+  color: #7A6F5D;
+}
+
+.avs-location-address {
+  font-size: 0.88rem;
+  color: #55625B;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.avs-location-hours {
+  font-size: 0.8rem;
+  color: #8C734B;
+  font-weight: 500;
+  padding-top: 10px;
+  border-top: 1px solid #EFEAE0;
+}
+
+.avs-location-selected-indicator {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #062C22;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.avs-location-soon-note {
+  margin: 10px 0 0 0;
+  font-size: 0.78rem;
+  color: #8A7B68;
+  font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   STEP 02: CATEGORIES & SERVICES
+   -------------------------------------------------------------------------- */
+.avs-category-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.avs-category-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.avs-cat-pill {
+  background: #F4ECE1;
+  border: 1px solid rgba(185, 151, 91, 0.25);
+  color: #55625B;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 24px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.avs-cat-pill:hover {
+  background: #ECE3D7;
+  color: #062C22;
+}
+
+.avs-cat-pill.active {
+  background: #062C22;
+  color: #FAF5EA;
+  border-color: #B9975B;
+  box-shadow: 0 4px 12px rgba(6, 44, 34, 0.15);
+}
+
+.avs-service-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #EFEAE0;
+}
+
+.avs-service-card-tag-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8C734B;
+}
+
+.avs-service-card-cta-text {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.avs-service-card-desc {
+  font-size: 0.84rem;
+  color: #5C6762;
+  line-height: 1.45;
+  margin: 4px 0 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   STEP 03: DATE & TIME RANGES
+   -------------------------------------------------------------------------- */
+.avs-time-ranges-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.avs-time-range-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 1.5px solid #E2DCCF;
+  border-radius: 12px;
+  padding: 13px 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.avs-time-range-card:hover:not(:disabled) {
+  border-color: #B9975B;
+  background: #FAF8F5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -2px rgba(6, 44, 34, 0.08);
+}
+
+.avs-time-range-card.selected {
+  background: #062C22;
+  border-color: #B9975B;
+  box-shadow: 0 0 0 2px #B9975B, 0 8px 20px -4px rgba(6, 44, 34, 0.2);
+}
+
+.avs-time-range-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: #F3EFE9;
+}
+
+.avs-time-range-primary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.avs-time-range-text {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #062C22;
+  letter-spacing: 0.01em;
+}
+
+.avs-time-range-card.selected .avs-time-range-text {
+  color: #FAF5EA;
+}
+
+.avs-time-range-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #DFBE77;
+  background: rgba(223, 190, 119, 0.18);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.avs-time-range-note {
+  font-size: 0.74rem;
+  color: #728078;
+}
+
+.avs-time-range-card.selected .avs-time-range-note {
+  color: #DFD5C4;
+}
+
+.avs-times-card-header {
+  margin-bottom: 12px;
+}
+
+.avs-times-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: #987739;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.avs-times-subtext {
+  font-size: 0.82rem;
+  color: #6B7871;
+  margin: 4px 0 12px 0;
+}
+
+.avs-times-empty-state {
+  text-align: center;
+  padding: 32px 18px;
+  background: #FAF6EE;
+  border: 1px dashed #D5CCA8;
+  border-radius: 12px;
+  color: #7A6F5D;
+  font-size: 0.86rem;
+}
+
+.avs-times-empty-state svg {
+  margin-bottom: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   STEP 04: STREAMLINED DETAILS & OTP
+   -------------------------------------------------------------------------- */
+.avs-inline-otp-card {
+  margin-top: 18px;
+  background: #062C22;
+  padding: 22px 24px;
+  border-radius: 14px;
+  border: 1.5px solid #B9975B;
+  color: #FAF5EA;
+  box-shadow: 0 12px 32px -6px rgba(6, 44, 34, 0.35);
+}
+
+.avs-otp-card-header {
+  margin-bottom: 14px;
+}
+
+.avs-otp-card-title {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #DFBE77;
+  text-transform: uppercase;
+}
+
+.avs-otp-card-subtitle {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #D3C4A7;
+  line-height: 1.45;
+}
+
+.avs-otp-digit-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 18px 0;
+}
+
+.avs-otp-digit-input {
+  width: 44px;
+  height: 50px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 8px;
+  border: 1.5px solid #B9975B;
+  background: #FAF5EA;
+  color: #062C22;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.avs-otp-digit-input:focus {
+  border-color: #DFBE77;
+  box-shadow: 0 0 0 3px rgba(223, 190, 119, 0.35);
+  background: #FFFFFF;
+}
+
+.avs-otp-digit-input.filled {
+  background: #FFFFFF;
+  border-color: #DFBE77;
+}
+
+.avs-otp-digit-input.error {
+  border-color: #E05252;
+  background: #FFF5F5;
+}
+
+.avs-otp-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.avs-btn-verify-proceed {
+  background: #B9975B;
+  color: #062C22;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.avs-btn-verify-proceed:hover:not(:disabled) {
+  background: #DFBE77;
+  box-shadow: 0 4px 14px rgba(185, 151, 91, 0.4);
+}
+
+.avs-btn-verify-proceed:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.avs-otp-resend-status {
+  font-size: 0.8rem;
+  color: #D3C4A7;
+}
+
+.avs-otp-resend-btn {
+  background: none;
+  border: none;
+  color: #DFBE77;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* --------------------------------------------------------------------------
+   STEP 05: LUXURY STACKED REVIEW CARD (OMITTING DURATION & PRICE)
+   -------------------------------------------------------------------------- */
+.avs-review-stacked-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E0D7C6;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px -6px rgba(6, 44, 34, 0.07);
+  margin-bottom: 24px;
+}
+
+.avs-review-stacked-row {
+  padding: 18px 22px;
+  border-bottom: 1px solid #ECE3D4;
+}
+
+.avs-review-stacked-row:last-child {
+  border-bottom: none;
+}
+
+.avs-review-stacked-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: #987739;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.avs-review-stacked-row.priority-service {
+  background: #FAF8F4;
+  border-bottom: 2px solid #DFBE77;
+}
+
+.avs-review-service-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.avs-review-service-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #062C22;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.avs-review-service-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: #062C22;
+  color: #DFBE77;
+}
+
+.avs-review-stacked-row.highlight-datetime {
+  background: #F7F4EC;
+}
+
+.avs-review-datetime-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.avs-review-date-main {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #062C22;
+  margin: 0;
+}
+
+.avs-review-time-main {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #987739;
+  margin: 0;
+}
+
+.avs-review-time-sub {
+  font-size: 0.78rem;
+  color: #63726A;
+  display: block;
+  margin-top: 2px;
+}
+
+.avs-review-value-bold {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #062C22;
+  margin: 0 0 2px 0;
+}
+
+.avs-review-value-sub {
+  font-size: 0.88rem;
+  color: #55625B;
+  margin: 0;
+}
+
+.avs-review-email-verified-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.88rem;
+  color: #062C22;
+}
+
+.avs-verified-mini-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #0E6245;
+  background: rgba(14, 98, 69, 0.12);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.avs-review-notes-line {
+  margin: 8px 0 0 0;
+  font-size: 0.82rem;
+  color: #66756D;
+  font-style: italic;
+  padding-top: 8px;
+  border-top: 1px dashed #E2DCCF;
+}
+
+.avs-btn-confirm-final {
+  background: #062C22 !important;
+  color: #FAF5EA !important;
+  border: 1.5px solid #B9975B !important;
+  box-shadow: 0 6px 20px rgba(6, 44, 34, 0.25);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+}
+
+.avs-btn-confirm-final:hover:not(:disabled) {
+  background: #0B382C !important;
+  border-color: #DFBE77 !important;
+  box-shadow: 0 8px 24px rgba(185, 151, 91, 0.35);
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVE RULES (320px – 768px)
+   ========================================================================== */
 @media (max-width: 768px) {
   .avs-booking-modal-overlay {
     padding: 0;
   }
+
   .avs-booking-modal-panel {
     max-width: 100vw;
     width: 100vw;
@@ -2996,80 +3628,165 @@
     border-radius: 0;
     border: none;
   }
+
   .avs-booking-modal-header {
-    padding: 18px 16px 14px 16px;
+    padding: 16px 16px 12px 16px;
   }
+
   .avs-booking-modal-title {
-    font-size: 1.35rem;
+    font-size: 1.3rem;
   }
+
+  /* 120px bottom clearance guarantees sticky CTA never overlaps scroll content */
   .avs-booking-modal-body {
-    padding: 20px 14px;
+    padding: 20px 16px 120px 16px;
     max-width: 100vw;
     overflow-x: hidden;
   }
 
-  .avs-btn-continue,
-  .avs-btn-back,
-  .avs-form-input,
-  .avs-form-select,
-  .avs-time-btn,
-  .avs-cal-day,
-  .avs-location-tile,
-  .avs-service-card {
-    min-height: 44px;
-  }
-
-  .avs-location-cards-grid {
+  .avs-location-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .avs-services-grid {
     gap: 14px;
   }
 
-  .avs-services-nav-arrow {
-    display: none;
+  .avs-services-scroll-wrapper {
+    overflow: visible;
+  }
+
+  .avs-services-grid {
+    grid-template-columns: 1fr;
+    max-height: none;
+    overflow: visible;
+    gap: 14px;
+    padding-right: 0;
   }
 
   .avs-service-card {
-    flex: 0 0 250px;
-    min-width: 250px;
-    max-width: 250px;
+    flex: none;
+    min-width: 100%;
+    max-width: 100%;
   }
 
   .avs-datetime-container {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 18px;
   }
 
-  .avs-calendar-weekdays span {
-    font-size: 0.78rem;
+  .avs-time-ranges-grid {
+    grid-template-columns: 1fr;
+    max-height: none;
+    gap: 10px;
+  }
+
+  .avs-review-datetime-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .avs-cal-day {
-    height: 44px;
-    width: 44px;
+    height: 42px;
+    width: 42px;
     margin: 0 auto;
+  }
+
+  /* Sticky Footer Action Bar on Mobile */
+  .avs-step-action-bar {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #FAF7F2;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px)) 16px;
+    margin: 24px -16px -120px -16px;
+    border-top: 1px solid rgba(185, 151, 91, 0.25);
+    box-shadow: 0 -6px 20px rgba(6, 44, 34, 0.08);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .avs-btn-continue {
+    flex: 1;
+    justify-content: center;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    min-height: 48px;
+  }
+
+  .avs-btn-back {
+    padding: 13px 16px;
+    font-size: 0.82rem;
+    min-height: 48px;
   }
 }
 
+/* Specific Small Mobile (< 390px, e.g. 375px iPhone SE) */
 @media (max-width: 390px) {
   .avs-booking-modal-header {
     padding: 14px 12px 10px 12px;
   }
+
   .avs-booking-modal-title {
-    font-size: 1.2rem;
+    font-size: 1.18rem;
   }
+
+  .avs-booking-modal-subtext {
+    font-size: 0.8rem;
+  }
+
   .avs-booking-modal-body {
-    padding: 16px 10px;
+    padding: 16px 12px 120px 12px;
   }
+
+  .avs-step-title {
+    font-size: 1.45rem;
+  }
+
+  .avs-step-desc {
+    font-size: 0.84rem;
+  }
+
+  .avs-location-card {
+    padding: 18px 14px;
+  }
+
+  .avs-location-name {
+    font-size: 1.25rem;
+  }
+
+  .avs-otp-digit-row {
+    gap: 5px;
+  }
+
+  .avs-otp-digit-input {
+    width: 38px;
+    height: 46px;
+    font-size: 1.25rem;
+  }
+
+  .avs-review-stacked-row {
+    padding: 14px 16px;
+  }
+
+  .avs-review-service-name {
+    font-size: 1.28rem;
+  }
+
   .avs-step-action-bar {
-    flex-direction: column-reverse;
-    gap: 10px;
+    margin: 20px -12px -120px -12px;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px;
+    gap: 8px;
   }
-  .avs-btn-continue,
+
+  .avs-btn-continue {
+    padding: 13px 12px;
+    font-size: 0.84rem;
+  }
+
   .avs-btn-back {
-    width: 100%;
+    padding: 13px 12px;
+    font-size: 0.8rem;
   }
 }

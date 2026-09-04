@@ -84,14 +84,14 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
             label="Lead Name *"
             value={formData.name}
             onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-            placeholder="e.g. Jessica Miller"
+            placeholder="Enter lead name"
             error={errors.name}
           />
           <Input
             label="Phone Number *"
             value={formData.phone}
             onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
-            placeholder="(905) 555-0143"
+            placeholder="Enter phone number"
             error={errors.phone}
           />
         </div>
@@ -102,7 +102,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
             type="email"
             value={formData.email}
             onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-            placeholder="jessica.m@outlook.com"
+            placeholder="Enter email address"
           />
           <Select
             label="Lead Source"

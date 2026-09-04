@@ -100,14 +100,14 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
             label="First Name *"
             value={formData.firstName}
             onChange={(e) => handleChange('firstName', e.target.value)}
-            placeholder="e.g. Neha"
+            placeholder="First name"
             error={errors.firstName}
           />
           <Input
             label="Last Name *"
             value={formData.lastName}
             onChange={(e) => handleChange('lastName', e.target.value)}
-            placeholder="e.g. Sharma"
+            placeholder="Last name"
             error={errors.lastName}
           />
         </div>
@@ -117,7 +117,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
             label="Phone Number *"
             value={formData.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="(905) 456-7890"
+            placeholder="Phone number"
             error={errors.phone}
           />
           <Input
@@ -125,7 +125,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
             type="email"
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="neha.sharma@example.com"
+            placeholder="email@example.com"
             error={errors.email}
           />
         </div>

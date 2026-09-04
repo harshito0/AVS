@@ -250,7 +250,7 @@ export const RedeemGiftCardModal: React.FC<RedeemGiftCardModalProps> = ({
                   label="Assign to Client"
                   value={redeemClient}
                   onChange={(e) => setRedeemClient(e.target.value)}
-                  placeholder="e.g. Guest Client"
+                  placeholder="Enter client name"
                 />
               )}
               <Input

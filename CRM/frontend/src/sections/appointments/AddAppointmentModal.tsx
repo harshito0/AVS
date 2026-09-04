@@ -113,7 +113,7 @@ export const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({
               label="Client Name *"
               value={manualClientName}
               onChange={(e) => setManualClientName(e.target.value)}
-              placeholder="e.g. Elena Rostova"
+              placeholder="Enter client name"
               required
             />
           )}
