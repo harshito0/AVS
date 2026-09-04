@@ -1902,6 +1902,38 @@
   .avs-success-recap-card {
     grid-template-columns: 1fr;
   }
+
+  /* Inline page: service cards as horizontal swipe carousel */
+  .avs-services-scroll-wrapper {
+    margin-left: -12px;
+    margin-right: -12px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .avs-services-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 8px 12px 14px 12px !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .avs-services-grid::-webkit-scrollbar { display: none; }
+
+  .avs-service-card {
+    flex: 0 0 calc(82vw - 12px) !important;
+    min-width: calc(82vw - 12px) !important;
+    max-width: calc(82vw - 12px) !important;
+    scroll-snap-align: start;
+  }
+
+  .avs-services-nav-arrow { display: none; }
 }
 
 /* ==========================================================================
@@ -3680,30 +3712,67 @@
     padding: 18px 16px;
   }
 
-  /* Services: vertical stack (no horizontal scroll on mobile) */
+  /* -----------------------------------------------------------------------
+     SERVICE CARDS — HORIZONTAL SWIPE CAROUSEL ON MOBILE
+     Shows ~1.25 cards at a time (peek effect = users know to swipe)
+     scroll-snap ensures clean card-by-card swiping
+     ----------------------------------------------------------------------- */
   .avs-services-scroll-wrapper {
-    overflow: visible;
+    /* Negative margin so carousel bleeds to screen edge */
+    margin-left: -16px;
+    margin-right: -16px;
+    overflow: hidden;
     padding: 0;
+    position: relative;
   }
 
+  /* Hide desktop nav arrows — touch swipe is natural on mobile */
   .avs-services-nav-arrow {
     display: none;
   }
 
   .avs-services-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    max-height: none;
-    overflow: visible;
-    gap: 12px;
-    padding-right: 0;
-    padding-bottom: 0;
+    /* Keep horizontal flex row — this IS the carousel */
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    max-height: none !important;
+    /* Padding: 16px left/right edge, 12px bottom for scrollbar clearance */
+    padding: 8px 16px 16px 16px !important;
+    /* Smooth card-by-card scroll snap */
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    /* Hide scrollbar on touch — clean look */
+    scrollbar-width: none;
   }
 
+  .avs-services-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Each card: fixed width showing 1.25 cards at a time (peek effect) */
   .avs-service-card {
-    flex: none;
-    min-width: 100%;
-    max-width: 100%;
+    flex: 0 0 calc(80vw - 16px) !important;
+    min-width: calc(80vw - 16px) !important;
+    max-width: calc(80vw - 16px) !important;
+    /* Snap each card into view */
+    scroll-snap-align: start;
+  }
+
+  /* Swipe hint label under the service grid */
+  .avs-services-scroll-wrapper::after {
+    content: '← Swipe to explore more →';
+    display: block;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #987739;
+    opacity: 0.72;
+    padding: 6px 0 0 0;
   }
 
   /* Category pills — horizontal scroll */
