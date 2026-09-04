@@ -8,8 +8,8 @@ A luxury, frontend-only Customer Relationship Management (CRM) and Admin Dashboa
 
 ```
 /CRM
-  /frontend     <-- All frontend code (React, TypeScript, Vite, Tailwind CSS, Lucide React, Recharts)
-  /backend      <-- Architecture documentation for future backend integration (No backend code)
+  /frontend     <-- React 18, TypeScript, Vite, Tailwind CSS, Lucide React, Recharts (Port 5174)
+  /backend      <-- Node.js, Express, TypeScript, Prisma ORM, SQLite, JWT Auth (Port 4000)
 ```
 
 ## 🎨 Design Language & Visual System
@@ -17,12 +17,40 @@ A luxury, frontend-only Customer Relationship Management (CRM) and Admin Dashboa
 - **Typography**: Clean, modern, luxury sans-serif hierarchy.
 - **Components**: High-end stat cards, right-side sliding drawers, animated modal overlays, rich data tables with sorting/filtering/pagination, and interactive Recharts visualizations.
 
-## 🚀 Running the Frontend
+## 🚀 Running the CRM
 
+### From the Root Directory:
 ```bash
-cd frontend
+# Run both CRM Backend and CRM Frontend concurrently
+npm run crm
+
+# Or individually:
+npm run crm:backend
+npm run crm:frontend
+```
+
+### Or from individual directories:
+
+**Backend:**
+```bash
+cd CRM/backend
+npm install
+npx prisma generate
+npx prisma db push
+npm run db:seed
+npm run dev
+```
+Backend runs on `http://localhost:4000/api`
+
+**Frontend:**
+```bash
+cd CRM/frontend
 npm install
 npm run dev
 ```
+Frontend runs on `http://localhost:5174/`
 
-Visit `http://localhost:5173/` in your browser.
+### 🔑 Default Admin Credentials
+- **Email:** `admin@auravitalstar.ca`
+- **Password:** `Admin@AVS2025`
+
