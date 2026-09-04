@@ -1,13 +1,16 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/crm",
+      "destination": "/crm/",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/crm/:match*",
-      "destination": "/crm/index.html"
-    },
-    {
-      "source": "/crm",
       "destination": "/crm/index.html"
     },
     {
@@ -27,8 +30,8 @@
       "destination": "/api/verify-otp.js"
     },
     {
-      "source": "/api/:match*",
-      "destination": "/api/crm.js"
+      "source": "/api/:path*",
+      "destination": "/api/crm.js?path=:path*"
     },
     {
       "source": "/(.*)",

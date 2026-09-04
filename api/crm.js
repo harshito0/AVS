@@ -127,7 +127,14 @@ export default async function handler(req, res) {
 
   const host = req.headers.host || 'localhost';
   const url = new URL(req.url, `https://${host}`);
-  const pathname = url.pathname;
+  let pathname = url.pathname;
+
+  // Support Vercel query path parameter from rewrites
+  if (url.searchParams.has('path')) {
+    const qp = url.searchParams.get('path');
+    pathname = qp.startsWith('/') ? `/api${qp}` : `/api/${qp}`;
+  }
+
   const method = req.method;
 
   // JSON helper
@@ -139,7 +146,7 @@ export default async function handler(req, res) {
 
   try {
     // 1. HEALTH CHECK
-    if (pathname === '/api/health') {
+    if (pathname === '/api/health' || pathname === '/api/crm' || pathname === '/api') {
       return json(200, { success: true, status: 'ok', service: 'AVS Unified Serverless CRM API', timestamp: new Date().toISOString() });
     }
 
