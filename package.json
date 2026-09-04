@@ -8,6 +8,7 @@
     "server": "node server/server.js",
     "start": "concurrently -n \"API,VITE\" -c \"cyan,green\" \"node server/server.js\" \"vite\"",
     "dev:all": "concurrently -n \"API,VITE\" -c \"cyan,green\" \"node server/server.js\" \"vite\"",
+    "postinstall": "npm --prefix CRM/frontend install",
     "crm:backend": "npm --prefix CRM/backend run dev",
     "crm:frontend": "npm --prefix CRM/frontend run dev",
     "crm": "concurrently -n \"CRM-API,CRM-UI\" -c \"magenta,cyan\" \"npm run crm:backend\" \"npm run crm:frontend\"",

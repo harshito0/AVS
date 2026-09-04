@@ -1,4 +1,6 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/crm/:match*",
@@ -10,23 +12,23 @@
     },
     {
       "source": "/api/bookings",
-      "destination": "/api/bookings"
+      "destination": "/api/bookings.js"
     },
     {
       "source": "/api/contact",
-      "destination": "/api/contact"
+      "destination": "/api/contact.js"
     },
     {
       "source": "/api/send-otp",
-      "destination": "/api/send-otp"
+      "destination": "/api/send-otp.js"
     },
     {
       "source": "/api/verify-otp",
-      "destination": "/api/verify-otp"
+      "destination": "/api/verify-otp.js"
     },
     {
       "source": "/api/:match*",
-      "destination": "/api/crm"
+      "destination": "/api/crm.js"
     },
     {
       "source": "/(.*)",
