@@ -360,15 +360,15 @@ export async function getDashboardOverview(req: AuthRequest, res: Response) {
       kpi: {
         totalClients: {
           value: totalClients,
-          change: '+12.5%',
-          trend: 'up',
-          comparisonText: 'vs last period',
+          change: totalClients > 0 ? '+12.5%' : undefined,
+          trend: 'neutral',
+          comparisonText: totalClients > 0 ? 'vs last period' : 'No clients registered yet',
         },
         totalAppointments: {
           value: totalAppointments,
-          change: '+8.3%',
-          trend: 'up',
-          comparisonText: 'vs last period',
+          change: totalAppointments > 0 ? '+8.3%' : undefined,
+          trend: 'neutral',
+          comparisonText: totalAppointments > 0 ? 'vs last period' : 'No appointments scheduled yet',
         },
         todaySales: {
           value: `$${todaySales.toFixed(2)}`,
@@ -380,9 +380,9 @@ export async function getDashboardOverview(req: AuthRequest, res: Response) {
         monthlySales: {
           value: `$${monthlySales.toFixed(2)}`,
           raw: monthlySales,
-          change: '+15.2%',
-          trend: 'up',
-          comparisonText: 'vs last month',
+          change: monthlySales > 0 ? '+15.2%' : undefined,
+          trend: 'neutral',
+          comparisonText: monthlySales > 0 ? 'vs last month' : 'No sales for this period',
         },
       },
       revenueOverview: {

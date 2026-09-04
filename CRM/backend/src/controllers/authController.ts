@@ -12,14 +12,21 @@ export async function login(req: Request, res: Response) {
     return fail(res, 'VALIDATION_ERROR', 'Email and password are required');
   }
 
-  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+  const clean = email.toLowerCase().trim();
+  const targetEmail = clean === 'admin' ? 'admin@auravitalstar.ca' : clean;
+
+  if (targetEmail !== 'admin@auravitalstar.ca') {
+    return unauthorized(res, 'Invalid username or password. Access denied.');
+  }
+
+  const user = await prisma.user.findUnique({ where: { email: targetEmail } });
   if (!user || !user.active) {
-    return unauthorized(res, 'Invalid credentials');
+    return unauthorized(res, 'Invalid username or password. Access denied.');
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
-    return unauthorized(res, 'Invalid credentials');
+    return unauthorized(res, 'Invalid username or password. Access denied.');
   }
 
   const token = jwt.sign(

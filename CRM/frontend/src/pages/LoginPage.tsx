@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
-import { loginApi, getToken, setStoredUser } from '../services/apiClient';
+import { loginApi, getToken, setStoredUser, clearToken, getMeApi } from '../services/apiClient';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,28 +15,39 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (getToken()) {
-      navigate('/dashboard', { replace: true });
+    const token = getToken();
+    if (token) {
+      getMeApi().then((res) => {
+        if (res.success) {
+          navigate('/dashboard', { replace: true });
+        } else {
+          clearToken();
+        }
+      });
     }
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError('Email and password are required');
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
+      setError('Email/Username and password are required');
       return;
     }
     setLoading(true);
     setError('');
 
-    const result = await loginApi(email, password);
+    clearToken();
+
+    const result = await loginApi(cleanEmail, password);
     setLoading(false);
 
-    if (result.success) {
+    if (result.success && (result.data as any)?.token) {
       setStoredUser((result.data as any).user);
       navigate(from, { replace: true });
     } else {
-      setError((result as any).error?.message || 'Login failed. Please check your credentials.');
+      clearToken();
+      setError((result as any).error?.message || 'Invalid username or password. Access denied.');
     }
   };
 
