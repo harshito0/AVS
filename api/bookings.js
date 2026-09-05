@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { recordWebsiteBooking } from './crmStore.js';
 
 const SMTP_HOST = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
@@ -46,7 +47,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       status: 'ok',
       service: 'Aura Vital Star Serverless Booking & Email API',
-      configuredGmail: GMAIL_USER
+      configuredGmail: SMTP_USER
     });
   }
 
@@ -72,6 +73,14 @@ export default async function handler(req, res) {
       createdAt: new Date().toISOString(),
       status: 'PENDING'
     };
+
+    // Save to CRM persistent database / store immediately
+    let crmResult = null;
+    try {
+      crmResult = recordWebsiteBooking(fullBooking);
+    } catch (storeErr) {
+      console.error('[Bookings API] Error saving to CRM store:', storeErr.message);
+    }
 
     const customerHtml = `
       <!DOCTYPE html>
@@ -187,6 +196,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       booking: fullBooking,
+      crmAppointment: crmResult?.appointment,
+      crmClient: crmResult?.client,
       otp: otpCode,
       emailSent,
       emailError

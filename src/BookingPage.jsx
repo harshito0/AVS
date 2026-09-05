@@ -473,15 +473,17 @@ export default function BookingPage({
   };
 
   // Final Confirmation
-  const handleConfirmAppointment = () => {
+  const handleConfirmAppointment = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      const newRecord = createBooking({
+    try {
+      const newRecord = await createBooking({
         name: customerDetails.name,
+        customerName: customerDetails.name,
         phone: customerDetails.phone,
         email: customerDetails.email,
         notes: customerDetails.notes,
         location: selectedLocation.name,
+        locationName: selectedLocation.name,
         service: selectedService.title,
         serviceCategory: selectedService.category,
         duration: selectedService.duration,
@@ -495,7 +497,10 @@ export default function BookingPage({
       setIsSubmitting(false);
       setStep(6); // Success screen
       window.scrollTo({ top: 80, behavior: 'smooth' });
-    }, 1400);
+    } catch (err) {
+      console.error('Failed to submit appointment:', err);
+      setIsSubmitting(false);
+    }
   };
 
   // Reset for another appointment

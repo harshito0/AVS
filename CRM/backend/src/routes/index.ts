@@ -121,9 +121,10 @@ router.post('/leads', authenticate, createLead);
 router.patch('/leads/:id', authenticate, updateLead);
 router.delete('/leads/:id', authenticate, deleteLead);
 
-// ---- Appointments (POST is public for website booking) ----
+// ---- Appointments & Bookings (POST is public for website booking) ----
 router.get('/appointments', authenticate, getAppointments);
 router.post('/appointments', createAppointment);
+router.post('/bookings', createAppointment);
 router.get('/appointments/:id', authenticate, getAppointment);
 router.patch('/appointments/:id', authenticate, updateAppointment);
 router.post('/appointments/:id/confirm', authenticate, confirmAppointment);

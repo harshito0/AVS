@@ -99,47 +99,100 @@ export async function getAppointment(req: Request, res: Response) {
   }
 }
 
-// POST /api/appointments â€” Public: website/QR booking
+// POST /api/appointments — Public: website/QR booking
 export async function createAppointment(req: Request, res: Response) {
   try {
-    const { name, phone, email, service, serviceCategory, locationId, locationName, date, time, duration, notes, source } = req.body;
+    const {
+      id,
+      name,
+      customerName,
+      clientName,
+      phone,
+      guestPhone,
+      email,
+      guestEmail,
+      service,
+      serviceName,
+      serviceCategory,
+      locationId,
+      locationName,
+      location: locParam,
+      date,
+      time,
+      duration,
+      notes,
+      source,
+      amount,
+    } = req.body;
 
-    if (!name || !phone || !service || !date || !time) {
+    const guestName = (name || customerName || clientName || 'Valued Guest').trim();
+    const guestPhoneNumber = (phone || guestPhone || '').trim();
+    const guestEmailAddress = (email || guestEmail || '').toLowerCase().trim();
+    const apptService = service || serviceName || 'AVS Signature Treatment';
+    const apptDate = date || new Date().toISOString().split('T')[0];
+    const apptTime = time || '10:00 AM';
+
+    if (!guestName || !guestPhoneNumber || !apptService || !apptDate || !apptTime) {
       return fail(res, 'VALIDATION_ERROR', 'Name, phone, service, date, and time are required');
     }
-    if (!locationId && !locationName) {
-      return fail(res, 'VALIDATION_ERROR', 'Location is required');
+
+    const apptId = id || `APT-${Date.now().toString().slice(-8)}`;
+
+    // Deduplication: if appointment already exists, return existing
+    const existing = await prisma.appointment.findUnique({
+      where: { id: apptId },
+      include: { client: true, location: true },
+    });
+    if (existing) {
+      return ok(res, existing);
     }
 
     // Resolve location
     let location = null;
     if (locationId) {
       location = await prisma.location.findUnique({ where: { id: locationId } });
-    } else if (locationName) {
-      location = await prisma.location.findFirst({ where: { name: { contains: locationName } } });
+    }
+    if (!location && (locationName || locParam)) {
+      const target = (locationName || locParam).toString().toLowerCase();
+      const locTerm = target.includes('mississauga') ? 'Mississauga' : 'Brampton';
+      location = await prisma.location.findFirst({
+        where: {
+          OR: [
+            { shortName: { contains: locTerm } },
+            { name: { contains: locTerm } },
+          ],
+        },
+      });
     }
 
     // Find or create client
-    const client = await findOrCreateClient({ name, phone, email, locationId: location?.id });
+    const client = await findOrCreateClient({
+      name: guestName,
+      phone: guestPhoneNumber,
+      email: guestEmailAddress || undefined,
+      locationId: location?.id,
+    });
+
+    const parsedAmount = Number(amount) || 100;
 
     // Create appointment
-    const apptId = `APT-${Date.now().toString().slice(-8)}`;
     const appointment = await prisma.appointment.create({
       data: {
         id: apptId,
         clientId: client.id,
         locationId: location?.id || null,
-        serviceName: service,
+        serviceName: apptService,
         serviceCategory: serviceCategory || null,
-        guestName: name,
-        guestPhone: phone,
-        guestEmail: email || null,
-        date,
-        time,
+        guestName,
+        guestPhone: guestPhoneNumber,
+        guestEmail: guestEmailAddress || null,
+        date: apptDate,
+        time: apptTime,
         duration: duration || '60 min',
         status: 'Pending',
         source: source || 'Website',
         notes: notes || null,
+        amount: parsedAmount,
       },
       include: { client: true, location: true },
     });
@@ -147,14 +200,19 @@ export async function createAppointment(req: Request, res: Response) {
     // Update client stats
     await prisma.client.update({
       where: { id: client.id },
-      data: { totalVisits: { increment: 1 }, lastVisit: date, lastService: service },
+      data: {
+        totalVisits: { increment: 1 },
+        totalSpent: { increment: parsedAmount },
+        lastVisit: apptDate,
+        lastService: apptService,
+      },
     });
 
     // Create CRM notification
     await prisma.notification.create({
       data: {
-        title: 'New Appointment',
-        message: `${name} booked ${service} on ${date} at ${time}`,
+        title: 'New Appointment Booked',
+        message: `${guestName} booked ${apptService} on ${apptDate} at ${apptTime} (${location?.shortName || 'Brampton'})`,
         type: 'appointment',
       },
     });
@@ -162,14 +220,14 @@ export async function createAppointment(req: Request, res: Response) {
     // Send emails (non-blocking)
     sendBookingConfirmationEmail({
       id: apptId,
-      customerName: name,
-      phone,
-      email,
-      service,
-      location: location?.name || locationName || 'AVS Centre',
-      date,
-      time,
-      duration,
+      customerName: guestName,
+      phone: guestPhoneNumber,
+      email: guestEmailAddress,
+      service: apptService,
+      location: location?.name || locationName || locParam || 'AVS Centre',
+      date: apptDate,
+      time: apptTime,
+      duration: duration || '60 min',
       notes,
     }).catch(console.error);
 

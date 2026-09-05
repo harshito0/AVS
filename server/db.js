@@ -68,6 +68,7 @@ export function insertBooking(bookingData) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        id: newRecord.id,
         name: newRecord.customerName,
         phone: newRecord.phone,
         email: newRecord.email,

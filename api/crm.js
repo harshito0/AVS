@@ -5,6 +5,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { loadCrmStore, saveCrmStore, recordWebsiteBooking } from './crmStore.js';
 
 // Initial Seed Data: Locations
 const DEFAULT_LOCATIONS = [
@@ -56,7 +57,7 @@ const DEFAULT_INVOICES = [];
 const DEFAULT_GIFTCARDS = [];
 const DEFAULT_NOTIFICATIONS = [];
 
-// Clean In-Memory Store for Serverless Runtime (Zero Dummy Data)
+// Clean Working Store for Serverless Runtime
 let clients = [];
 let appointments = [];
 let leads = [];
@@ -65,6 +66,29 @@ let giftCards = [];
 let services = [...DEFAULT_SERVICES];
 let packages = [...DEFAULT_PACKAGES];
 let notifications = [];
+
+export function syncFromStore() {
+  const store = loadCrmStore();
+  clients = store.clients || [];
+  appointments = store.appointments || [];
+  leads = store.leads || [];
+  invoices = store.invoices || [];
+  giftCards = store.giftCards || [];
+  notifications = store.notifications || [];
+  if (Array.isArray(store.services) && store.services.length) {
+    services = store.services;
+  } else {
+    store.services = [...DEFAULT_SERVICES];
+    services = store.services;
+  }
+  if (Array.isArray(store.packages) && store.packages.length) {
+    packages = store.packages;
+  } else {
+    store.packages = [...DEFAULT_PACKAGES];
+    packages = store.packages;
+  }
+  return store;
+}
 
 // Helper: Read JSON Body
 function readBody(req) {
@@ -84,6 +108,7 @@ function readBody(req) {
 
 // Dynamic Dashboard Aggregation Engine
 function computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, endDateParam) {
+  syncFromStore();
   let start = startDateParam;
   let end = endDateParam;
   const todayStr = new Date().toISOString().split('T')[0];
@@ -322,6 +347,8 @@ export default async function handler(req, res) {
   };
 
   try {
+    syncFromStore();
+
     // 1. HEALTH CHECK
     if (pathname === '/api/health' || pathname === '/api/crm' || pathname === '/api') {
       return json(200, { success: true, status: 'ok', service: 'AVS Unified Serverless CRM API', timestamp: new Date().toISOString() });
@@ -418,39 +445,25 @@ export default async function handler(req, res) {
       }
     }
 
-    // 6. APPOINTMENTS
-    if (pathname.startsWith('/api/appointments')) {
+    // 6. APPOINTMENTS & BOOKINGS
+    if (pathname.startsWith('/api/appointments') || pathname === '/api/bookings') {
       const parts = pathname.split('/').filter(Boolean);
-      // /api/appointments
-      if (parts.length === 2) {
+      // /api/appointments or /api/bookings
+      if (parts.length === 2 || pathname === '/api/bookings') {
         if (method === 'GET') {
+          syncFromStore();
           return json(200, { success: true, data: appointments });
         }
         if (method === 'POST') {
           const body = await readBody(req);
-          const newApt = {
-            id: 'apt-' + Date.now(),
-            clientName: body.name || body.clientName || 'Valued Guest',
-            clientId: body.clientId || 'cl-' + Date.now(),
-            phone: body.phone || '',
-            email: body.email || '',
-            service: body.service || 'Signature Treatment',
-            serviceCategory: body.serviceCategory || 'Massage Therapy',
-            staff: body.staff || 'Staff Specialist',
-            location: body.locationName || body.location || 'Brampton',
-            date: body.date || new Date().toISOString().split('T')[0],
-            time: body.time || '10:00 AM',
-            duration: body.duration || '60 min',
-            status: body.status || 'Confirmed',
-            amount: body.amount || 100,
-            notes: body.notes || ''
-          };
-          appointments.unshift(newApt);
-          return json(201, { success: true, data: newApt });
+          const result = recordWebsiteBooking(body);
+          syncFromStore();
+          return json(201, { success: true, data: result.appointment, client: result.client });
         }
       }
       // Status update actions
       if (parts.length >= 3) {
+        syncFromStore();
         const id = parts[2];
         const action = parts[3];
         const apt = appointments.find(a => a.id === id);
@@ -464,6 +477,7 @@ export default async function handler(req, res) {
           const body = await readBody(req);
           Object.assign(apt, body);
         }
+        saveCrmStore({ appointments });
         return json(200, { success: true, data: apt });
       }
     }
@@ -472,7 +486,10 @@ export default async function handler(req, res) {
     if (pathname.startsWith('/api/clients')) {
       const parts = pathname.split('/').filter(Boolean);
       if (parts.length === 2) {
-        if (method === 'GET') return json(200, { success: true, data: clients });
+        if (method === 'GET') {
+          syncFromStore();
+          return json(200, { success: true, data: clients });
+        }
         if (method === 'POST') {
           const body = await readBody(req);
           const newClient = {
@@ -491,10 +508,12 @@ export default async function handler(req, res) {
             createdAt: new Date().toISOString().split('T')[0]
           };
           clients.unshift(newClient);
+          saveCrmStore({ clients });
           return json(201, { success: true, data: newClient });
         }
       }
       if (parts.length === 3) {
+        syncFromStore();
         const id = parts[2];
         const client = clients.find(c => c.id === id);
         if (!client) return json(404, { success: false, error: { message: 'Client not found' } });
@@ -502,6 +521,7 @@ export default async function handler(req, res) {
         if (method === 'PATCH') {
           const body = await readBody(req);
           Object.assign(client, body);
+          saveCrmStore({ clients });
           return json(200, { success: true, data: client });
         }
       }

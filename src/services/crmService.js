@@ -141,11 +141,13 @@ export async function createBooking(bookingData) {
 
   const newBooking = {
     id: generateBookingId(),
+    name: bookingData.name || bookingData.customerName || 'Valued Guest',
     customerName: bookingData.name || bookingData.customerName || 'Valued Guest',
     phone: bookingData.phone || '',
     email: bookingData.email || '',
     otp: otpCode,
     location: bookingData.location || 'Brampton Rejuvenation Centre',
+    locationName: bookingData.location || 'Brampton Rejuvenation Centre',
     service: bookingData.service || 'AVS Signature Treatment',
     serviceCategory: bookingData.serviceCategory || 'General Wellness',
     duration: bookingData.duration || '60 min',
@@ -164,7 +166,36 @@ export async function createBooking(bookingData) {
     console.error('Failed to save booking to CRM:', err);
   }
 
-  // Send to backend database and trigger real email + OTP
+  // 1. Post to CRM appointments endpoint (registers in CRM database, creates client, creates notification)
+  try {
+    const aptRes = await fetch('/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: newBooking.id,
+        name: newBooking.customerName,
+        customerName: newBooking.customerName,
+        phone: newBooking.phone,
+        email: newBooking.email,
+        service: newBooking.service,
+        serviceCategory: newBooking.serviceCategory,
+        locationName: newBooking.location,
+        location: newBooking.location,
+        date: newBooking.date,
+        time: newBooking.time,
+        duration: newBooking.duration,
+        notes: newBooking.notes,
+        source: newBooking.source
+      })
+    });
+    if (aptRes.ok) {
+      console.log('✅ Appointment registered in CRM database');
+    }
+  } catch (aptErr) {
+    console.warn('CRM appointment endpoint notice:', aptErr.message);
+  }
+
+  // 2. Post to /api/bookings for customer verification email, admin alert, and backup sync
   try {
     const res = await fetch('/api/bookings', {
       method: 'POST',
@@ -173,16 +204,16 @@ export async function createBooking(bookingData) {
     });
     if (res.ok) {
       const data = await res.json();
-      console.log('✅ Booking saved in database & email sent:', data);
+      console.log('✅ Booking emails dispatched:', data);
       if (data.otp) {
         newBooking.otp = data.otp;
       }
     } else {
       const errText = await res.text();
-      console.warn('Backend returned error status:', res.status, errText);
+      console.warn('Booking endpoint status:', res.status, errText);
     }
   } catch (err) {
-    console.warn('Backend API not reachable; saved locally:', err);
+    console.warn('Booking email dispatch notice:', err.message);
   }
 
   return newBooking;
