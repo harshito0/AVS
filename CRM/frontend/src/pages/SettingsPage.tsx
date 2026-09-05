@@ -81,11 +81,11 @@ export const SettingsPage: React.FC = () => {
 
               {/* Official Brand Logo Showcase */}
               <div className="p-4 rounded-xl border border-[#D9E2DC] bg-[#FAFBF9] flex items-center gap-4">
-                <div className="w-18 h-18 rounded-xl bg-white p-2 shadow-sm border border-[#C5A880]/50 shrink-0 flex items-center justify-center">
+                <div className="w-32 h-auto rounded-xl bg-white p-2 shadow-sm border border-[#C5A880]/50 shrink-0 flex items-center justify-center">
                   <img
                     src="/avs_logo.png"
                     alt="Aura Vital Star"
-                    className="w-full h-full object-contain"
+                    className="w-full h-auto object-contain"
                   />
                 </div>
                 <div>

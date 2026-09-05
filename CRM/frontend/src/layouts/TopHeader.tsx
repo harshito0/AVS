@@ -204,7 +204,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             {showProfile && (
               <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-[#E3EAE5] z-50 p-2 animate-scaleUp">
                 <div className="px-3 py-2 border-b border-slate-100 mb-1 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white p-1 shadow-xs border border-slate-200 shrink-0 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-lg bg-white p-0.5 shadow-xs border border-slate-200 shrink-0 flex items-center justify-center overflow-hidden">
                     <img src="/avs_logo.png" alt="AVS" className="w-full h-full object-contain" />
                   </div>
                   <div className="min-w-0">

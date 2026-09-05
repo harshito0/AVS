@@ -62,11 +62,11 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-md px-6 relative z-10">
         {/* Logo + Brand */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-forest-900 flex items-center justify-center shadow-lg mb-4 overflow-hidden border border-gold-500/20">
+          <div className="w-28 h-28 rounded-2xl flex items-center justify-center mb-3 overflow-hidden">
             <img
               src="/avs_logo.png"
               alt="Aura Vital Star"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
               }}
