@@ -106,20 +106,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }`}
       >
         {/* Brand Header */}
-        <div className="p-4 border-b border-[#15382A]">
+        <div className="px-3 pt-3 pb-2 border-b border-[#15382A]">
           <div
             onClick={() => navigate('/dashboard')}
-            className="flex flex-col items-center cursor-pointer select-none group py-2"
+            className="flex flex-col items-center cursor-pointer select-none group py-1"
           >
-            {/* Full Logo — large & prominent */}
+            {/* Logo — compact size */}
             <div className="w-full flex items-center justify-center mb-1">
               <img
                 src="/avs_logo.png"
                 alt="Aura Vital Star"
-                className="w-48 max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
+                className="w-28 max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
               />
             </div>
-            <p className="text-[9px] font-semibold tracking-widest uppercase text-[#6B897C] mt-1">
+            <p className="text-[9px] font-semibold tracking-widest uppercase text-[#6B897C] mt-0.5">
               CRM Admin Portal
             </p>
           </div>

@@ -3,18 +3,21 @@ import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
+import { AlertTriangle } from 'lucide-react';
 import { Client } from '../../types';
 
 export interface AddClientModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddClient: (clientData: any) => void;
+  existingClients?: Client[];
 }
 
 export const AddClientModal: React.FC<AddClientModalProps> = ({
   isOpen,
   onClose,
-  onAddClient
+  onAddClient,
+  existingClients = []
 }) => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -29,9 +32,13 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [confirmedDuplicate, setConfirmedDuplicate] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setDuplicateWarning(null);
+    setConfirmedDuplicate(false);
     if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -39,6 +46,29 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
         return next;
       });
     }
+  };
+
+  const checkForDuplicates = () => {
+    const phone = formData.phone.trim().replace(/\D/g, '');
+    const email = formData.email.trim().toLowerCase();
+
+    const phoneMatch = existingClients.find(
+      (c) => c.phone.replace(/\D/g, '') === phone && phone.length > 5
+    );
+    const emailMatch = existingClients.find(
+      (c) => c.email.toLowerCase() === email && email.includes('@')
+    );
+
+    if (phoneMatch && emailMatch && phoneMatch.id === emailMatch.id) {
+      return `A client named "${phoneMatch.name}" already has this exact phone and email on file.`;
+    }
+    if (phoneMatch) {
+      return `Phone number already used by client "${phoneMatch.name}" (${phoneMatch.email}).`;
+    }
+    if (emailMatch) {
+      return `Email already used by client "${emailMatch.name}" (${emailMatch.phone}).`;
+    }
+    return null;
   };
 
   const validate = () => {
@@ -57,6 +87,15 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
     e.preventDefault();
     if (!validate()) return;
 
+    // Check for duplicates — if warning not yet acknowledged, show it and pause
+    if (!confirmedDuplicate) {
+      const warning = checkForDuplicates();
+      if (warning) {
+        setDuplicateWarning(warning);
+        return; // Wait for user to confirm
+      }
+    }
+
     setIsSubmitting(true);
     setTimeout(() => {
       onAddClient(formData);
@@ -73,6 +112,8 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
         location: 'Brampton',
         notes: ''
       });
+      setDuplicateWarning(null);
+      setConfirmedDuplicate(false);
     }, 400);
   };
 
@@ -88,13 +129,57 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
           <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button variant="primary" size="sm" onClick={handleSubmit} isLoading={isSubmitting}>
-            Add Client
-          </Button>
+          {duplicateWarning && !confirmedDuplicate ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setConfirmedDuplicate(true);
+                setDuplicateWarning(null);
+                // Immediately submit after confirming
+                setIsSubmitting(true);
+                setTimeout(() => {
+                  onAddClient(formData);
+                  setIsSubmitting(false);
+                  onClose();
+                  setFormData({
+                    firstName: '',
+                    lastName: '',
+                    phone: '',
+                    email: '',
+                    dob: '',
+                    gender: 'Female',
+                    location: 'Brampton',
+                    notes: ''
+                  });
+                }, 400);
+              }}
+              isLoading={isSubmitting}
+            >
+              Add Anyway
+            </Button>
+          ) : (
+            <Button variant="primary" size="sm" onClick={handleSubmit} isLoading={isSubmitting}>
+              Add Client
+            </Button>
+          )}
         </>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+
+        {/* Duplicate Warning Banner */}
+        {duplicateWarning && (
+          <div className="flex items-start gap-3 p-3.5 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
+            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className="text-xs leading-relaxed">
+              <p className="font-bold mb-0.5">Possible Duplicate Client Detected</p>
+              <p>{duplicateWarning}</p>
+              <p className="mt-1 text-amber-600">Click <strong>Add Anyway</strong> to create a new record, or <strong>Cancel</strong> to go back and search for the existing client.</p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="First Name *"

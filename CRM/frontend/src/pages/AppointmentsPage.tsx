@@ -375,6 +375,7 @@ export const AppointmentsPage: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddAppointment={handleAddAppointment}
+        existingAppointments={appointments}
       />
     </div>
   );

@@ -437,6 +437,7 @@ export const ClientsPage: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddClient={handleAddClient}
+        existingClients={clients}
       />
 
       {/* Confirmation Modal for Delete */}

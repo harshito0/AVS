@@ -4,8 +4,9 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { InvoiceItem, Client } from '../../types';
-import { Plus, Trash2, Info } from 'lucide-react';
+import { Plus, Trash2, Info, Gift, Tag, CheckCircle2, AlertTriangle, X } from 'lucide-react';
 import { clientService } from '../../services/clientService';
+import { giftCardService } from '../../services/giftCardService';
 
 export interface CreateInvoiceModalProps {
   isOpen: boolean;
@@ -62,6 +63,14 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   const [customTaxRate, setCustomTaxRate] = useState<number>(13);
   const [taxLabel, setTaxLabel] = useState('HST (13%)');
   const [showCustomTax, setShowCustomTax] = useState(false);
+
+  // Gift Voucher Redemption state
+  const [showVoucherPanel, setShowVoucherPanel] = useState(false);
+  const [voucherCode, setVoucherCode] = useState('');
+  const [voucherLookupStatus, setVoucherLookupStatus] = useState<'idle' | 'loading' | 'found' | 'error'>('idle');
+  const [voucherCard, setVoucherCard] = useState<any>(null);
+  const [voucherRedeemAmount, setVoucherRedeemAmount] = useState<number>(0);
+  const [voucherApplied, setVoucherApplied] = useState(false);
 
   const [items, setItems] = useState<InvoiceItem[]>([
     { id: 'item-init-1', service: 'RMT Massage Therapy', quantity: 1, price: 100.00, amount: 100.00 }
@@ -136,12 +145,46 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
     }
   };
 
+  // Gift voucher lookup
+  const handleVoucherLookup = async () => {
+    if (!voucherCode.trim()) return;
+    setVoucherLookupStatus('loading');
+    setVoucherCard(null);
+    setVoucherApplied(false);
+    try {
+      const card = await giftCardService.findByCardNumber(voucherCode.trim());
+      if (card && card.status === 'Active' && card.balance > 0) {
+        setVoucherCard(card);
+        setVoucherRedeemAmount(Math.min(card.balance, subtotal));
+        setVoucherLookupStatus('found');
+      } else if (card && (card.status !== 'Active' || card.balance <= 0)) {
+        setVoucherCard(card);
+        setVoucherLookupStatus('error');
+      } else {
+        setVoucherLookupStatus('error');
+        setVoucherCard(null);
+      }
+    } catch {
+      setVoucherLookupStatus('error');
+      setVoucherCard(null);
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setVoucherApplied(false);
+    setVoucherCard(null);
+    setVoucherCode('');
+    setVoucherLookupStatus('idle');
+    setVoucherRedeemAmount(0);
+  };
+
   // Calculations
   const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
   const taxAmount = taxEnabled
     ? Math.round(subtotal * (effectiveTaxRate / 100) * 100) / 100
     : 0;
-  const total = Math.max(0, Math.round((subtotal + taxAmount - discount) * 100) / 100);
+  const appliedVoucherAmount = voucherApplied ? Math.min(voucherRedeemAmount, subtotal + taxAmount) : 0;
+  const total = Math.max(0, Math.round((subtotal + taxAmount - discount - appliedVoucherAmount) * 100) / 100);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,6 +206,8 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       taxLabel: taxEnabled ? taxLabel : 'No Tax',
       taxEnabled,
       discount,
+      giftVoucherCode: voucherApplied ? voucherCard?.cardNumber : undefined,
+      giftVoucherAmount: voucherApplied ? appliedVoucherAmount : 0,
       total,
       paymentMethod,
       notes
@@ -447,6 +492,122 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
           )}
         </div>
 
+        {/* GIFT VOUCHER REDEMPTION */}
+        <div className="rounded-xl border border-[#E3EAE5] bg-white overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowVoucherPanel(p => !p)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-[#F8FAF8] border-b border-[#E3EAE5] hover:bg-forest-50/60 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Gift className="w-3.5 h-3.5 text-forest-700" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                Redeem Gift Voucher
+              </span>
+              {voucherApplied && (
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  −${appliedVoucherAmount.toFixed(2)} applied
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] text-slate-400 font-medium">{showVoucherPanel ? 'Hide' : 'Enter code'}</span>
+          </button>
+
+          {showVoucherPanel && (
+            <div className="p-4 space-y-3">
+              {/* Applied voucher summary */}
+              {voucherApplied && voucherCard ? (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-emerald-800">{voucherCard.cardNumber}</p>
+                      <p className="text-[11px] text-emerald-600">Recipient: {voucherCard.recipient} · Balance after: ${(voucherCard.balance - appliedVoucherAmount).toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={handleRemoveVoucher} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Code input + lookup */}
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={voucherCode}
+                        onChange={(e) => { setVoucherCode(e.target.value.toUpperCase()); setVoucherLookupStatus('idle'); setVoucherCard(null); setVoucherApplied(false); }}
+                        placeholder="Enter gift voucher code (e.g. GC-2025-XXXX)"
+                        className="w-full bg-white border border-[#D9E2DC] rounded-lg text-xs p-2.5 focus:ring-1 focus:ring-forest-800 font-mono tracking-widest uppercase"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleVoucherLookup}
+                      isLoading={voucherLookupStatus === 'loading'}
+                    >
+                      <Tag className="w-3.5 h-3.5" />
+                      Validate
+                    </Button>
+                  </div>
+
+                  {/* Lookup error */}
+                  {voucherLookupStatus === 'error' && (
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        {voucherCard
+                          ? `This voucher (${voucherCard.cardNumber}) is ${voucherCard.status === 'Redeemed' ? 'fully redeemed' : voucherCard.status === 'Expired' ? 'expired' : 'inactive'} and cannot be applied.`
+                          : 'Gift voucher not found. Please check the code and try again.'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Found — show details + amount input */}
+                  {voucherLookupStatus === 'found' && voucherCard && (
+                    <div className="p-3 rounded-xl bg-forest-50 border border-forest-100 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-forest-900">{voucherCard.cardNumber}</p>
+                          <p className="text-[11px] text-slate-500">Recipient: {voucherCard.recipient} · Expires: {voucherCard.expiryDate}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-slate-500">Available Balance</p>
+                          <p className="text-base font-bold text-forest-900">${voucherCard.balance.toFixed(2)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1 uppercase tracking-wide">Redeem Amount ($)</label>
+                          <input
+                            type="number"
+                            min="0.01"
+                            max={Math.min(voucherCard.balance, subtotal + taxAmount)}
+                            step="0.01"
+                            value={voucherRedeemAmount}
+                            onChange={(e) => setVoucherRedeemAmount(Math.min(parseFloat(e.target.value) || 0, voucherCard.balance, subtotal + taxAmount))}
+                            className="w-full bg-white border border-[#D9E2DC] rounded-lg text-xs p-2 text-right"
+                          />
+                        </div>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setVoucherApplied(true)}
+                          disabled={voucherRedeemAmount <= 0}
+                        >
+                          Apply Voucher
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* SUMMARY + DISCOUNT */}
         <div className="p-4 rounded-xl bg-forest-50/50 border border-forest-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex flex-col gap-3 w-full sm:w-48">
@@ -494,6 +655,13 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               <div className="flex justify-between text-emerald-600">
                 <span>Discount:</span>
                 <span className="font-semibold">-${discount.toFixed(2)}</span>
+              </div>
+            )}
+
+            {voucherApplied && appliedVoucherAmount > 0 && (
+              <div className="flex justify-between text-violet-600">
+                <span className="flex items-center gap-1"><Gift className="w-3 h-3" /> Gift Voucher ({voucherCard?.cardNumber}):</span>
+                <span className="font-semibold">-${appliedVoucherAmount.toFixed(2)}</span>
               </div>
             )}
 
