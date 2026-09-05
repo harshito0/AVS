@@ -1,16 +1,49 @@
 // ============================================================
 // Aura Vital Star — Centralized CRM Persistent Data Store
 // Shared across serverless functions (api/crm.js & api/bookings.js)
-// Real-time CMS for Services, Packages, and Gallery
+// Real-time CMS for Services, Packages, Gallery, Appointments, Clients, Leads
+//
+// PERSISTENCE STRATEGY:
+//   - ON VERCEL:  Uses Upstash Redis (permanent, cross-instance, cross-deployment)
+//   - LOCAL DEV:  Uses server/data/avs_crm_store.json (file-based, unchanged)
 // ============================================================
 
 import fs from 'fs';
 import path from 'path';
 
-export const STORE_PATH = process.env.VERCEL
-  ? '/tmp/avs_crm_store.json'
-  : path.join(process.cwd(), 'server', 'data', 'avs_crm_store.json');
+// ──────────────────────────────────────────────────────────────
+// Redis client (lazy-initialised only on Vercel)
+// ──────────────────────────────────────────────────────────────
+const IS_VERCEL = !!(process.env.VERCEL || process.env.UPSTASH_REDIS_REST_URL);
+const REDIS_KEY  = 'avs_crm_store';
 
+let _redisClient = null;
+
+async function getRedis() {
+  if (_redisClient) return _redisClient;
+  if (!IS_VERCEL) return null;
+
+  const url   = process.env.UPSTASH_REDIS_REST_URL   || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN  || process.env.KV_REST_API_TOKEN;
+
+  if (!url || !token) {
+    console.warn('[CRM Store] Redis env vars not set — falling back to in-memory.');
+    return null;
+  }
+
+  const { Redis } = await import('@upstash/redis');
+  _redisClient = new Redis({ url, token });
+  return _redisClient;
+}
+
+// ──────────────────────────────────────────────────────────────
+// Local (dev) file path — never used on Vercel
+// ──────────────────────────────────────────────────────────────
+export const STORE_PATH = path.join(process.cwd(), 'server', 'data', 'avs_crm_store.json');
+
+// ──────────────────────────────────────────────────────────────
+// Default Seed Data
+// ──────────────────────────────────────────────────────────────
 export const DEFAULT_SERVICES = [
   {
     id: 'svc-1',
@@ -203,7 +236,9 @@ export const DEFAULT_GALLERY = [
   }
 ];
 
-// Memory store fallback
+// ──────────────────────────────────────────────────────────────
+// In-memory fallback store (used locally or when Redis unavailable)
+// ──────────────────────────────────────────────────────────────
 let store = {
   clients: [],
   appointments: [],
@@ -217,73 +252,138 @@ let store = {
   lastUpdated: new Date().toISOString()
 };
 
-/**
- * Loads the current store from disk (/tmp on Vercel or local JSON)
- */
-export function loadCrmStore() {
+// ──────────────────────────────────────────────────────────────
+// LOCAL DEV: file-based helpers
+// ──────────────────────────────────────────────────────────────
+function loadFromFile() {
   try {
     if (fs.existsSync(STORE_PATH)) {
       const raw = fs.readFileSync(STORE_PATH, 'utf-8');
       if (raw && raw.trim().length > 0) {
         const parsed = JSON.parse(raw);
-        store.clients = Array.isArray(parsed.clients) ? parsed.clients : [];
-        store.appointments = Array.isArray(parsed.appointments) ? parsed.appointments : [];
-        store.leads = Array.isArray(parsed.leads) ? parsed.leads : [];
-        store.invoices = Array.isArray(parsed.invoices) ? parsed.invoices : [];
-        store.giftCards = Array.isArray(parsed.giftCards) ? parsed.giftCards : [];
+        store.clients       = Array.isArray(parsed.clients)       ? parsed.clients       : [];
+        store.appointments  = Array.isArray(parsed.appointments)  ? parsed.appointments  : [];
+        store.leads         = Array.isArray(parsed.leads)         ? parsed.leads         : [];
+        store.invoices      = Array.isArray(parsed.invoices)      ? parsed.invoices      : [];
+        store.giftCards     = Array.isArray(parsed.giftCards)     ? parsed.giftCards     : [];
         store.notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
-        store.services = Array.isArray(parsed.services) ? parsed.services : [...DEFAULT_SERVICES];
-        store.packages = Array.isArray(parsed.packages) ? parsed.packages : [...DEFAULT_PACKAGES];
-        store.gallery = Array.isArray(parsed.gallery) ? parsed.gallery : [...DEFAULT_GALLERY];
+        store.services      = Array.isArray(parsed.services)      ? parsed.services      : [...DEFAULT_SERVICES];
+        store.packages      = Array.isArray(parsed.packages)      ? parsed.packages      : [...DEFAULT_PACKAGES];
+        store.gallery       = Array.isArray(parsed.gallery)       ? parsed.gallery       : [...DEFAULT_GALLERY];
       }
     }
   } catch (err) {
-    console.error('[CRM Store] Error loading store:', err.message);
+    console.error('[CRM Store] Error reading file store:', err.message);
   }
   return store;
 }
 
-/**
- * Persists the store to disk atomically
- */
-export function saveCrmStore(updatedStore) {
+function saveToFile() {
   try {
-    if (updatedStore) {
-      store = { ...store, ...updatedStore };
-    }
-    store.lastUpdated = new Date().toISOString();
     const dir = path.dirname(STORE_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    store.lastUpdated = new Date().toISOString();
     fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2), 'utf-8');
   } catch (err) {
-    console.error('[CRM Store] Error saving store:', err.message);
+    console.error('[CRM Store] Error writing file store:', err.message);
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+// VERCEL: Redis helpers
+// ──────────────────────────────────────────────────────────────
+async function loadFromRedis() {
+  const redis = await getRedis();
+  if (!redis) return null;
+  try {
+    const data = await redis.get(REDIS_KEY);
+    if (!data) return null;
+    // Upstash returns already-parsed JSON objects
+    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+    store.clients       = Array.isArray(parsed.clients)       ? parsed.clients       : [];
+    store.appointments  = Array.isArray(parsed.appointments)  ? parsed.appointments  : [];
+    store.leads         = Array.isArray(parsed.leads)         ? parsed.leads         : [];
+    store.invoices      = Array.isArray(parsed.invoices)      ? parsed.invoices      : [];
+    store.giftCards     = Array.isArray(parsed.giftCards)     ? parsed.giftCards     : [];
+    store.notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
+    store.services      = Array.isArray(parsed.services)      ? parsed.services      : [...DEFAULT_SERVICES];
+    store.packages      = Array.isArray(parsed.packages)      ? parsed.packages      : [...DEFAULT_PACKAGES];
+    store.gallery       = Array.isArray(parsed.gallery)       ? parsed.gallery       : [...DEFAULT_GALLERY];
+    return store;
+  } catch (err) {
+    console.error('[CRM Store] Error reading Redis store:', err.message);
+    return null;
+  }
+}
+
+async function saveToRedis() {
+  const redis = await getRedis();
+  if (!redis) return;
+  try {
+    store.lastUpdated = new Date().toISOString();
+    await redis.set(REDIS_KEY, JSON.stringify(store));
+  } catch (err) {
+    console.error('[CRM Store] Error writing Redis store:', err.message);
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+// PUBLIC API — async, works in both environments
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * Loads the current store from Redis (Vercel) or local file (dev).
+ * Always returns the store object.
+ */
+export async function loadCrmStore() {
+  if (IS_VERCEL) {
+    const result = await loadFromRedis();
+    if (!result) {
+      // Redis not configured yet — use in-memory defaults and warn
+      console.warn('[CRM Store] Redis not available. Using in-memory store.');
+    }
+    return store;
+  } else {
+    return loadFromFile();
+  }
+}
+
+/**
+ * Persists the current store to Redis (Vercel) or local file (dev).
+ */
+export async function saveCrmStore(updatedStore) {
+  if (updatedStore) {
+    store = { ...store, ...updatedStore };
+  }
+  if (IS_VERCEL) {
+    await saveToRedis();
+  } else {
+    saveToFile();
   }
   return store;
 }
 
 /**
- * Retrieves the in-memory store reference
+ * Retrieves current store (alias for loadCrmStore for compatibility)
  */
-export function getCrmStore() {
+export async function getCrmStore() {
   return loadCrmStore();
 }
 
-// -------------------------------------------------------------
-// CMS: SERVICES METHODS
-// -------------------------------------------------------------
-export function getServices() {
-  const s = loadCrmStore();
+// ──────────────────────────────────────────────────────────────
+// CMS: SERVICES
+// ──────────────────────────────────────────────────────────────
+export async function getServices() {
+  const s = await loadCrmStore();
   if (!s.services || s.services.length === 0) {
-    s.services = [...DEFAULT_SERVICES];
-    saveCrmStore();
+    store.services = [...DEFAULT_SERVICES];
+    await saveCrmStore();
   }
-  return s.services;
+  return store.services;
 }
 
-export function addService(data) {
-  loadCrmStore();
+export async function addService(data) {
+  await loadCrmStore();
   const newSvc = {
     id: data.id || ('svc-' + Date.now()),
     name: data.name || data.title || 'New Service',
@@ -295,41 +395,41 @@ export function addService(data) {
     imageUrl: data.imageUrl || data.image || '/hero_massage.webp'
   };
   store.services.unshift(newSvc);
-  saveCrmStore();
+  await saveCrmStore();
   return newSvc;
 }
 
-export function updateService(id, data) {
-  loadCrmStore();
+export async function updateService(id, data) {
+  await loadCrmStore();
   const svc = store.services.find(s => s.id === id);
   if (svc) {
     Object.assign(svc, data);
-    saveCrmStore();
+    await saveCrmStore();
   }
   return svc;
 }
 
-export function deleteService(id) {
-  loadCrmStore();
+export async function deleteService(id) {
+  await loadCrmStore();
   store.services = store.services.filter(s => s.id !== id);
-  saveCrmStore();
+  await saveCrmStore();
   return { deleted: true, id };
 }
 
-// -------------------------------------------------------------
-// CMS: PACKAGES METHODS
-// -------------------------------------------------------------
-export function getPackages() {
-  const s = loadCrmStore();
+// ──────────────────────────────────────────────────────────────
+// CMS: PACKAGES
+// ──────────────────────────────────────────────────────────────
+export async function getPackages() {
+  const s = await loadCrmStore();
   if (!s.packages || s.packages.length === 0) {
-    s.packages = [...DEFAULT_PACKAGES];
-    saveCrmStore();
+    store.packages = [...DEFAULT_PACKAGES];
+    await saveCrmStore();
   }
-  return s.packages;
+  return store.packages;
 }
 
-export function addPackage(data) {
-  loadCrmStore();
+export async function addPackage(data) {
+  await loadCrmStore();
   const originalPrice = Number(data.originalPrice) || Number(data.price) || 200;
   const price = Number(data.price) || originalPrice;
   const discount = Number(data.discount) || (originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0);
@@ -348,41 +448,41 @@ export function addPackage(data) {
     imageUrl: data.imageUrl || data.image || '/hero_relaxation.webp'
   };
   store.packages.unshift(newPkg);
-  saveCrmStore();
+  await saveCrmStore();
   return newPkg;
 }
 
-export function updatePackage(id, data) {
-  loadCrmStore();
+export async function updatePackage(id, data) {
+  await loadCrmStore();
   const pkg = store.packages.find(p => p.id === id);
   if (pkg) {
     Object.assign(pkg, data);
-    saveCrmStore();
+    await saveCrmStore();
   }
   return pkg;
 }
 
-export function deletePackage(id) {
-  loadCrmStore();
+export async function deletePackage(id) {
+  await loadCrmStore();
   store.packages = store.packages.filter(p => p.id !== id);
-  saveCrmStore();
+  await saveCrmStore();
   return { deleted: true, id };
 }
 
-// -------------------------------------------------------------
-// CMS: GALLERY METHODS
-// -------------------------------------------------------------
-export function getGallery() {
-  const s = loadCrmStore();
+// ──────────────────────────────────────────────────────────────
+// CMS: GALLERY
+// ──────────────────────────────────────────────────────────────
+export async function getGallery() {
+  const s = await loadCrmStore();
   if (!s.gallery || s.gallery.length === 0) {
-    s.gallery = [...DEFAULT_GALLERY];
-    saveCrmStore();
+    store.gallery = [...DEFAULT_GALLERY];
+    await saveCrmStore();
   }
-  return s.gallery;
+  return store.gallery;
 }
 
-export function addGalleryItem(data) {
-  loadCrmStore();
+export async function addGalleryItem(data) {
+  await loadCrmStore();
   const newItem = {
     id: data.id || ('gal-' + Date.now()),
     title: data.title || 'Sanctuary Scene',
@@ -393,61 +493,63 @@ export function addGalleryItem(data) {
     dateAdded: new Date().toISOString().split('T')[0]
   };
   store.gallery.unshift(newItem);
-  saveCrmStore();
+  await saveCrmStore();
   return newItem;
 }
 
-export function updateGalleryItem(id, data) {
-  loadCrmStore();
+export async function updateGalleryItem(id, data) {
+  await loadCrmStore();
   const item = store.gallery.find(g => g.id === id);
   if (item) {
     Object.assign(item, data);
-    saveCrmStore();
+    await saveCrmStore();
   }
   return item;
 }
 
-export function deleteGalleryItem(id) {
-  loadCrmStore();
+export async function deleteGalleryItem(id) {
+  await loadCrmStore();
   store.gallery = store.gallery.filter(g => g.id !== id);
-  saveCrmStore();
+  await saveCrmStore();
   return { deleted: true, id };
 }
 
-// -------------------------------------------------------------
+// ──────────────────────────────────────────────────────────────
 // BOOKING REGISTRATION
-// -------------------------------------------------------------
-export function recordWebsiteBooking(bookingData) {
-  loadCrmStore();
+// Records a new appointment from Website, QR, or CRM manual entry
+// Creates/updates client, appointment, lead, and notification
+// ──────────────────────────────────────────────────────────────
+export async function recordWebsiteBooking(bookingData) {
+  await loadCrmStore();
 
-  const customerName = (bookingData.name || bookingData.customerName || bookingData.clientName || 'Valued Guest').trim();
-  const phone = (bookingData.phone || bookingData.guestPhone || '').trim();
-  const email = (bookingData.email || bookingData.guestEmail || '').toLowerCase().trim();
-  const service = bookingData.service || bookingData.serviceName || 'AVS Signature Treatment';
+  const customerName    = (bookingData.name || bookingData.customerName || bookingData.clientName || 'Valued Guest').trim();
+  const phone           = (bookingData.phone || bookingData.guestPhone || '').trim();
+  const email           = (bookingData.email || bookingData.guestEmail || '').toLowerCase().trim();
+  const service         = bookingData.service || bookingData.serviceName || 'AVS Signature Treatment';
   const serviceCategory = bookingData.serviceCategory || 'Massage & Wellness';
-  const rawLoc = (bookingData.locationName || bookingData.location || 'Brampton').toString().toLowerCase();
-  const location = rawLoc.includes('mississauga') ? 'Mississauga' : 'Brampton';
-  const date = bookingData.date || new Date().toISOString().split('T')[0];
-  const time = bookingData.time || '10:00 AM';
-  const duration = bookingData.duration || '60 min';
-  const notes = bookingData.notes || '';
-  const source = bookingData.source || 'Website';
-  const amount = Number(bookingData.amount) || 100;
+  const rawLoc          = (bookingData.locationName || bookingData.location || 'Brampton').toString().toLowerCase();
+  const location        = rawLoc.includes('mississauga') ? 'Mississauga' : 'Brampton';
+  const date            = bookingData.date || new Date().toISOString().split('T')[0];
+  const time            = bookingData.time || '10:00 AM';
+  const duration        = bookingData.duration || '60 min';
+  const notes           = bookingData.notes || '';
+  const source          = bookingData.source || 'Website';
+  const amount          = Number(bookingData.amount) || 100;
 
-  const year = new Date().getFullYear();
+  const year      = new Date().getFullYear();
   const randomNum = Math.floor(1000 + Math.random() * 9000);
-  const apptId = bookingData.id || `AVS-${year}-${randomNum}`;
+  const apptId    = bookingData.id || `AVS-${year}-${randomNum}`;
 
   // 1. Deduplication Check
-  const existingApt = store.appointments.find((a) => a.id === apptId);
+  const existingApt = store.appointments.find(a => a.id === apptId);
   if (existingApt) {
-    const existingClient = store.clients.find((c) => c.id === existingApt.clientId);
+    const existingClient = store.clients.find(c => c.id === existingApt.clientId);
     return { appointment: existingApt, client: existingClient };
   }
 
   // 2. Resolve or Create Client
   const normPhone = phone.replace(/\D/g, '');
-  let client = store.clients.find((c) => {
+  let client = store.clients.find(c => {
     if (email && c.email && c.email.toLowerCase() === email) return true;
     if (normPhone && c.phone && c.phone.replace(/\D/g, '').slice(-7) === normPhone.slice(-7)) return true;
     return false;
@@ -457,8 +559,8 @@ export function recordWebsiteBooking(bookingData) {
 
   if (client) {
     client.totalVisits = (client.totalVisits || 0) + 1;
-    client.totalSpent = (client.totalSpent || 0) + amount;
-    client.lastVisit = date;
+    client.totalSpent  = (client.totalSpent  || 0) + amount;
+    client.lastVisit   = date;
     client.lastService = service;
     if (!client.phone && phone) client.phone = phone;
     if (!client.email && email) client.email = email;
@@ -470,9 +572,9 @@ export function recordWebsiteBooking(bookingData) {
       firstName: nameParts[0] || 'Guest',
       lastName: nameParts.slice(1).join(' ') || '',
       fullName: customerName,
-      phone: phone,
-      email: email,
-      location: location,
+      phone,
+      email,
+      location,
       totalVisits: 1,
       totalSpent: amount,
       status: 'Active',
@@ -483,24 +585,24 @@ export function recordWebsiteBooking(bookingData) {
     store.clients.unshift(client);
   }
 
-  // 3. Create Appointment
+  // 3. Create Appointment record
   const newApt = {
     id: apptId,
     clientId: client.id,
     clientName: client.fullName,
     phone: client.phone || phone,
     email: client.email || email,
-    service: service,
-    serviceCategory: serviceCategory,
+    service,
+    serviceCategory,
     staff: bookingData.staff || 'Staff Specialist',
-    location: location,
-    date: date,
-    time: time,
-    duration: duration,
+    location,
+    date,
+    time,
+    duration,
     status: bookingData.status || 'Pending',
-    amount: amount,
-    notes: notes,
-    source: source,
+    amount,
+    notes,
+    source,
     createdAt: new Date().toISOString()
   };
   store.appointments.unshift(newApt);
@@ -517,8 +619,8 @@ export function recordWebsiteBooking(bookingData) {
 
   // 5. Attribute or Update Lead
   const existingLead = store.leads.find(
-    (l) =>
-      (email && l.email && l.email.toLowerCase() === email) ||
+    l =>
+      (email    && l.email && l.email.toLowerCase() === email) ||
       (normPhone && l.phone && l.phone.replace(/\D/g, '').slice(-7) === normPhone.slice(-7))
   );
 
@@ -526,12 +628,12 @@ export function recordWebsiteBooking(bookingData) {
     store.leads.unshift({
       id: 'ld-' + Date.now(),
       name: customerName,
-      phone: phone,
-      email: email,
-      source: source,
+      phone,
+      email,
+      source,
       status: 'Converted',
-      service: service,
-      location: location,
+      service,
+      location,
       notes: `Booked online via ${source}. Notes: ${notes}`,
       createdAt: todayStr
     });
@@ -539,8 +641,8 @@ export function recordWebsiteBooking(bookingData) {
     existingLead.status = 'Converted';
   }
 
-  // 6. Save Store
-  saveCrmStore();
+  // 6. Persist
+  await saveCrmStore();
 
   return { appointment: newApt, client };
 }

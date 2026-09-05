@@ -77,7 +77,7 @@ export default async function handler(req, res) {
     // Save to CRM persistent database / store immediately
     let crmResult = null;
     try {
-      crmResult = recordWebsiteBooking(fullBooking);
+      crmResult = await recordWebsiteBooking(fullBooking);
     } catch (storeErr) {
       console.error('[Bookings API] Error saving to CRM store:', storeErr.message);
     }

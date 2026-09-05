@@ -1,6 +1,7 @@
 // ============================================================
 // Aura Vital Star — Unified CRM Serverless API Handler (Vercel)
 // Powers all CRM dashboard endpoints directly on Vercel
+// Persistence: Upstash Redis (Vercel) | JSON file (local dev)
 // ============================================================
 
 import fs from 'fs';
@@ -45,67 +46,6 @@ const DEFAULT_LOCATIONS = [
   }
 ];
 
-const DEFAULT_SERVICES = [
-  { id: 'svc-1', name: 'RMT Massage Therapy', category: 'Massage Therapy', price: 100, duration: '60 min', status: 'Active', description: 'Registered Massage Therapy for muscle relief and restoration.' },
-  { id: 'svc-2', name: 'Deep Tissue Massage', category: 'Massage Therapy', price: 120, duration: '60 min', status: 'Active', description: 'Targets deeper layers of muscle for chronic tension relief.' },
-  { id: 'svc-3', name: 'Aroma Therapy Ritual', category: 'Massage Therapy', price: 80, duration: '60 min', status: 'Active', description: 'Essential botanical oils to soothe mind and body.' },
-  { id: 'svc-4', name: 'Hot Stone Therapy', category: 'Massage Therapy', price: 130, duration: '75 min', status: 'Active', description: 'Warm volcanic stones to relieve tension and stress.' },
-  { id: 'svc-5', name: 'Hydra Glow Facial', category: 'Facial & Skincare', price: 110, duration: '60 min', status: 'Active', description: 'Deep hydration and gentle exfoliation for radiant skin.' },
-  { id: 'svc-6', name: 'Anti-Aging Elixir Facial', category: 'Facial & Skincare', price: 140, duration: '75 min', status: 'Active', description: 'Collagen-boosting treatment for firm, youthful skin.' },
-  { id: 'svc-7', name: 'Detoxifying Mud Wrap', category: 'Body Rituals', price: 125, duration: '60 min', status: 'Active', description: 'Mineral-rich mud wrap to detoxify and nourish skin.' },
-  { id: 'svc-8', name: 'Ayurvedic Scalp Massage', category: 'Hair Spa', price: 70, duration: '45 min', status: 'Active', description: 'Herbal oils and pressure point massage for hair health.' },
-  { id: 'svc-9', name: 'AVS Luxury Pedicure', category: 'Nail Care', price: 65, duration: '50 min', status: 'Active', description: 'Exfoliation, massage, and nail care for tired feet.' },
-  { id: 'svc-10', name: 'Laser Hair Removal - Full Face', category: 'Laser & Waxing', price: 90, duration: '30 min', status: 'Active', description: 'Painless diode laser for permanent hair reduction.' },
-  { id: 'svc-11', name: 'Custom Orthotics Assessment', category: 'Orthotics', price: 150, duration: '45 min', status: 'Active', description: 'Gait analysis and biomechanical foot assessment.' },
-  { id: 'svc-12', name: 'Couples Massage Retreat', category: 'Massage Therapy', price: 220, duration: '75 min', status: 'Active', description: 'Side-by-side relaxation massage in private suite.' }
-];
-
-const DEFAULT_PACKAGES = [
-  { id: 'pkg-1', name: 'Rejuvenation Express', category: 'Wellness', sessions: 1, price: 150, originalPrice: 190, discount: 21, status: 'Active', description: '60 min RMT + Express Hydra Facial' },
-  { id: 'pkg-2', name: 'The Ultimate Glow', category: 'Beauty', sessions: 1, price: 210, originalPrice: 270, discount: 22, status: 'Active', description: 'Deep Tissue Massage + Hydra Facial + Scalp Ritual' },
-  { id: 'pkg-3', name: 'Total Body Renewal', category: 'Complete Wellness', sessions: 3, price: 420, originalPrice: 550, discount: 24, status: 'Active', description: '3 sessions combining Hot Stone, Body Scrub & Reflexology' }
-];
-
-const DEFAULT_CLIENTS = [];
-const DEFAULT_LEADS = [];
-const DEFAULT_APPOINTMENTS = [];
-const DEFAULT_INVOICES = [];
-const DEFAULT_GIFTCARDS = [];
-const DEFAULT_NOTIFICATIONS = [];
-
-// Clean Working Store for Serverless Runtime
-let clients = [];
-let appointments = [];
-let leads = [];
-let invoices = [];
-let giftCards = [];
-let services = [...DEFAULT_SERVICES];
-let packages = [...DEFAULT_PACKAGES];
-let notifications = [];
-
-export function syncFromStore() {
-  const store = loadCrmStore();
-  clients = store.clients || [];
-  appointments = store.appointments || [];
-  leads = store.leads || [];
-  invoices = store.invoices || [];
-  giftCards = store.giftCards || [];
-  notifications = store.notifications || [];
-  if (Array.isArray(store.services)) {
-    services = store.services;
-  } else {
-    store.services = [...DEFAULT_SERVICES];
-    services = store.services;
-  }
-  if (Array.isArray(store.packages)) {
-    packages = store.packages;
-  } else {
-    store.packages = [...DEFAULT_PACKAGES];
-    packages = store.packages;
-  }
-  return store;
-}
-
 // Helper: Read JSON Body
 function readBody(req) {
   return new Promise((resolve) => {
@@ -123,8 +63,8 @@ function readBody(req) {
 }
 
 // Dynamic Dashboard Aggregation Engine
-function computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, endDateParam) {
-  syncFromStore();
+function computeDashboardMetrics(store, locationParam, dateRangeParam, startDateParam, endDateParam) {
+  const { clients, appointments, invoices, leads } = store;
   let start = startDateParam;
   let end = endDateParam;
   const todayStr = new Date().toISOString().split('T')[0];
@@ -170,15 +110,15 @@ function computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, 
     return true;
   };
 
-  const filteredClients = clients.filter(c => matchLocation(c.location));
+  const filteredClients      = clients.filter(c => matchLocation(c.location));
   const filteredAppointments = appointments.filter(a => matchLocation(a.location) && matchDate(a.date));
-  const filteredInvoices = invoices.filter(i => matchLocation(i.location) && matchDate(i.date) && i.status === 'Paid');
-  const filteredLeads = leads.filter(l => matchLocation(l.location));
+  const filteredInvoices     = invoices.filter(i => matchLocation(i.location) && matchDate(i.date) && i.status === 'Paid');
+  const filteredLeads        = leads.filter(l => matchLocation(l.location));
 
   // KPIs
-  const totalClientsCount = filteredClients.length;
+  const totalClientsCount      = filteredClients.length;
   const totalAppointmentsCount = filteredAppointments.length;
-  const todayPaid = filteredInvoices.filter(i => i.date === todayStr).reduce((sum, i) => sum + (i.total || 0), 0);
+  const todayPaid    = filteredInvoices.filter(i => i.date === todayStr).reduce((sum, i) => sum + (i.total || 0), 0);
   const totalPeriodSales = filteredInvoices.reduce((sum, i) => sum + (i.total || 0), 0);
 
   // Revenue Series
@@ -192,11 +132,7 @@ function computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, 
     .sort((a, b) => a.date.localeCompare(b.date));
 
   // Appointment Status Overview
-  let completedCount = 0;
-  let upcomingCount = 0;
-  let cancelledCount = 0;
-  let noShowCount = 0;
-
+  let completedCount = 0, upcomingCount = 0, cancelledCount = 0, noShowCount = 0;
   for (const apt of filteredAppointments) {
     const s = (apt.status || 'Pending').toLowerCase();
     if (s === 'completed') completedCount++;
@@ -204,16 +140,14 @@ function computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, 
     else if (s === 'no show' || s === 'no_show') noShowCount++;
     else upcomingCount++;
   }
-
   const aptTotal = filteredAppointments.length;
   const pct = (v) => aptTotal > 0 ? Math.round((v / aptTotal) * 100) : 0;
-
   const appointmentOverview = {
     total: aptTotal,
     completed: { count: completedCount, percentage: pct(completedCount) },
-    upcoming: { count: upcomingCount, percentage: pct(upcomingCount) },
+    upcoming:  { count: upcomingCount,  percentage: pct(upcomingCount)  },
     cancelled: { count: cancelledCount, percentage: pct(cancelledCount) },
-    noShow: { count: noShowCount, percentage: pct(noShowCount) },
+    noShow:    { count: noShowCount,    percentage: pct(noShowCount)    },
   };
 
   // Location Performance (Both Locations always shown)
@@ -221,19 +155,10 @@ function computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, 
     const apts = appointments.filter(a => a.location?.toLowerCase().includes(loc.shortName.toLowerCase()) && matchDate(a.date));
     const invs = invoices.filter(i => i.location?.toLowerCase().includes(loc.shortName.toLowerCase()) && matchDate(i.date) && i.status === 'Paid');
     const sales = invs.reduce((sum, i) => sum + (i.total || 0), 0);
-    return {
-      id: loc.id,
-      name: loc.name,
-      shortName: loc.shortName,
-      appointments: apts.length,
-      sales: Math.round(sales * 100) / 100,
-    };
+    return { id: loc.id, name: loc.name, shortName: loc.shortName, appointments: apts.length, sales: Math.round(sales * 100) / 100 };
   });
   const maxSales = Math.max(...locPerf.map(l => l.sales), 1);
-  const locationPerformance = locPerf.map(l => ({
-    ...l,
-    percentage: Math.round((l.sales / maxSales) * 100),
-  }));
+  const locationPerformance = locPerf.map(l => ({ ...l, percentage: Math.round((l.sales / maxSales) * 100) }));
 
   // Top Services
   const svcMap = new Map();
@@ -261,32 +186,15 @@ function computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, 
   const recentAppointments = [...filteredAppointments]
     .sort((a, b) => (b.date + ' ' + b.time).localeCompare(a.date + ' ' + a.time))
     .slice(0, 5)
-    .map(a => ({
-      id: a.id,
-      clientName: a.clientName,
-      clientId: a.clientId,
-      service: a.service,
-      date: a.date,
-      time: a.time,
-      status: a.status,
-      location: a.location,
-      amount: a.amount,
-    }));
+    .map(a => ({ id: a.id, clientName: a.clientName, clientId: a.clientId, service: a.service, date: a.date, time: a.time, status: a.status, location: a.location, amount: a.amount }));
 
   // Lead Sources
   const srcMap = new Map();
-  for (const ld of filteredLeads) {
-    const s = ld.source || 'Website';
-    srcMap.set(s, (srcMap.get(s) || 0) + 1);
-  }
+  for (const ld of filteredLeads) { const s = ld.source || 'Website'; srcMap.set(s, (srcMap.get(s) || 0) + 1); }
   const totalLeadsCount = filteredLeads.length;
   const leadSources = {
     total: totalLeadsCount,
-    breakdown: Array.from(srcMap.entries()).map(([source, count]) => ({
-      source,
-      count,
-      percentage: totalLeadsCount > 0 ? Math.round((count / totalLeadsCount) * 100) : 0,
-    })),
+    breakdown: Array.from(srcMap.entries()).map(([source, count]) => ({ source, count, percentage: totalLeadsCount > 0 ? Math.round((count / totalLeadsCount) * 100) : 0 })),
   };
 
   return {
@@ -316,11 +224,7 @@ function computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, 
         comparisonText: totalPeriodSales > 0 ? 'vs last month' : 'No sales for this period',
       },
     },
-    revenueOverview: {
-      totalRevenue: totalPeriodSales,
-      changePercent: totalPeriodSales > 0 ? '+18.5%' : '0%',
-      series: revenueSeries,
-    },
+    revenueOverview:    { totalRevenue: totalPeriodSales, changePercent: totalPeriodSales > 0 ? '+18.5%' : '0%', series: revenueSeries },
     appointmentOverview,
     locationPerformance,
     topServices,
@@ -363,7 +267,9 @@ export default async function handler(req, res) {
   };
 
   try {
-    syncFromStore();
+    // Load the persistent store at the start of every request
+    const store = await loadCrmStore();
+    let { clients, appointments, leads, invoices, giftCards, notifications } = store;
 
     // 1. HEALTH CHECK
     if (pathname === '/api/health' || pathname === '/api/crm' || pathname === '/api') {
@@ -376,20 +282,14 @@ export default async function handler(req, res) {
       const email = (body.email || '').toLowerCase().trim();
       const password = body.password || '';
 
-      const isValidUser = (email === 'admin@auravitalstar.ca' || email === 'admin');
+      const isValidUser     = (email === 'admin@auravitalstar.ca' || email === 'admin');
       const isValidPassword = (password === 'Admin@AVS2025');
 
       if (isValidUser && isValidPassword) {
         return json(200, {
           success: true,
           data: {
-            user: {
-              id: 'usr-admin',
-              name: 'AVS Admin',
-              email: 'admin@auravitalstar.ca',
-              role: 'ADMIN',
-              location: 'All Locations'
-            },
+            user: { id: 'usr-admin', name: 'AVS Admin', email: 'admin@auravitalstar.ca', role: 'ADMIN', location: 'All Locations' },
             token: 'avs_crm_session_jwt_mock_token_admin_2025'
           }
         });
@@ -405,22 +305,10 @@ export default async function handler(req, res) {
     if (pathname === '/api/auth/me' && method === 'GET') {
       const authHeader = req.headers['authorization'] || '';
       const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
       if (token === 'avs_crm_session_jwt_mock_token_admin_2025' || (token.startsWith('eyJ') && token.length > 30)) {
-        return json(200, {
-          success: true,
-          data: {
-            id: 'usr-admin',
-            name: 'AVS Admin',
-            email: 'admin@auravitalstar.ca',
-            role: 'ADMIN'
-          }
-        });
+        return json(200, { success: true, data: { id: 'usr-admin', name: 'AVS Admin', email: 'admin@auravitalstar.ca', role: 'ADMIN' } });
       } else {
-        return json(401, {
-          success: false,
-          error: { code: 'UNAUTHORIZED', message: 'Invalid or expired session. Please log in.' }
-        });
+        return json(401, { success: false, error: { code: 'UNAUTHORIZED', message: 'Invalid or expired session. Please log in.' } });
       }
     }
 
@@ -431,15 +319,7 @@ export default async function handler(req, res) {
       if (!token || (!token.startsWith('eyJ') && token !== 'avs_crm_session_jwt_mock_token_admin_2025')) {
         return json(401, { success: false, error: { message: 'Unauthorized' } });
       }
-      saveCrmStore({
-        clients: [],
-        appointments: [],
-        leads: [],
-        invoices: [],
-        giftCards: [],
-        notifications: []
-      });
-      syncFromStore();
+      await saveCrmStore({ clients: [], appointments: [], leads: [], invoices: [], giftCards: [], notifications: [] });
       return json(200, { success: true, message: 'All test records cleared successfully. CRM is completely clean.' });
     }
 
@@ -450,12 +330,12 @@ export default async function handler(req, res) {
 
     // 5. DASHBOARD ROUTES
     if (pathname.startsWith('/api/dashboard')) {
-      const locationParam = url.searchParams.get('location') || '';
-      const dateRangeParam = url.searchParams.get('dateRange') || '';
-      const startDateParam = url.searchParams.get('startDate') || '';
-      const endDateParam = url.searchParams.get('endDate') || '';
+      const locationParam  = url.searchParams.get('location')  || '';
+      const dateRangeParam = url.searchParams.get('dateRange')  || '';
+      const startDateParam = url.searchParams.get('startDate')  || '';
+      const endDateParam   = url.searchParams.get('endDate')    || '';
 
-      const metrics = computeDashboardMetrics(locationParam, dateRangeParam, startDateParam, endDateParam);
+      const metrics = computeDashboardMetrics(store, locationParam, dateRangeParam, startDateParam, endDateParam);
 
       if (pathname === '/api/dashboard/overview' || pathname === '/api/dashboard/summary') {
         return json(200, { success: true, data: metrics });
@@ -483,36 +363,32 @@ export default async function handler(req, res) {
     // 6. APPOINTMENTS & BOOKINGS
     if (pathname.startsWith('/api/appointments') || pathname === '/api/bookings') {
       const parts = pathname.split('/').filter(Boolean);
-      // /api/appointments or /api/bookings
       if (parts.length === 2 || pathname === '/api/bookings') {
         if (method === 'GET') {
-          syncFromStore();
           return json(200, { success: true, data: appointments });
         }
         if (method === 'POST') {
           const body = await readBody(req);
-          const result = recordWebsiteBooking(body);
-          syncFromStore();
+          const result = await recordWebsiteBooking(body);
           return json(201, { success: true, data: result.appointment, client: result.client });
         }
       }
       // Status update actions
       if (parts.length >= 3) {
-        syncFromStore();
-        const id = parts[2];
+        const id     = parts[2];
         const action = parts[3];
-        const apt = appointments.find(a => a.id === id);
+        const apt    = appointments.find(a => a.id === id);
         if (!apt) return json(404, { success: false, error: { message: 'Appointment not found' } });
 
-        if (action === 'confirm') apt.status = 'Confirmed';
+        if      (action === 'confirm')  apt.status = 'Confirmed';
         else if (action === 'complete') apt.status = 'Completed';
-        else if (action === 'cancel') apt.status = 'Cancelled';
-        else if (action === 'no-show') apt.status = 'No Show';
+        else if (action === 'cancel')   apt.status = 'Cancelled';
+        else if (action === 'no-show')  apt.status = 'No Show';
         else if (method === 'PATCH') {
           const body = await readBody(req);
           Object.assign(apt, body);
         }
-        saveCrmStore({ appointments });
+        await saveCrmStore({ appointments });
         return json(200, { success: true, data: apt });
       }
     }
@@ -522,7 +398,6 @@ export default async function handler(req, res) {
       const parts = pathname.split('/').filter(Boolean);
       if (parts.length === 2) {
         if (method === 'GET') {
-          syncFromStore();
           return json(200, { success: true, data: clients });
         }
         if (method === 'POST') {
@@ -530,33 +405,32 @@ export default async function handler(req, res) {
           const newClient = {
             id: 'cl-' + Date.now(),
             firstName: body.firstName || '',
-            lastName: body.lastName || '',
-            fullName: body.fullName || `${body.firstName || ''} ${body.lastName || ''}`.trim() || 'New Client',
-            phone: body.phone || '',
-            email: body.email || '',
-            location: body.location || 'Brampton',
+            lastName:  body.lastName  || '',
+            fullName:  body.fullName  || `${body.firstName || ''} ${body.lastName || ''}`.trim() || 'New Client',
+            phone:     body.phone     || '',
+            email:     body.email     || '',
+            location:  body.location  || 'Brampton',
             totalVisits: 0,
-            totalSpent: 0,
-            status: 'Active',
+            totalSpent:  0,
+            status:    'Active',
             lastVisit: new Date().toISOString().split('T')[0],
             lastService: 'New Registration',
             createdAt: new Date().toISOString().split('T')[0]
           };
           clients.unshift(newClient);
-          saveCrmStore({ clients });
+          await saveCrmStore({ clients });
           return json(201, { success: true, data: newClient });
         }
       }
       if (parts.length === 3) {
-        syncFromStore();
-        const id = parts[2];
+        const id     = parts[2];
         const client = clients.find(c => c.id === id);
         if (!client) return json(404, { success: false, error: { message: 'Client not found' } });
         if (method === 'GET') return json(200, { success: true, data: client });
         if (method === 'PATCH') {
           const body = await readBody(req);
           Object.assign(client, body);
-          saveCrmStore({ clients });
+          await saveCrmStore({ clients });
           return json(200, { success: true, data: client });
         }
       }
@@ -579,6 +453,7 @@ export default async function handler(req, res) {
           addedOn: new Date().toISOString().split('T')[0]
         };
         leads.unshift(newLead);
+        await saveCrmStore({ leads });
         return json(201, { success: true, data: newLead });
       }
     }
@@ -591,22 +466,23 @@ export default async function handler(req, res) {
         const newInv = {
           id: 'inv-' + Date.now(),
           invoiceNo: 'INV-' + Date.now().toString().slice(-6),
-          clientId: body.clientId || 'cl-1',
-          clientName: body.clientName || 'Valued Client',
+          clientId:    body.clientId    || 'cl-1',
+          clientName:  body.clientName  || 'Valued Client',
           clientEmail: body.clientEmail || '',
           clientPhone: body.clientPhone || '',
-          date: body.date || new Date().toISOString().split('T')[0],
-          dueDate: body.dueDate || new Date().toISOString().split('T')[0],
+          date:     body.date    || new Date().toISOString().split('T')[0],
+          dueDate:  body.dueDate || new Date().toISOString().split('T')[0],
           location: body.location || 'Brampton',
-          status: body.status || 'Paid',
-          items: body.items || [{ id: 'it-1', service: 'Clinical Treatment', quantity: 1, price: 100, amount: 100 }],
+          status:   body.status   || 'Paid',
+          items:    body.items    || [{ id: 'it-1', service: 'Clinical Treatment', quantity: 1, price: 100, amount: 100 }],
           subtotal: parseFloat(body.subtotal || 100),
-          tax: parseFloat(body.tax || 13),
+          tax:      parseFloat(body.tax      || 13),
           discount: parseFloat(body.discount || 0),
-          total: parseFloat(body.total || 113),
+          total:    parseFloat(body.total    || 113),
           paymentMethod: body.paymentMethod || 'Credit Card'
         };
         invoices.unshift(newInv);
+        await saveCrmStore({ invoices });
         return json(201, { success: true, data: newInv });
       }
     }
@@ -620,18 +496,19 @@ export default async function handler(req, res) {
           id: 'gc-' + Date.now(),
           cardNumber: 'GC-AVS-' + Date.now().toString().slice(-6),
           recipient: body.recipient || 'Valued Guest',
-          buyer: body.buyer || 'Purchaser',
+          buyer:     body.buyer     || 'Purchaser',
           recipientEmail: body.recipientEmail || '',
-          buyerEmail: body.buyerEmail || '',
-          value: parseFloat(body.value || 100),
+          buyerEmail:     body.buyerEmail     || '',
+          value:   parseFloat(body.value || 100),
           balance: parseFloat(body.value || 100),
-          status: 'Active',
+          status:  'Active',
           expiryDate: '2026-12-31',
-          createdOn: new Date().toISOString().split('T')[0],
-          location: body.location || 'Brampton',
+          createdOn:  new Date().toISOString().split('T')[0],
+          location:   body.location || 'Brampton',
           history: []
         };
         giftCards.unshift(newCard);
+        await saveCrmStore({ giftCards });
         return json(201, { success: true, data: newCard });
       }
     }
@@ -641,26 +518,24 @@ export default async function handler(req, res) {
       const parts = pathname.split('/').filter(Boolean);
       if (parts.length === 2) {
         if (method === 'GET') {
-          return json(200, { success: true, data: getServices() });
+          const svcs = await getServices();
+          return json(200, { success: true, data: svcs });
         }
         if (method === 'POST') {
-          const body = await readBody(req);
-          const newSvc = addService(body);
-          syncFromStore();
+          const body   = await readBody(req);
+          const newSvc = await addService(body);
           return json(201, { success: true, data: newSvc });
         }
       }
       if (parts.length === 3) {
         const id = parts[2];
         if (method === 'PATCH') {
-          const body = await readBody(req);
-          const updated = updateService(id, body);
-          syncFromStore();
+          const body    = await readBody(req);
+          const updated = await updateService(id, body);
           return json(200, { success: true, data: updated });
         }
         if (method === 'DELETE') {
-          const result = deleteService(id);
-          syncFromStore();
+          const result = await deleteService(id);
           return json(200, { success: true, data: result });
         }
       }
@@ -671,26 +546,24 @@ export default async function handler(req, res) {
       const parts = pathname.split('/').filter(Boolean);
       if (parts.length === 2) {
         if (method === 'GET') {
-          return json(200, { success: true, data: getPackages() });
+          const pkgs = await getPackages();
+          return json(200, { success: true, data: pkgs });
         }
         if (method === 'POST') {
-          const body = await readBody(req);
-          const newPkg = addPackage(body);
-          syncFromStore();
+          const body   = await readBody(req);
+          const newPkg = await addPackage(body);
           return json(201, { success: true, data: newPkg });
         }
       }
       if (parts.length === 3) {
         const id = parts[2];
         if (method === 'PATCH') {
-          const body = await readBody(req);
-          const updated = updatePackage(id, body);
-          syncFromStore();
+          const body    = await readBody(req);
+          const updated = await updatePackage(id, body);
           return json(200, { success: true, data: updated });
         }
         if (method === 'DELETE') {
-          const result = deletePackage(id);
-          syncFromStore();
+          const result = await deletePackage(id);
           return json(200, { success: true, data: result });
         }
       }
@@ -701,7 +574,7 @@ export default async function handler(req, res) {
       if (method === 'GET') return json(200, { success: true, data: notifications });
       if (method === 'POST') {
         notifications.forEach(n => n.read = true);
-        saveCrmStore({ notifications });
+        await saveCrmStore({ notifications });
         return json(200, { success: true, message: 'All notifications marked as read' });
       }
     }
@@ -711,26 +584,24 @@ export default async function handler(req, res) {
       const parts = pathname.split('/').filter(Boolean);
       if (parts.length === 2) {
         if (method === 'GET') {
-          return json(200, { success: true, data: getGallery() });
+          const items = await getGallery();
+          return json(200, { success: true, data: items });
         }
         if (method === 'POST') {
-          const body = await readBody(req);
-          const newItem = addGalleryItem(body);
-          syncFromStore();
+          const body    = await readBody(req);
+          const newItem = await addGalleryItem(body);
           return json(201, { success: true, data: newItem });
         }
       }
       if (parts.length === 3) {
         const id = parts[2];
         if (method === 'PATCH') {
-          const body = await readBody(req);
-          const updated = updateGalleryItem(id, body);
-          syncFromStore();
+          const body    = await readBody(req);
+          const updated = await updateGalleryItem(id, body);
           return json(200, { success: true, data: updated });
         }
         if (method === 'DELETE') {
-          const result = deleteGalleryItem(id);
-          syncFromStore();
+          const result = await deleteGalleryItem(id);
           return json(200, { success: true, data: result });
         }
       }
