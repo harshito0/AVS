@@ -23,8 +23,13 @@ async function getRedis() {
   if (_redisClient) return _redisClient;
   if (!IS_VERCEL) return null;
 
-  const url   = process.env.UPSTASH_REDIS_REST_URL   || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN  || process.env.KV_REST_API_TOKEN;
+  const url   = process.env.UPSTASH_REDIS_REST_URL
+             || process.env.KV_REST_API_URL
+             || 'https://correct-boar-165805.upstash.io';
+
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+             || process.env.KV_REST_API_TOKEN
+             || 'gQAAAAAAAoetAAIgcDFmZDM0NWY3ZWU3ZmI0ZDZlODkzMjA4MGQ0ZmM1MzA4Zg';
 
   if (!url || !token) {
     console.warn('[CRM Store] Redis env vars not set — falling back to in-memory.');
@@ -35,6 +40,7 @@ async function getRedis() {
   _redisClient = new Redis({ url, token });
   return _redisClient;
 }
+
 
 // ──────────────────────────────────────────────────────────────
 // Local (dev) file path — never used on Vercel
