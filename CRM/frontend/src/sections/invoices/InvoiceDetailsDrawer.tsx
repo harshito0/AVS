@@ -193,8 +193,13 @@ export const InvoiceDetailsDrawer: React.FC<InvoiceDetailsDrawerProps> = ({
               Thank you for choosing Aura Vital Star!
             </p>
             <p className="text-slate-500 text-[11px] leading-relaxed">
-              Registered Massage Therapy receipts qualify for direct reimbursement through standard Canadian health insurance plans (Sun Life, Manulife, Canada Life).
+              {(invoice as any).notes || 'Registered Massage Therapy receipts qualify for direct reimbursement through standard Canadian health insurance plans (Sun Life, Manulife, Canada Life).'}
             </p>
+            {(invoice as any).taxEnabled === false && (
+              <div className="mt-2 px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[10px] text-amber-700 font-semibold">
+                ⚡ Tax-Exempt Invoice — No HST/GST applied
+              </div>
+            )}
           </div>
 
           <div className="w-full sm:w-64 space-y-2 text-xs border border-[#E3EAE5] rounded-xl p-4 bg-white">
@@ -202,10 +207,17 @@ export const InvoiceDetailsDrawer: React.FC<InvoiceDetailsDrawerProps> = ({
               <span>Subtotal</span>
               <span className="font-semibold text-slate-800">${invoice.subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-slate-600">
-              <span>Tax (HST 13%)</span>
-              <span className="font-semibold text-slate-800">${invoice.tax.toFixed(2)}</span>
-            </div>
+            {(invoice as any).taxEnabled === false ? (
+              <div className="flex justify-between text-slate-400">
+                <span className="italic">Tax</span>
+                <span className="font-semibold italic text-slate-400">$0.00 (exempt)</span>
+              </div>
+            ) : (
+              <div className="flex justify-between text-slate-600">
+                <span>{(invoice as any).taxLabel || 'Tax'}</span>
+                <span className="font-semibold text-slate-800">${invoice.tax.toFixed(2)}</span>
+              </div>
+            )}
             {invoice.discount > 0 && (
               <div className="flex justify-between text-emerald-600">
                 <span>Discount</span>

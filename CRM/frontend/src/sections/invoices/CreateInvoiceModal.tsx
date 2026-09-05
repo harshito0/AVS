@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { InvoiceItem, Client } from '../../types';
-import { Plus, Trash2, Calculator } from 'lucide-react';
+import { Plus, Trash2, Info } from 'lucide-react';
 import { clientService } from '../../services/clientService';
 
 export interface CreateInvoiceModalProps {
@@ -14,15 +14,26 @@ export interface CreateInvoiceModalProps {
 }
 
 const AVAILABLE_SERVICES = [
-  { name: 'RMT Massage Therapy', price: 100.00 },
-  { name: 'Deep Tissue Massage', price: 120.00 },
-  { name: 'Aroma Therapy', price: 80.00 },
-  { name: 'Hot Stone Therapy', price: 70.00 },
-  { name: 'Consultation Fee', price: 50.00 },
-  { name: 'Luxury 24K Gold Facial', price: 180.00 },
-  { name: 'Hydra-Glow Cleansing Facial', price: 140.00 },
-  { name: 'Hair Spa & Scalp Detox', price: 110.00 },
-  { name: 'AVS Signature Couple Retreat', price: 380.00 }
+  { name: 'RMT Massage Therapy', price: 100.00, taxable: true },
+  { name: 'Deep Tissue Massage', price: 120.00, taxable: true },
+  { name: 'Aroma Therapy', price: 80.00, taxable: true },
+  { name: 'Hot Stone Therapy', price: 70.00, taxable: true },
+  { name: 'Consultation Fee', price: 50.00, taxable: false },
+  { name: 'Luxury 24K Gold Facial', price: 180.00, taxable: false },
+  { name: 'Hydra-Glow Cleansing Facial', price: 140.00, taxable: false },
+  { name: 'Hair Spa & Scalp Detox', price: 110.00, taxable: false },
+  { name: 'Body Polishing Ritual', price: 125.00, taxable: false },
+  { name: 'Foot Spa Treatment', price: 75.00, taxable: false },
+  { name: 'Laser Hair Removal', price: 90.00, taxable: false },
+  { name: 'Custom Service', price: 100.00, taxable: false },
+  { name: 'AVS Signature Couple Retreat', price: 380.00, taxable: false },
+];
+
+const TAX_PRESETS = [
+  { label: 'Ontario HST (13%)', value: 13 },
+  { label: 'GST Only (5%)', value: 5 },
+  { label: 'Provincial PST (8%)', value: 8 },
+  { label: 'Custom Rate', value: -1 },
 ];
 
 export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
@@ -34,113 +45,133 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   const [selectedClientId, setSelectedClientId] = useState('');
   const [manualClientName, setManualClientName] = useState('');
   const [manualClientEmail, setManualClientEmail] = useState('');
-  const [invoiceDate, setInvoiceDate] = useState('2025-05-31');
-  const [dueDate, setDueDate] = useState('2025-06-07');
+  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [dueDate, setDueDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split('T')[0];
+  });
+  const [location, setLocation] = useState<'Brampton' | 'Mississauga'>('Brampton');
+  const [discount, setDiscount] = useState<number>(0);
+  const [paymentMethod, setPaymentMethod] = useState<string>('Credit Card');
+  const [notes, setNotes] = useState('Thank you for choosing Aura Vital Star!');
+
+  // Tax customization state
+  const [taxEnabled, setTaxEnabled] = useState(true);
+  const [taxPreset, setTaxPreset] = useState(13);
+  const [customTaxRate, setCustomTaxRate] = useState<number>(13);
+  const [taxLabel, setTaxLabel] = useState('HST (13%)');
+  const [showCustomTax, setShowCustomTax] = useState(false);
+
+  const [items, setItems] = useState<InvoiceItem[]>([
+    { id: 'item-init-1', service: 'RMT Massage Therapy', quantity: 1, price: 100.00, amount: 100.00 }
+  ]);
 
   useEffect(() => {
     if (isOpen) {
       clientService.getClients().then((res) => {
         setClients(res);
-        if (res.length > 0) {
-          setSelectedClientId(res[0].id);
-        }
+        if (res.length > 0) setSelectedClientId(res[0].id);
       });
     }
   }, [isOpen]);
-  const [location, setLocation] = useState<'Brampton' | 'Mississauga'>('Brampton');
-  const [discount, setDiscount] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState<'Credit Card' | 'Debit' | 'Cash' | 'Gift Card' | 'E-Transfer'>('Credit Card');
-  const [notes, setNotes] = useState('Thank you for choosing Aura Vital Star!');
 
-  const [items, setItems] = useState<InvoiceItem[]>([
-    {
-      id: 'item-init-1',
-      service: 'RMT Massage Therapy',
-      quantity: 1,
-      price: 100.00,
-      amount: 100.00
+  const effectiveTaxRate = showCustomTax ? customTaxRate : taxPreset;
+
+  // Sync label when preset or rate changes
+  useEffect(() => {
+    if (showCustomTax) {
+      setTaxLabel(`Tax (${customTaxRate}%)`);
+    } else {
+      const found = TAX_PRESETS.find(p => p.value === taxPreset);
+      if (found) setTaxLabel(found.label.split(' (')[0] + ` (${taxPreset}%)`);
     }
-  ]);
+  }, [taxPreset, customTaxRate, showCustomTax]);
 
   const handleAddItem = () => {
     const defaultSvc = AVAILABLE_SERVICES[0];
-    const newItem: InvoiceItem = {
+    setItems(prev => [...prev, {
       id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
       service: defaultSvc.name,
       quantity: 1,
       price: defaultSvc.price,
       amount: defaultSvc.price
-    };
-    setItems((prev) => [...prev, newItem]);
+    }]);
   };
 
   const handleRemoveItem = (id: string) => {
     if (items.length <= 1) return;
-    setItems((prev) => prev.filter((it) => it.id !== id));
+    setItems(prev => prev.filter(it => it.id !== id));
   };
 
   const handleServiceChange = (id: string, serviceName: string) => {
-    const found = AVAILABLE_SERVICES.find((s) => s.name === serviceName);
+    const found = AVAILABLE_SERVICES.find(s => s.name === serviceName);
     const price = found ? found.price : 100;
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id ? { ...it, service: serviceName, price, amount: price * it.quantity } : it
-      )
-    );
+    setItems(prev => prev.map(it =>
+      it.id === id ? { ...it, service: serviceName, price, amount: price * it.quantity } : it
+    ));
   };
 
   const handleQuantityChange = (id: string, qty: number) => {
     const safeQty = Math.max(1, qty);
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id ? { ...it, quantity: safeQty, amount: it.price * safeQty } : it
-      )
-    );
+    setItems(prev => prev.map(it =>
+      it.id === id ? { ...it, quantity: safeQty, amount: it.price * safeQty } : it
+    ));
   };
 
   const handlePriceChange = (id: string, price: number) => {
     const safePrice = Math.max(0, price);
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id ? { ...it, price: safePrice, amount: safePrice * it.quantity } : it
-      )
-    );
+    setItems(prev => prev.map(it =>
+      it.id === id ? { ...it, price: safePrice, amount: safePrice * it.quantity } : it
+    ));
+  };
+
+  const handleTaxPresetChange = (val: string) => {
+    const num = parseFloat(val);
+    if (num === -1) {
+      setShowCustomTax(true);
+    } else {
+      setShowCustomTax(false);
+      setTaxPreset(num);
+    }
   };
 
   // Calculations
   const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-  const tax = Math.round(subtotal * 0.13 * 100) / 100; // 13% Ontario HST
-  const total = Math.max(0, Math.round((subtotal + tax - discount) * 100) / 100);
+  const taxAmount = taxEnabled
+    ? Math.round(subtotal * (effectiveTaxRate / 100) * 100) / 100
+    : 0;
+  const total = Math.max(0, Math.round((subtotal + taxAmount - discount) * 100) / 100);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const client = clients.find((c) => c.id === selectedClientId);
+    const client = clients.find(c => c.id === selectedClientId);
     const clientName = client ? client.name : (manualClientName.trim() || 'Guest Client');
     const clientEmail = client ? client.email : (manualClientEmail.trim() || 'guest@auravitalstar.ca');
-    const clientPhone = client ? client.phone : '(905) 555-0100';
+    const clientPhone = client ? client.phone : '';
     const clientId = client ? client.id : `cli-${Date.now()}`;
 
-    const invoicePayload = {
-      clientId,
-      clientName,
-      clientEmail,
-      clientPhone,
+    onCreateInvoice({
+      clientId, clientName, clientEmail, clientPhone,
       clientAddress: `${location}, ON`,
-      date: invoiceDate,
-      dueDate,
-      location,
+      date: invoiceDate, dueDate, location,
       status: 'Pending' as const,
       items,
       subtotal,
-      tax,
+      tax: taxAmount,
+      taxRate: taxEnabled ? effectiveTaxRate : 0,
+      taxLabel: taxEnabled ? taxLabel : 'No Tax',
+      taxEnabled,
       discount,
       total,
       paymentMethod,
       notes
-    };
-
-    onCreateInvoice(invoicePayload);
+    });
     onClose();
+  };
+
+  const isTaxableService = (serviceName: string) => {
+    return AVAILABLE_SERVICES.find(s => s.name === serviceName)?.taxable ?? false;
   };
 
   return (
@@ -152,9 +183,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       maxWidth="2xl"
       footer={
         <>
-          <Button variant="outline" size="sm" onClick={onClose}>
-            Cancel
-          </Button>
+          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
           <Button variant="primary" size="sm" onClick={handleSubmit}>
             Create & Issue Invoice
           </Button>
@@ -162,17 +191,15 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       }
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Top Meta Selectors */}
+
+        {/* CLIENT + LOCATION */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {clients.length > 0 ? (
             <Select
               label="Client *"
               value={selectedClientId}
               onChange={(e) => setSelectedClientId(e.target.value)}
-              options={clients.map((c) => ({
-                value: c.id,
-                label: `${c.name} (${c.location})`
-              }))}
+              options={clients.map(c => ({ value: c.id, label: `${c.name} (${c.location})` }))}
             />
           ) : (
             <div className="grid grid-cols-2 gap-2">
@@ -184,7 +211,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 required
               />
               <Input
-                label="Client Email *"
+                label="Client Email"
                 type="email"
                 value={manualClientEmail}
                 onChange={(e) => setManualClientEmail(e.target.value)}
@@ -203,6 +230,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
           />
         </div>
 
+        {/* DATES + PAYMENT */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
             label="Invoice Date"
@@ -219,18 +247,19 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
           <Select
             label="Payment Method"
             value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value as any)}
+            onChange={(e) => setPaymentMethod(e.target.value)}
             options={[
               { value: 'Credit Card', label: 'Credit Card' },
               { value: 'Debit', label: 'Debit' },
               { value: 'Cash', label: 'Cash' },
               { value: 'Gift Card', label: 'Gift Card' },
-              { value: 'E-Transfer', label: 'E-Transfer' }
+              { value: 'E-Transfer', label: 'E-Transfer' },
+              { value: 'Insurance', label: 'Insurance' }
             ]}
           />
         </div>
 
-        {/* Dynamic Line Items */}
+        {/* LINE ITEMS */}
         <div className="space-y-2 pt-2 border-t border-slate-100">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -241,8 +270,17 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               onClick={handleAddItem}
               className="text-xs text-forest-850 font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Treatment Item
+              <Plus className="w-3.5 h-3.5" /> Add Item
             </button>
+          </div>
+
+          {/* Column headers */}
+          <div className="hidden sm:grid grid-cols-[1fr_64px_100px_88px_36px] gap-2 px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span>Service / Description</span>
+            <span className="text-center">Qty</span>
+            <span className="text-right">Unit Price</span>
+            <span className="text-right">Total</span>
+            <span></span>
           </div>
 
           <div className="space-y-2">
@@ -251,23 +289,28 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 key={it.id}
                 className="flex items-center gap-2 p-2.5 rounded-xl border border-[#E3EAE5] bg-[#FAFBF9]"
               >
-                <span className="text-xs font-bold text-slate-400 w-5 text-center">{idx + 1}</span>
+                <span className="text-xs font-bold text-slate-400 w-5 text-center shrink-0">{idx + 1}</span>
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <select
                     value={it.service}
                     onChange={(e) => handleServiceChange(it.id, e.target.value)}
                     className="w-full bg-white border border-[#D9E2DC] rounded-lg text-xs p-2 focus:ring-1 focus:ring-forest-800"
                   >
-                    {AVAILABLE_SERVICES.map((s) => (
+                    {AVAILABLE_SERVICES.map(s => (
                       <option key={s.name} value={s.name}>
-                        {s.name} (${s.price.toFixed(2)})
+                        {s.name} — ${s.price.toFixed(2)} {s.taxable ? '(Taxable)' : '(Tax-Free)'}
                       </option>
                     ))}
                   </select>
+                  {isTaxableService(it.service) && taxEnabled && (
+                    <span className="inline-block mt-1 text-[10px] text-amber-600 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">
+                      HST applicable
+                    </span>
+                  )}
                 </div>
 
-                <div className="w-16">
+                <div className="w-16 shrink-0">
                   <input
                     type="number"
                     min="1"
@@ -278,7 +321,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                   />
                 </div>
 
-                <div className="w-24">
+                <div className="w-24 shrink-0">
                   <input
                     type="number"
                     min="0"
@@ -290,7 +333,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                   />
                 </div>
 
-                <div className="w-24 text-right font-bold text-xs text-slate-900 pr-1">
+                <div className="w-22 text-right font-bold text-xs text-slate-900 pr-1 shrink-0">
                   ${it.amount.toFixed(2)}
                 </div>
 
@@ -298,7 +341,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                   type="button"
                   onClick={() => handleRemoveItem(it.id)}
                   disabled={items.length <= 1}
-                  className="p-1.5 text-slate-400 hover:text-rose-600 disabled:opacity-30 cursor-pointer"
+                  className="p-1.5 text-slate-400 hover:text-rose-600 disabled:opacity-30 cursor-pointer shrink-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -307,9 +350,106 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
           </div>
         </div>
 
-        {/* Calculation Summary Footer */}
-        <div className="p-4 rounded-xl bg-forest-50/50 border border-forest-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="w-full sm:w-48">
+        {/* TAX CUSTOMIZATION PANEL */}
+        <div className="rounded-xl border border-[#E3EAE5] bg-white overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-[#F8FAF8] border-b border-[#E3EAE5]">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                Tax Settings
+              </span>
+              <span className="text-[10px] text-slate-400 font-normal">(RMT is HST-exempt in Ontario)</span>
+            </div>
+
+            {/* Toggle Switch */}
+            <button
+              type="button"
+              onClick={() => setTaxEnabled(prev => !prev)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer focus:outline-none ${
+                taxEnabled ? 'bg-forest-700' : 'bg-slate-300'
+              }`}
+              title={taxEnabled ? 'Disable Tax' : 'Enable Tax'}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                  taxEnabled ? 'translate-x-4' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+
+          {taxEnabled && (
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Tax Preset */}
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                  Tax Type
+                </label>
+                <select
+                  value={showCustomTax ? -1 : taxPreset}
+                  onChange={(e) => handleTaxPresetChange(e.target.value)}
+                  className="w-full bg-white border border-[#D9E2DC] rounded-lg text-xs p-2 focus:ring-1 focus:ring-forest-800"
+                >
+                  {TAX_PRESETS.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Custom Rate Input — only if custom selected */}
+              {showCustomTax ? (
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                    Custom Rate (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={customTaxRate}
+                    onChange={(e) => setCustomTaxRate(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-white border border-[#D9E2DC] rounded-lg text-xs p-2 text-right"
+                    placeholder="e.g. 7.5"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col justify-end">
+                  <p className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Rate Applied</p>
+                  <div className="p-2 bg-forest-50 border border-forest-100 rounded-lg text-xs font-bold text-forest-900">
+                    {effectiveTaxRate}% → +${taxAmount.toFixed(2)}
+                  </div>
+                </div>
+              )}
+
+              {/* Tax Label on Invoice */}
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                  Label on Invoice
+                </label>
+                <input
+                  type="text"
+                  value={taxLabel}
+                  onChange={(e) => setTaxLabel(e.target.value)}
+                  className="w-full bg-white border border-[#D9E2DC] rounded-lg text-xs p-2"
+                  placeholder="e.g. HST (13%)"
+                />
+              </div>
+            </div>
+          )}
+
+          {!taxEnabled && (
+            <div className="px-4 py-3">
+              <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                No tax will be applied to this invoice. Suitable for RMT sessions, insurance claims, or tax-exempt clients.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* SUMMARY + DISCOUNT */}
+        <div className="p-4 rounded-xl bg-forest-50/50 border border-forest-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex flex-col gap-3 w-full sm:w-48">
             <Input
               label="Discount ($)"
               type="number"
@@ -318,29 +458,52 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
               placeholder="0.00"
             />
+            <div className="w-full">
+              <label className="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                Invoice Notes
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                className="w-full bg-white border border-[#D9E2DC] rounded-lg text-xs p-2 resize-none focus:ring-1 focus:ring-forest-800"
+                placeholder="Add a note for the client..."
+              />
+            </div>
           </div>
 
-          <div className="w-full sm:w-60 space-y-1.5 text-xs text-right">
+          <div className="w-full sm:w-64 space-y-1.5 text-xs text-right">
             <div className="flex justify-between text-slate-600">
               <span>Subtotal:</span>
               <span className="font-semibold">${subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-slate-600">
-              <span>HST (13%):</span>
-              <span className="font-semibold">${tax.toFixed(2)}</span>
-            </div>
+
+            {taxEnabled ? (
+              <div className="flex justify-between text-slate-600">
+                <span>{taxLabel}:</span>
+                <span className="font-semibold">${taxAmount.toFixed(2)}</span>
+              </div>
+            ) : (
+              <div className="flex justify-between text-slate-400">
+                <span className="italic">Tax:</span>
+                <span className="font-semibold italic">$0.00 (exempt)</span>
+              </div>
+            )}
+
             {discount > 0 && (
               <div className="flex justify-between text-emerald-600">
                 <span>Discount:</span>
                 <span className="font-semibold">-${discount.toFixed(2)}</span>
               </div>
             )}
+
             <div className="pt-2 border-t border-forest-200/60 flex justify-between items-center text-sm font-bold text-forest-900">
               <span>Invoice Total:</span>
               <span className="text-lg">${total.toFixed(2)}</span>
             </div>
           </div>
         </div>
+
       </form>
     </Modal>
   );
