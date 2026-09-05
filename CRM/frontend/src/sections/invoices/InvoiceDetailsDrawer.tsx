@@ -78,16 +78,23 @@ export const InvoiceDetailsDrawer: React.FC<InvoiceDetailsDrawerProps> = ({
       }
     >
       {/* Printable Invoice Container */}
-      <div id="invoice-print-area" className="space-y-6 text-slate-800">
+      <div id="invoice-print-area" className="space-y-6 text-slate-800 relative">
+
         {/* Luxury Brand Header */}
-        <div className="p-6 rounded-2xl bg-gradient-to-br from-[#0F291E] to-[#0A1E16] text-white border border-[#1A4232] shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-6 rounded-2xl bg-gradient-to-br from-[#0F291E] to-[#0A1E16] text-white border border-[#1A4232] shadow-sm relative overflow-hidden">
+          {/* Subtle logo watermark inside the dark header */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+            <img src="/avs_logo.png" alt="" aria-hidden="true"
+              className="w-72 opacity-[0.06] mix-blend-screen" />
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-white p-1.5 shadow-md shrink-0 flex items-center justify-center overflow-hidden border border-[#C5A880]/50">
+              {/* Full Logo */}
+              <div className="shrink-0">
                 <img
                   src="/avs_logo.png"
                   alt="Aura Vital Star"
-                  className="w-full h-full object-contain"
+                  className="h-20 w-auto object-contain drop-shadow-xl"
                 />
               </div>
               <div>
@@ -160,8 +167,13 @@ export const InvoiceDetailsDrawer: React.FC<InvoiceDetailsDrawerProps> = ({
         </div>
 
         {/* Line Items Table */}
-        <div className="border border-[#E3EAE5] rounded-xl overflow-hidden bg-white shadow-2xs">
-          <table className="w-full text-left text-xs">
+        <div className="border border-[#E3EAE5] rounded-xl overflow-hidden bg-white shadow-2xs relative">
+          {/* Watermark inside the table */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
+            <img src="/avs_logo.png" alt="" aria-hidden="true"
+              className="w-48 opacity-[0.04] mix-blend-multiply" />
+          </div>
+          <table className="w-full text-left text-xs relative z-10">
             <thead>
               <tr className="bg-[#FAFBF9] border-b border-[#E3EAE5] text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                 <th className="py-3 px-4 w-10">#</th>

@@ -109,31 +109,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-4 border-b border-[#15382A]">
           <div
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-3 cursor-pointer select-none group bg-[#081811] hover:bg-[#0c2319] p-2.5 rounded-xl border border-[#C9A227]/30 hover:border-[#C9A227]/70 transition-all"
+            className="flex flex-col items-center cursor-pointer select-none group py-2"
           >
-            <div className="w-11 h-11 rounded-xl bg-white p-1 shadow-md shrink-0 flex items-center justify-center overflow-hidden border border-[#C9A227]/40 group-hover:scale-105 transition-transform">
+            {/* Full Logo — large & prominent */}
+            <div className="w-full flex items-center justify-center mb-1">
               <img
                 src="/avs_logo.png"
                 alt="Aura Vital Star"
-                className="w-full h-full object-contain"
+                className="w-48 max-w-full object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-200"
               />
             </div>
-            <div className="min-w-0">
-              <div className="text-[12px] font-bold tracking-wider text-white leading-tight">
-                AURA VITAL STAR
-              </div>
-              <p className="text-[9px] font-semibold tracking-widest uppercase text-[#E1BE5A] leading-tight mt-1">
-                Rejuvenation Centre
-              </p>
-              <p className="text-[8px] text-emerald-400 font-medium tracking-tight">
-                Wellness Meets Radiance
-              </p>
-            </div>
+            <p className="text-[9px] font-semibold tracking-widest uppercase text-[#6B897C] mt-1">
+              CRM Admin Portal
+            </p>
           </div>
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 ml-auto"
+              className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 absolute top-3 right-3"
               aria-label="Close sidebar"
             >
               <X className="w-5 h-5" />

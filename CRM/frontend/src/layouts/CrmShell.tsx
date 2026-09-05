@@ -156,8 +156,20 @@ export const CrmShell: React.FC = () => {
             onToggleMobileMenu={() => setIsMobileMenuOpen(true)}
           />
 
-          <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-            <Outlet />
+          {/* Main Content with Logo Watermark */}
+          <main className="flex-1 p-4 lg:p-8 overflow-y-auto relative">
+            {/* Logo Watermark — low opacity background */}
+            <div className="pointer-events-none select-none fixed inset-0 lg:left-[240px] flex items-center justify-center z-0 overflow-hidden">
+              <img
+                src="/avs_logo.png"
+                alt=""
+                className="w-[520px] max-w-[60vw] opacity-[0.04] mix-blend-multiply"
+                aria-hidden="true"
+              />
+            </div>
+            <div className="relative z-10">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>
