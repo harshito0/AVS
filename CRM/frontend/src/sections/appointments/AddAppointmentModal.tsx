@@ -100,12 +100,17 @@ export const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({
     e.preventDefault();
     setSlotError(null);
 
+    if (bookingMode === 'walkin' && !manualClientName.trim()) {
+      setSlotError('Please enter the client / guest name before booking.');
+      return;
+    }
+
     const selectedClient = bookingMode === 'registered' ? clients.find((c) => c.id === clientId) : null;
     const clientName = selectedClient
       ? selectedClient.name
-      : (manualClientName.trim() || 'Walk-in Guest');
+      : (manualClientName.trim() || 'Valued Guest');
     const phone = selectedClient ? selectedClient.phone : manualPhone.trim();
-    const email = selectedClient ? selectedClient.email : 'guest@example.ca';
+    const email = selectedClient ? selectedClient.email : 'guest@auravitalstar.ca';
     const service = INITIAL_SERVICES.find((s) => s.name === serviceName) || INITIAL_SERVICES[0];
 
     // --- Duplicate slot check ---
@@ -204,16 +209,17 @@ export const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({
           {bookingMode === 'walkin' ? (
             <div className="space-y-3">
               <Input
-                label="Guest Name"
+                label="Client / Guest Name *"
                 value={manualClientName}
                 onChange={(e) => setManualClientName(e.target.value)}
-                placeholder="e.g. Jane Doe (optional)"
+                placeholder="Full Name (e.g. John Smith)"
+                required
               />
               <Input
-                label="Guest Phone (optional)"
+                label="Client Phone Number"
                 value={manualPhone}
                 onChange={(e) => setManualPhone(e.target.value)}
-                placeholder="e.g. (905) 555-0100"
+                placeholder="e.g. (647) 555-0199"
               />
             </div>
           ) : (

@@ -1,10 +1,475 @@
 {
-  "clients": [],
-  "appointments": [],
-  "leads": [],
-  "invoices": [],
-  "giftCards": [],
-  "notifications": [],
+  "clients": [
+    {
+      "id": "cl-1788697372505-431",
+      "firstName": "Harshit",
+      "lastName": "Singh",
+      "fullName": "Harshit Singh",
+      "phone": "09792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "location": "Brampton",
+      "totalVisits": 3,
+      "totalSpent": 300,
+      "status": "Active",
+      "lastVisit": "2026-09-05",
+      "lastService": "RMT Massage Therapy",
+      "createdAt": "2026-09-06"
+    },
+    {
+      "id": "cl-1788679831088",
+      "firstName": "shubham",
+      "lastName": "kumar",
+      "fullName": "shubham kumar",
+      "phone": "9876543210",
+      "email": "sk5292477@gmail.com",
+      "location": "Brampton",
+      "totalVisits": 0,
+      "totalSpent": 0,
+      "status": "Active",
+      "lastVisit": "2026-09-06",
+      "lastService": "New Registration",
+      "createdAt": "2026-09-06"
+    },
+    {
+      "id": "cl-1788678877030",
+      "firstName": "shubham",
+      "lastName": "kumar",
+      "fullName": "shubham kumar",
+      "phone": "9876543210",
+      "email": "sk5292477@gmail.com",
+      "location": "Brampton",
+      "totalVisits": 5,
+      "totalSpent": 500,
+      "status": "Active",
+      "lastVisit": "2025-06-19",
+      "lastService": "Luxury 24K Gold Facial",
+      "createdAt": "2026-09-06"
+    },
+    {
+      "id": "cl-1788644682280-852",
+      "firstName": "Harshit",
+      "lastName": "Singh",
+      "fullName": "Harshit Singh",
+      "phone": "(905) 555-0100",
+      "email": "guest@example.ca",
+      "location": "Brampton",
+      "totalVisits": 1,
+      "totalSpent": 100,
+      "status": "Active",
+      "lastVisit": "2025-06-05",
+      "lastService": "RMT Massage Therapy",
+      "createdAt": "2026-09-05"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "AVS-2026-5901",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "phone": "09792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "service": "RMT Massage Therapy",
+      "serviceCategory": "Massage Therapy",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-09-05",
+      "time": "11:00 AM",
+      "duration": "60 min",
+      "status": "Pending",
+      "amount": 100,
+      "notes": "",
+      "source": "CRM",
+      "createdAt": "2026-09-06T12:26:06.273Z"
+    },
+    {
+      "id": "AVS-2026-1335",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "phone": "09792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "service": "RMT Massage Therapy",
+      "serviceCategory": "Massage Therapy",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-09-05",
+      "time": "11:00 AM",
+      "duration": "60 min",
+      "status": "Pending",
+      "amount": 100,
+      "notes": "",
+      "source": "CRM",
+      "createdAt": "2026-09-06T12:24:48.796Z"
+    },
+    {
+      "id": "AVS-2026-6522",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "phone": "09792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "service": "Deep Tissue Massage",
+      "serviceCategory": "MASSAGE & RMT",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-09-17",
+      "time": "3:30 PM",
+      "duration": "60 min",
+      "status": "Pending",
+      "amount": 100,
+      "notes": "",
+      "source": "Website CTA",
+      "createdAt": "2026-09-06T12:22:52.505Z"
+    },
+    {
+      "id": "AVS-2026-6551",
+      "clientId": "cl-1788678877030",
+      "clientName": "shubham kumar",
+      "phone": "9876543210",
+      "email": "sk5292477@gmail.com",
+      "service": "Luxury 24K Gold Facial",
+      "serviceCategory": "Facial & Skincare",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2025-06-19",
+      "time": "11:00 AM",
+      "duration": "60 min",
+      "status": "Pending",
+      "amount": 100,
+      "notes": "test",
+      "source": "CRM",
+      "createdAt": "2026-09-06T07:18:26.027Z"
+    },
+    {
+      "id": "AVS-2026-3645",
+      "clientId": "cl-1788678877030",
+      "clientName": "shubham kumar",
+      "phone": "9876543210",
+      "email": "sk5292477@gmail.com",
+      "service": "Luxury 24K Gold Facial",
+      "serviceCategory": "Facial & Skincare",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2025-06-19",
+      "time": "11:00 AM",
+      "duration": "60 min",
+      "status": "Pending",
+      "amount": 100,
+      "notes": "test",
+      "source": "CRM",
+      "createdAt": "2026-09-06T07:18:23.464Z"
+    },
+    {
+      "id": "AVS-2026-3636",
+      "clientId": "cl-1788678877030",
+      "clientName": "shubham kumar",
+      "phone": "9876543210",
+      "email": "sk5292477@gmail.com",
+      "service": "Luxury 24K Gold Facial",
+      "serviceCategory": "Facial & Skincare",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2025-06-19",
+      "time": "11:00 AM",
+      "duration": "60 min",
+      "status": "Pending",
+      "amount": 100,
+      "notes": "test",
+      "source": "CRM",
+      "createdAt": "2026-09-06T07:18:20.880Z"
+    },
+    {
+      "id": "AVS-2026-4232",
+      "clientId": "cl-1788678877030",
+      "clientName": "shubham kumar",
+      "phone": "9876543210",
+      "email": "sk5292477@gmail.com",
+      "service": "Luxury 24K Gold Facial",
+      "serviceCategory": "Facial & Skincare",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2025-06-19",
+      "time": "11:00 AM",
+      "duration": "60 min",
+      "status": "Pending",
+      "amount": 100,
+      "notes": "test",
+      "source": "CRM",
+      "createdAt": "2026-09-06T07:15:28.540Z"
+    },
+    {
+      "id": "AVS-2026-3529",
+      "clientId": "cl-1788678877030",
+      "clientName": "shubham kumar",
+      "phone": "9876543210",
+      "email": "sk5292477@gmail.com",
+      "service": "Luxury 24K Gold Facial",
+      "serviceCategory": "Facial & Skincare",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2025-06-19",
+      "time": "11:00 AM",
+      "duration": "60 min",
+      "status": "Pending",
+      "amount": 100,
+      "notes": "test",
+      "source": "CRM",
+      "createdAt": "2026-09-06T07:15:28.082Z"
+    }
+  ],
+  "leads": [
+    {
+      "id": "ld-1788697372505",
+      "name": "Harshit Singh",
+      "phone": "09792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "source": "Website CTA",
+      "status": "Converted",
+      "service": "Deep Tissue Massage",
+      "location": "Brampton",
+      "notes": "Booked online via Website CTA. Notes: ",
+      "createdAt": "2026-09-06"
+    },
+    {
+      "id": "ld-1788678928082",
+      "name": "shubham kumar",
+      "phone": "9876543210",
+      "email": "sk5292477@gmail.com",
+      "source": "CRM",
+      "status": "Converted",
+      "service": "Luxury 24K Gold Facial",
+      "location": "Brampton",
+      "notes": "Booked online via CRM. Notes: test",
+      "createdAt": "2026-09-06"
+    },
+    {
+      "id": "ld-1788644682280",
+      "name": "Harshit Singh",
+      "phone": "(905) 555-0100",
+      "email": "guest@example.ca",
+      "source": "CRM",
+      "status": "Converted",
+      "service": "RMT Massage Therapy",
+      "location": "Brampton",
+      "notes": "Booked online via CRM. Notes: ",
+      "createdAt": "2026-09-05"
+    }
+  ],
+  "invoices": [
+    {
+      "id": "inv-1788696956574",
+      "invoiceNo": "INV-956574",
+      "clientId": "cl-1788679831088",
+      "clientName": "shubham kumar",
+      "clientEmail": "sk5292477@gmail.com",
+      "clientPhone": "9876543210",
+      "date": "2026-09-06",
+      "dueDate": "2026-09-12",
+      "location": "Brampton",
+      "status": "Pending",
+      "items": [
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        },
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        }
+      ],
+      "subtotal": 100,
+      "tax": 26,
+      "discount": 0,
+      "total": 113,
+      "paymentMethod": "Credit Card"
+    },
+    {
+      "id": "inv-1788696909021",
+      "invoiceNo": "INV-909021",
+      "clientId": "cl-1788679831088",
+      "clientName": "shubham kumar",
+      "clientEmail": "sk5292477@gmail.com",
+      "clientPhone": "9876543210",
+      "date": "2026-09-06",
+      "dueDate": "2026-09-12",
+      "location": "Brampton",
+      "status": "Pending",
+      "items": [
+        {
+          "service": "Body Polishing Ritual",
+          "quantity": 1,
+          "price": 125,
+          "amount": 125
+        },
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        }
+      ],
+      "subtotal": 100,
+      "tax": 13.05,
+      "discount": 10,
+      "total": 113,
+      "paymentMethod": "Credit Card"
+    },
+    {
+      "id": "inv-1788644493889",
+      "invoiceNo": "INV-493889",
+      "clientId": "cli-1788571323026",
+      "clientName": "Harshit Singh",
+      "clientEmail": "harshitsingh19622@gmail.com",
+      "clientPhone": "(905) 555-0100",
+      "date": "2026-09-05",
+      "dueDate": "2025-06-07",
+      "location": "Brampton",
+      "status": "Pending",
+      "items": [
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        },
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        }
+      ],
+      "subtotal": 100,
+      "tax": 26,
+      "discount": 5,
+      "total": 113,
+      "paymentMethod": "Cash"
+    },
+    {
+      "id": "inv-1788644493852",
+      "invoiceNo": "INV-493852",
+      "clientId": "cli-1788571332929",
+      "clientName": "Harshit Singh",
+      "clientEmail": "harshitsingh19622@gmail.com",
+      "clientPhone": "(905) 555-0100",
+      "date": "2026-09-05",
+      "dueDate": "2025-06-07",
+      "location": "Brampton",
+      "status": "Pending",
+      "items": [
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        },
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        }
+      ],
+      "subtotal": 100,
+      "tax": 26,
+      "discount": 5,
+      "total": 113,
+      "paymentMethod": "Cash"
+    }
+  ],
+  "giftCards": [
+    {
+      "id": "gc-1788680051900",
+      "cardNumber": "GC-AVS-051900",
+      "recipient": "Valued Guest",
+      "buyer": "Purchaser",
+      "recipientEmail": "",
+      "buyerEmail": "",
+      "value": 150,
+      "balance": 150,
+      "status": "Active",
+      "expiryDate": "2026-12-31",
+      "createdOn": "2026-09-06",
+      "location": "Brampton",
+      "history": []
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1788697566273",
+      "title": "New Appointment Booked",
+      "message": "harshit singh booked RMT Massage Therapy for 2026-09-05 at 11:00 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-06T12:26:06.273Z"
+    },
+    {
+      "id": "notif-1788697488796",
+      "title": "New Appointment Booked",
+      "message": "harshit singh booked RMT Massage Therapy for 2026-09-05 at 11:00 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-06T12:24:48.796Z"
+    },
+    {
+      "id": "notif-1788697372505",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh booked Deep Tissue Massage for 2026-09-17 at 3:30 PM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-06T12:22:52.505Z"
+    },
+    {
+      "id": "notif-1788679106027",
+      "title": "New Appointment Booked",
+      "message": "shubham kumar booked Luxury 24K Gold Facial for 2025-06-19 at 11:00 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-06T07:18:26.027Z"
+    },
+    {
+      "id": "notif-1788679103464",
+      "title": "New Appointment Booked",
+      "message": "shubham kumar booked Luxury 24K Gold Facial for 2025-06-19 at 11:00 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-06T07:18:23.464Z"
+    },
+    {
+      "id": "notif-1788679100880",
+      "title": "New Appointment Booked",
+      "message": "shubham kumar booked Luxury 24K Gold Facial for 2025-06-19 at 11:00 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-06T07:18:20.880Z"
+    },
+    {
+      "id": "notif-1788678928540",
+      "title": "New Appointment Booked",
+      "message": "shubham kumar booked Luxury 24K Gold Facial for 2025-06-19 at 11:00 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-06T07:15:28.540Z"
+    },
+    {
+      "id": "notif-1788678928082",
+      "title": "New Appointment Booked",
+      "message": "shubham kumar booked Luxury 24K Gold Facial for 2025-06-19 at 11:00 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-06T07:15:28.082Z"
+    },
+    {
+      "id": "notif-1788644682280",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh booked RMT Massage Therapy for 2025-06-05 at 11:00 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-05T21:44:42.280Z"
+    }
+  ],
   "services": [
     {
       "id": "svc-1",
@@ -205,5 +670,5 @@
       "dateAdded": "2026-09-01"
     }
   ],
-  "lastUpdated": "2026-09-05T00:34:42.167Z"
+  "lastUpdated": "2026-09-05T16:22:37.168Z"
 }

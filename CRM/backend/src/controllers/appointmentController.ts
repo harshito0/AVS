@@ -74,7 +74,7 @@ export async function getAppointments(req: AuthRequest, res: Response) {
         orderBy: [{ date: 'desc' }, { time: 'asc' }],
         skip,
         take: parseInt(limit),
-        include: { client: { select: { fullName: true } }, service: true, location: true, staff: true },
+        include: { client: true, service: true, location: true, staff: true },
       }),
       prisma.appointment.count({ where }),
     ]);
@@ -174,12 +174,25 @@ export async function createAppointment(req: Request, res: Response) {
     });
 
     const parsedAmount = Number(amount) || 100;
+    const staffNameInput = (req.body.staff || req.body.staffName || '').trim();
+    let staffRecord = null;
+    if (staffNameInput) {
+      staffRecord = await prisma.staff.findFirst({
+        where: {
+          OR: [
+            { name: { contains: staffNameInput.split(' ')[0] } },
+            { name: { contains: staffNameInput } },
+          ],
+        },
+      });
+    }
 
     // Create appointment
     const appointment = await prisma.appointment.create({
       data: {
         id: apptId,
         clientId: client.id,
+        staffId: staffRecord?.id || null,
         locationId: location?.id || null,
         serviceName: apptService,
         serviceCategory: serviceCategory || null,
@@ -189,12 +202,12 @@ export async function createAppointment(req: Request, res: Response) {
         date: apptDate,
         time: apptTime,
         duration: duration || '60 min',
-        status: 'Pending',
+        status: req.body.status || 'Confirmed',
         source: source || 'Website',
         notes: notes || null,
         amount: parsedAmount,
       },
-      include: { client: true, location: true },
+      include: { client: true, location: true, staff: true, service: true },
     });
 
     // Update client stats
@@ -317,3 +330,20 @@ async function updateStatus(req: AuthRequest, res: Response, status: string) {
     return serverError(res);
   }
 }
+
+// DELETE /api/appointments/:id
+export async function deleteAppointment(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const existing = await prisma.appointment.findUnique({ where: { id } });
+    if (!existing) {
+      return notFound(res, 'Appointment');
+    }
+    await prisma.appointment.delete({ where: { id } });
+    return ok(res, { message: 'Appointment deleted successfully', id });
+  } catch (err: any) {
+    console.error('Delete appointment error:', err);
+    return serverError(res);
+  }
+}
+

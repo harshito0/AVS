@@ -21,7 +21,8 @@ import {
   getGallery,
   addGalleryItem,
   updateGalleryItem,
-  deleteGalleryItem
+  deleteGalleryItem,
+  deleteAppointment
 } from './crmStore.js';
 
 // Initial Seed Data: Locations
@@ -373,10 +374,16 @@ export default async function handler(req, res) {
           return json(201, { success: true, data: result.appointment, client: result.client });
         }
       }
-      // Status update actions
+      // Status update actions & delete
       if (parts.length >= 3) {
         const id     = parts[2];
         const action = parts[3];
+
+        if (method === 'DELETE' || action === 'delete') {
+          const result = await deleteAppointment(id);
+          return json(200, { success: true, message: 'Appointment deleted successfully', ...result });
+        }
+
         const apt    = appointments.find(a => a.id === id);
         if (!apt) return json(404, { success: false, error: { message: 'Appointment not found' } });
 

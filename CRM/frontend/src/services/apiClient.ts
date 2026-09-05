@@ -173,6 +173,7 @@ export const appointmentsApi = {
   complete: (id: string) => apiPost<any>(`/appointments/${id}/complete`),
   cancel: (id: string) => apiPost<any>(`/appointments/${id}/cancel`),
   noShow: (id: string) => apiPost<any>(`/appointments/${id}/no-show`),
+  delete: (id: string) => apiDelete<any>(`/appointments/${id}`),
 };
 
 // Invoices

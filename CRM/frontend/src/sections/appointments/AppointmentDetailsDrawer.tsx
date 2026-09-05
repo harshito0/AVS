@@ -3,7 +3,7 @@ import { Drawer } from '../../components/ui/Drawer';
 import { Button } from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { Appointment, AppointmentStatus } from '../../types';
-import { Calendar, Clock, MapPin, User, Sparkles, Phone, Mail, CheckCircle2, XCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Sparkles, Phone, Mail, CheckCircle2, XCircle, Trash2 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 
 export interface AppointmentDetailsDrawerProps {
@@ -11,13 +11,15 @@ export interface AppointmentDetailsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onStatusUpdate: (id: string, status: AppointmentStatus) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const AppointmentDetailsDrawer: React.FC<AppointmentDetailsDrawerProps> = ({
   appointment,
   isOpen,
   onClose,
-  onStatusUpdate
+  onStatusUpdate,
+  onDelete
 }) => {
   const { success } = useToast();
 
@@ -37,9 +39,25 @@ export const AppointmentDetailsDrawer: React.FC<AppointmentDetailsDrawerProps> =
       width="max-w-lg"
       footer={
         <div className="flex items-center justify-between w-full">
-          <Button variant="outline" size="sm" onClick={onClose}>
-            Close
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={onClose}>
+              Close
+            </Button>
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onDelete(appointment.id);
+                  onClose();
+                }}
+                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200"
+                icon={<Trash2 className="w-3.5 h-3.5" />}
+              >
+                Delete
+              </Button>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {appointment.status !== 'Completed' && (
               <Button
@@ -110,14 +128,18 @@ export const AppointmentDetailsDrawer: React.FC<AppointmentDetailsDrawerProps> =
         <div className="crm-card p-4 space-y-2">
           <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500">Client Information</h5>
           <p className="text-sm font-bold text-slate-900">{appointment.clientName}</p>
-          <div className="space-y-1 text-xs text-slate-600">
-            <p className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-slate-400" />
-              {appointment.phone}
+          <div className="space-y-1.5 text-xs text-slate-600">
+            <p className="flex items-center gap-2">
+              <Phone className="w-3.5 h-3.5 text-forest-850 shrink-0" />
+              <span className={appointment.phone ? "text-slate-800 font-medium" : "text-slate-400 italic"}>
+                {appointment.phone || 'No phone number provided'}
+              </span>
             </p>
-            <p className="flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-slate-400" />
-              {appointment.email}
+            <p className="flex items-center gap-2">
+              <Mail className="w-3.5 h-3.5 text-forest-850 shrink-0" />
+              <span className={appointment.email ? "text-slate-800 font-medium" : "text-slate-400 italic"}>
+                {appointment.email || 'No email provided'}
+              </span>
             </p>
           </div>
         </div>

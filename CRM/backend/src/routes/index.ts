@@ -21,7 +21,8 @@ import { getClients, getClient, createClient, updateClient, getClientAppointment
 import { getLeads, createLead, updateLead, deleteLead } from '../controllers/leadController';
 import {
   getAppointments, getAppointment, createAppointment, updateAppointment,
-  confirmAppointment, completeAppointment, cancelAppointment, noShowAppointment
+  confirmAppointment, completeAppointment, cancelAppointment, noShowAppointment,
+  deleteAppointment
 } from '../controllers/appointmentController';
 import { getInvoices, getInvoice, createInvoice, updateInvoice } from '../controllers/invoiceController';
 import { getGiftCards, getGiftCard, createGiftCard, redeemGiftCard } from '../controllers/giftCardController';
@@ -131,6 +132,7 @@ router.post('/appointments/:id/confirm', authenticate, confirmAppointment);
 router.post('/appointments/:id/complete', authenticate, completeAppointment);
 router.post('/appointments/:id/cancel', authenticate, cancelAppointment);
 router.post('/appointments/:id/no-show', authenticate, noShowAppointment);
+router.delete('/appointments/:id', authenticate, deleteAppointment);
 
 // ---- Invoices ----
 router.get('/invoices', authenticate, getInvoices);

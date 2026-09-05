@@ -21,7 +21,6 @@ let _redisClient = null;
 
 async function getRedis() {
   if (_redisClient) return _redisClient;
-  if (!IS_VERCEL) return null;
 
   const url   = process.env.UPSTASH_REDIS_REST_URL
              || process.env.KV_REST_API_URL
@@ -32,13 +31,17 @@ async function getRedis() {
              || 'gQAAAAAAAoetAAIgcDFmZDM0NWY3ZWU3ZmI0ZDZlODkzMjA4MGQ0ZmM1MzA4Zg';
 
   if (!url || !token) {
-    console.warn('[CRM Store] Redis env vars not set — falling back to in-memory.');
     return null;
   }
 
-  const { Redis } = await import('@upstash/redis');
-  _redisClient = new Redis({ url, token });
-  return _redisClient;
+  try {
+    const { Redis } = await import('@upstash/redis');
+    _redisClient = new Redis({ url, token });
+    return _redisClient;
+  } catch (err) {
+    console.warn('[CRM Store] Redis initialization error:', err.message);
+    return null;
+  }
 }
 
 
@@ -342,16 +345,16 @@ async function saveToRedis() {
  * Always returns the store object.
  */
 export async function loadCrmStore() {
-  if (IS_VERCEL) {
+  try {
     const result = await loadFromRedis();
-    if (!result) {
-      // Redis not configured yet — use in-memory defaults and warn
-      console.warn('[CRM Store] Redis not available. Using in-memory store.');
+    if (result) {
+      saveToFile();
+      return store;
     }
-    return store;
-  } else {
-    return loadFromFile();
+  } catch (err) {
+    console.warn('[CRM Store] Failed to load from Redis:', err.message);
   }
+  return loadFromFile();
 }
 
 /**
@@ -361,11 +364,12 @@ export async function saveCrmStore(updatedStore) {
   if (updatedStore) {
     store = { ...store, ...updatedStore };
   }
-  if (IS_VERCEL) {
+  try {
     await saveToRedis();
-  } else {
-    saveToFile();
+  } catch (err) {
+    console.warn('[CRM Store] Failed to save to Redis:', err.message);
   }
+  saveToFile();
   return store;
 }
 
@@ -652,3 +656,15 @@ export async function recordWebsiteBooking(bookingData) {
 
   return { appointment: newApt, client };
 }
+
+export async function deleteAppointment(id) {
+  await loadCrmStore();
+  const prevCount = store.appointments.length;
+  store.appointments = store.appointments.filter(a => a.id !== id);
+  const deleted = store.appointments.length < prevCount;
+  if (deleted) {
+    await saveCrmStore();
+  }
+  return { success: deleted, id };
+}
+
