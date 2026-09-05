@@ -92,19 +92,19 @@ export const LoginPage: React.FC = () => {
               </div>
             )}
 
-            {/* Email */}
+            {/* Email / Username */}
             <div>
               <label htmlFor="login-email" className="block text-xs font-semibold text-forest-800 uppercase tracking-wider mb-1.5">
-                Email Address
+                Username or Email
               </label>
               <input
                 id="login-email"
-                type="email"
+                type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@auravitalstar.ca"
+                placeholder="admin or admin@auravitalstar.ca"
                 className="w-full h-10 px-3 rounded-lg border border-spa-border bg-white text-sm text-forest-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-forest-700/20 focus:border-forest-700 transition-all"
-                autoComplete="email"
+                autoComplete="username"
                 autoFocus
               />
             </div>

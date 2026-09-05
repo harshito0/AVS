@@ -72,15 +72,20 @@ async function request<T>(
 
     const res = await fetch(url, options);
 
-    // Handle 401 — redirect to login
-    if (res.status === 401) {
+    // Handle 401 for protected endpoints — redirect to login
+    if (res.status === 401 && path !== '/auth/login') {
       clearToken();
       const base = import.meta.env.BASE_URL || '/';
       window.location.href = base.endsWith('/') ? `${base}login` : `${base}/login`;
       return { success: false, error: { code: 'UNAUTHORIZED', message: 'Session expired. Please login again.' } };
     }
 
-    const json = await res.json();
+    let json: any;
+    try {
+      json = await res.json();
+    } catch {
+      json = { success: false, error: { code: 'HTTP_ERROR', message: `Server error (${res.status})` } };
+    }
     return json as ApiResult<T>;
   } catch (err: any) {
     console.error(`[API] ${method} ${path} failed:`, err.message);
