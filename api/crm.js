@@ -408,6 +408,25 @@ export default async function handler(req, res) {
       }
     }
 
+    // 3B. ADMIN: CLEAR / RESET TEST DATA (Authenticated)
+    if (pathname === '/api/admin/clear-data' && method === 'POST') {
+      const authHeader = req.headers['authorization'] || '';
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+      if (!token || (!token.startsWith('eyJ') && token !== 'avs_crm_session_jwt_mock_token_admin_2025')) {
+        return json(401, { success: false, error: { message: 'Unauthorized' } });
+      }
+      saveCrmStore({
+        clients: [],
+        appointments: [],
+        leads: [],
+        invoices: [],
+        giftCards: [],
+        notifications: []
+      });
+      syncFromStore();
+      return json(200, { success: true, message: 'All test records cleared successfully. CRM is completely clean.' });
+    }
+
     // 4. LOCATIONS
     if (pathname === '/api/locations' && method === 'GET') {
       return json(200, { success: true, data: DEFAULT_LOCATIONS });
