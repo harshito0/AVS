@@ -1,0 +1,300 @@
+/* ============================================================
+   Aura Vital Star — Signature Packages Luxury Styling
+   Live CMS Driven Catalog
+   ============================================================ */
+
+.packages-catalog-section {
+  position: relative;
+  background: radial-gradient(circle at 80% 20%, #0A1E15 0%, #06140E 65%, #040D09 100%);
+  padding: 40px 0 120px;
+  border-top: 1px solid rgba(196, 154, 60, 0.15);
+}
+
+.packages-catalog-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.packages-catalog-header {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 60px;
+}
+
+.packages-catalog-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #C49A3C;
+  margin-bottom: 16px;
+}
+
+.packages-catalog-eyebrow::before,
+.packages-catalog-eyebrow::after {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: #C49A3C;
+}
+
+.packages-catalog-title {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 400;
+  color: #FAF7F2;
+  line-height: 1.2;
+  margin: 0 0 18px;
+  letter-spacing: 0.3px;
+}
+
+.packages-catalog-subtitle {
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: #A3B5AC;
+  margin: 0;
+}
+
+/* Packages Grid */
+.packages-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 32px;
+}
+
+@media (max-width: 768px) {
+  .packages-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .packages-catalog-container {
+    padding: 0 20px;
+  }
+}
+
+/* Individual Package Card */
+.package-card {
+  background: rgba(12, 28, 20, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(196, 154, 60, 0.22);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+  position: relative;
+}
+
+.package-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(196, 154, 60, 0.55);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55), 0 0 30px rgba(196, 154, 60, 0.12);
+}
+
+.package-card-img-wrap {
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+  background: #0A1A12;
+}
+
+.package-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.package-card:hover .package-card-img {
+  transform: scale(1.06);
+}
+
+.package-card-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 20, 14, 0.15) 0%, rgba(6, 20, 14, 0.7) 100%);
+}
+
+.package-card-category {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(6, 20, 14, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(196, 154, 60, 0.4);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #DFC07A;
+  text-transform: uppercase;
+}
+
+.package-card-discount {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: linear-gradient(135deg, #CA9F46 0%, #AF832A 100%);
+  color: #FFFFFF;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.package-card-content {
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.package-card-sessions {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #C49A3C;
+  margin-bottom: 8px;
+}
+
+.package-card-title {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: #FAF7F2;
+  margin: 0 0 12px;
+  line-height: 1.25;
+}
+
+.package-card-desc {
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #BAC8C0;
+  margin: 0 0 20px;
+  flex-grow: 1;
+}
+
+.package-inclusions-block {
+  padding-top: 18px;
+  border-top: 1px solid rgba(196, 154, 60, 0.15);
+  margin-bottom: 24px;
+}
+
+.package-inclusions-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #DFC07A;
+  margin-bottom: 12px;
+}
+
+.package-inclusions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.package-inclusion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #E3ECE7;
+}
+
+.package-inclusion-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(196, 154, 60, 0.15);
+  border: 1px solid rgba(196, 154, 60, 0.4);
+  color: #C49A3C;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.package-card-footer {
+  padding-top: 20px;
+  border-top: 1px solid rgba(196, 154, 60, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: auto;
+}
+
+.package-pricing {
+  display: flex;
+  flex-direction: column;
+}
+
+.package-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.package-price-main {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: 26px;
+  font-weight: 600;
+  color: #FAF7F2;
+}
+
+.package-price-original {
+  font-size: 13.5px;
+  color: #7E9187;
+  text-decoration: line-through;
+}
+
+.package-price-note {
+  font-size: 10.5px;
+  color: #7E9187;
+  margin-top: 2px;
+}
+
+.package-book-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #CA9F46 0%, #AF832A 100%);
+  color: #FFFFFF !important;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(175, 131, 42, 0.28);
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.package-book-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(175, 131, 42, 0.45);
+  filter: brightness(1.08);
+}

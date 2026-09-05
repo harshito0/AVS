@@ -5,7 +5,23 @@
 
 import fs from 'fs';
 import path from 'path';
-import { loadCrmStore, saveCrmStore, recordWebsiteBooking } from './crmStore.js';
+import {
+  loadCrmStore,
+  saveCrmStore,
+  recordWebsiteBooking,
+  getServices,
+  addService,
+  updateService,
+  deleteService,
+  getPackages,
+  addPackage,
+  updatePackage,
+  deletePackage,
+  getGallery,
+  addGalleryItem,
+  updateGalleryItem,
+  deleteGalleryItem
+} from './crmStore.js';
 
 // Initial Seed Data: Locations
 const DEFAULT_LOCATIONS = [
@@ -75,13 +91,13 @@ export function syncFromStore() {
   invoices = store.invoices || [];
   giftCards = store.giftCards || [];
   notifications = store.notifications || [];
-  if (Array.isArray(store.services) && store.services.length) {
+  if (Array.isArray(store.services)) {
     services = store.services;
   } else {
     store.services = [...DEFAULT_SERVICES];
     services = store.services;
   }
-  if (Array.isArray(store.packages) && store.packages.length) {
+  if (Array.isArray(store.packages)) {
     packages = store.packages;
   } else {
     store.packages = [...DEFAULT_PACKAGES];
@@ -622,18 +638,62 @@ export default async function handler(req, res) {
 
     // 11. SERVICES
     if (pathname.startsWith('/api/services')) {
-      if (method === 'GET') return json(200, { success: true, data: services });
-      if (method === 'POST') {
-        const body = await readBody(req);
-        const newSvc = { id: 'svc-' + Date.now(), ...body };
-        services.push(newSvc);
-        return json(201, { success: true, data: newSvc });
+      const parts = pathname.split('/').filter(Boolean);
+      if (parts.length === 2) {
+        if (method === 'GET') {
+          return json(200, { success: true, data: getServices() });
+        }
+        if (method === 'POST') {
+          const body = await readBody(req);
+          const newSvc = addService(body);
+          syncFromStore();
+          return json(201, { success: true, data: newSvc });
+        }
+      }
+      if (parts.length === 3) {
+        const id = parts[2];
+        if (method === 'PATCH') {
+          const body = await readBody(req);
+          const updated = updateService(id, body);
+          syncFromStore();
+          return json(200, { success: true, data: updated });
+        }
+        if (method === 'DELETE') {
+          const result = deleteService(id);
+          syncFromStore();
+          return json(200, { success: true, data: result });
+        }
       }
     }
 
     // 12. PACKAGES
     if (pathname.startsWith('/api/packages')) {
-      if (method === 'GET') return json(200, { success: true, data: packages });
+      const parts = pathname.split('/').filter(Boolean);
+      if (parts.length === 2) {
+        if (method === 'GET') {
+          return json(200, { success: true, data: getPackages() });
+        }
+        if (method === 'POST') {
+          const body = await readBody(req);
+          const newPkg = addPackage(body);
+          syncFromStore();
+          return json(201, { success: true, data: newPkg });
+        }
+      }
+      if (parts.length === 3) {
+        const id = parts[2];
+        if (method === 'PATCH') {
+          const body = await readBody(req);
+          const updated = updatePackage(id, body);
+          syncFromStore();
+          return json(200, { success: true, data: updated });
+        }
+        if (method === 'DELETE') {
+          const result = deletePackage(id);
+          syncFromStore();
+          return json(200, { success: true, data: result });
+        }
+      }
     }
 
     // 13. NOTIFICATIONS
@@ -641,20 +701,39 @@ export default async function handler(req, res) {
       if (method === 'GET') return json(200, { success: true, data: notifications });
       if (method === 'POST') {
         notifications.forEach(n => n.read = true);
+        saveCrmStore({ notifications });
         return json(200, { success: true, message: 'All notifications marked as read' });
       }
     }
 
     // 14. GALLERY
     if (pathname.startsWith('/api/gallery')) {
-      return json(200, {
-        success: true,
-        data: [
-          { id: 'gal-1', title: 'Luxury Lounge Interior', category: 'Lounge', imageUrl: '/gallery_lounge_interior.webp', status: 'Published' },
-          { id: 'gal-2', title: 'Volcanic Hot Stones Treatment', category: 'Treatments', imageUrl: '/gallery_hot_stones.webp', status: 'Published' },
-          { id: 'gal-3', title: 'Hair Wash & Scalp Spa', category: 'Treatments', imageUrl: '/salon_facial_glow.webp', status: 'Published' }
-        ]
-      });
+      const parts = pathname.split('/').filter(Boolean);
+      if (parts.length === 2) {
+        if (method === 'GET') {
+          return json(200, { success: true, data: getGallery() });
+        }
+        if (method === 'POST') {
+          const body = await readBody(req);
+          const newItem = addGalleryItem(body);
+          syncFromStore();
+          return json(201, { success: true, data: newItem });
+        }
+      }
+      if (parts.length === 3) {
+        const id = parts[2];
+        if (method === 'PATCH') {
+          const body = await readBody(req);
+          const updated = updateGalleryItem(id, body);
+          syncFromStore();
+          return json(200, { success: true, data: updated });
+        }
+        if (method === 'DELETE') {
+          const result = deleteGalleryItem(id);
+          syncFromStore();
+          return json(200, { success: true, data: result });
+        }
+      }
     }
 
     // Fallback: route not found

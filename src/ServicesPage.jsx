@@ -312,6 +312,7 @@ export const SERVICE_FILTER_TABS = [
 ];
 
 export default function ServicesPage({ onBookClick, onNavClick }) {
+  const [servicesList, setServicesList] = useState(AVS_SERVICES);
   const [activeCategory, setActiveCategory] = useState('ALL SERVICES');
   const [selectedService, setSelectedService] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -338,6 +339,49 @@ export default function ServicesPage({ onBookClick, onNavClick }) {
     }
     metaDesc.content =
       'Explore premium spa, wellness, facial, massage, waxing, manicure, pedicure and beauty services at Aura Vital Star Rejuvenation Centre in Brampton, Ontario.';
+
+    // Fetch live services configured in CRM CMS
+    fetch('/api/services')
+      .then((res) => res.json())
+      .then((result) => {
+        const data = Array.isArray(result) ? result : (result?.data || []);
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((item, idx) => {
+            const existing = AVS_SERVICES.find(
+              (s) => s.id === item.id || s.title?.toLowerCase() === item.name?.toLowerCase()
+            );
+
+            let cat = (item.category || 'BODY WELLNESS').toUpperCase();
+            if (cat.includes('MASSAGE')) cat = 'BODY WELLNESS';
+            else if (cat.includes('FACIAL') || cat.includes('SKIN')) cat = 'FACIALS & SKIN';
+            else if (cat.includes('HAIR')) cat = 'HAIR & HEAD';
+            else if (cat.includes('NAIL') || cat.includes('FOOT') || cat.includes('HAND')) cat = 'HANDS & FEET';
+            else if (cat.includes('WAX') || cat.includes('LASER')) cat = 'WAXING & LASER';
+            else if (cat.includes('MAKEUP')) cat = 'MAKEUP';
+            else if (cat.includes('COUPLE') || cat.includes('RITUAL')) cat = 'SPECIAL EXPERIENCES';
+
+            return {
+              id: item.id || `crm-svc-${idx}`,
+              num: String(idx + 1).padStart(2, '0'),
+              title: item.name,
+              category: cat,
+              categories: [cat, (item.category || '').toUpperCase()].filter(Boolean),
+              desc: item.description || existing?.desc || `Experience relaxing ${item.name} at Aura Vital Star.`,
+              detailedDesc: item.description || existing?.detailedDesc || `Indulge in our tailored ${item.name} session (${item.duration || '60 min'}), customized for restorative wellness.`,
+              benefits: existing?.benefits || [
+                'Clinical restorative treatment by licensed specialists',
+                'Deep relaxation and muscular tension relief',
+                'Customized botanical formulations & aromatherapy',
+                'Restores physical vitality, circulation, and inner balance'
+              ],
+              experience: `Approx. ${item.duration || '60 min'} • $${item.price ? Number(item.price).toFixed(2) : '120.00'} CAD`,
+              image: item.imageUrl || item.image || existing?.image || '/hero_massage.webp'
+            };
+          });
+          setServicesList(mapped);
+        }
+      })
+      .catch((err) => console.warn('Services live API fallback:', err));
   }, []);
 
   // Keyboard accessibility for modal (ESC key to close)
@@ -363,11 +407,11 @@ export default function ServicesPage({ onBookClick, onNavClick }) {
     };
   }, [selectedService]);
 
-  // Filter services dynamically
+  // Filter services dynamically from live state
   const filteredServices =
     activeCategory === 'ALL SERVICES'
-      ? AVS_SERVICES
-      : AVS_SERVICES.filter(
+      ? servicesList
+      : servicesList.filter(
           (s) =>
             s.category === activeCategory ||
             (s.categories && s.categories.includes(activeCategory))
@@ -522,8 +566,8 @@ export default function ServicesPage({ onBookClick, onNavClick }) {
             {SERVICE_FILTER_TABS.map((tab) => {
               const count =
                 tab.id === 'ALL SERVICES'
-                  ? AVS_SERVICES.length
-                  : AVS_SERVICES.filter(
+                  ? servicesList.length
+                  : servicesList.filter(
                       (s) =>
                         s.category === tab.id ||
                         (s.categories && s.categories.includes(tab.id))

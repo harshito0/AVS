@@ -22,6 +22,7 @@ export const GalleryPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<'Lounge' | 'Treatments' | 'Spa Suites' | 'Products'>('Treatments');
   const [imageUrl, setImageUrl] = useState('');
+  const [description, setDescription] = useState('');
 
   useEffect(() => {
     loadGallery();
@@ -51,6 +52,7 @@ export const GalleryPage: React.FC = () => {
       title,
       category,
       imageUrl: imageUrl || 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&auto=format&fit=crop&q=80',
+      description,
       status: 'Published'
     });
 
@@ -58,6 +60,7 @@ export const GalleryPage: React.FC = () => {
     success('Image Added', `"${newItem.title}" added to the public gallery.`);
     setIsAddModalOpen(false);
     setTitle('');
+    setDescription('');
     setImageUrl('');
   };
 
@@ -152,7 +155,12 @@ export const GalleryPage: React.FC = () => {
             <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
               <div>
                 <h4 className="font-bold text-slate-900 text-sm">{item.title}</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">Added on {item.dateAdded}</p>
+                {item.description && (
+                  <p className="text-xs text-slate-600 line-clamp-2 mt-1 leading-relaxed">
+                    {item.description}
+                  </p>
+                )}
+                <p className="text-[11px] text-slate-400 mt-1">Added on {item.dateAdded}</p>
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-100">
@@ -176,13 +184,23 @@ export const GalleryPage: React.FC = () => {
       {/* Add Modal with Local File Preview */}
       <Modal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setDescription('');
+          setTitle('');
+          setImageUrl('');
+        }}
         title="Add Gallery Image"
         subtitle="Upload luxury interior or therapy treatment photography"
         maxWidth="md"
         footer={
           <>
-            <Button variant="outline" size="sm" onClick={() => setIsAddModalOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => {
+              setIsAddModalOpen(false);
+              setDescription('');
+              setTitle('');
+              setImageUrl('');
+            }}>
               Cancel
             </Button>
             <Button variant="primary" size="sm" onClick={handleAddItem}>
@@ -211,6 +229,19 @@ export const GalleryPage: React.FC = () => {
               { value: 'Products', label: 'Products' }
             ]}
           />
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              Description *
+            </label>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the atmosphere, equipment, therapy benefits, or sanctuary experience..."
+              className="w-full bg-white border border-[#D9E2DC] hover:border-slate-400 focus:border-forest-800 text-slate-900 text-xs rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-forest-800/15"
+            />
+          </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">

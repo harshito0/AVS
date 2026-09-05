@@ -225,17 +225,47 @@ const SOCIAL_PHOTOS = [
 ];
 
 export default function GalleryPage({ onBookClick, onNavClick }) {
+  const [galleryList, setGalleryList] = useState(GALLERY_ITEMS);
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+
+    // Load dynamic gallery items from CRM CMS
+    fetch('/api/gallery')
+      .then((res) => res.json())
+      .then((result) => {
+        const data = Array.isArray(result) ? result : (result?.data || []);
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((item, idx) => ({
+            id: item.id || `crm-gal-${idx}`,
+            category: (item.category || 'AVS SPACE').toUpperCase(),
+            title: item.title,
+            subtitle: item.category || 'Aura Vital Star',
+            desc: item.description || item.desc || 'Experience pure clinical wellness and relaxation at Aura Vital Star.',
+            image: item.imageUrl || item.image || '/gallery_hot_stones.webp',
+            alt: item.title || 'Aura Vital Star luxury gallery scene',
+            spanClass: item.spanClass || (idx % 6 === 0 ? 'span-feature' : idx % 5 === 0 ? 'span-wide' : idx % 3 === 0 ? 'span-portrait' : 'span-landscape')
+          }));
+          setGalleryList(mapped);
+        }
+      })
+      .catch((err) => console.warn('Gallery live API load fallback:', err));
   }, []);
+
+  const dynamicCategories = [
+    'ALL',
+    ...Array.from(new Set([
+      ...CATEGORIES.filter((c) => c !== 'ALL'),
+      ...galleryList.map((i) => i.category.toUpperCase())
+    ]))
+  ];
 
   // Filter gallery items
   const filteredItems = selectedCategory === 'ALL'
-    ? GALLERY_ITEMS
-    : GALLERY_ITEMS.filter((item) => item.category === selectedCategory);
+    ? galleryList
+    : galleryList.filter((item) => item.category.toUpperCase() === selectedCategory.toUpperCase());
 
   // Lightbox handlers
   const openLightbox = (item) => {
@@ -338,7 +368,7 @@ export default function GalleryPage({ onBookClick, onNavClick }) {
       <section className="gallery-filter-section" aria-label="Gallery category filters">
         <div className="gallery-filter-container">
           <div className="gallery-filter-track" role="tablist">
-            {CATEGORIES.map((cat) => (
+            {dynamicCategories.map((cat) => (
               <button
                 key={cat}
                 role="tab"

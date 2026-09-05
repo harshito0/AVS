@@ -129,8 +129,9 @@ export interface Appointment {
 export interface GalleryItem {
   id: string;
   title: string;
-  category: 'Lounge' | 'Treatments' | 'Spa Suites' | 'Products';
+  category: 'Lounge' | 'Treatments' | 'Spa Suites' | 'Products' | string;
   imageUrl: string;
+  description?: string;
   status: 'Published' | 'Draft';
   dateAdded: string;
 }
@@ -138,9 +139,10 @@ export interface GalleryItem {
 export interface ServiceItem {
   id: string;
   name: string;
-  category: 'Massage Therapy' | 'Facial & Skincare' | 'Hair Spa' | 'Nail Care' | 'Body Rituals' | 'Laser & Waxing';
+  category: 'Massage Therapy' | 'Facial & Skincare' | 'Hair Spa' | 'Nail Care' | 'Body Rituals' | 'Laser & Waxing' | string;
   duration: string;
   price: number;
+  imageUrl?: string;
   status: 'Active' | 'Inactive';
   description: string;
 }
@@ -154,6 +156,7 @@ export interface PackageItem {
   price: number;
   originalPrice: number;
   discount: number;
+  imageUrl?: string;
   status: 'Active' | 'Inactive';
   description: string;
 }

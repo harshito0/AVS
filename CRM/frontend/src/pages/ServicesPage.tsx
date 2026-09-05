@@ -23,6 +23,7 @@ export const ServicesPage: React.FC = () => {
   const [duration, setDuration] = useState('60 min');
   const [price, setPrice] = useState<number>(120);
   const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
     loadServices();
@@ -43,7 +44,8 @@ export const ServicesPage: React.FC = () => {
       duration,
       price,
       status: 'Active',
-      description
+      description,
+      imageUrl: imageUrl || '/hero_massage.webp'
     });
 
     setServices((prev) => [...prev, newSvc]);
@@ -51,6 +53,7 @@ export const ServicesPage: React.FC = () => {
     setIsAddModalOpen(false);
     setName('');
     setDescription('');
+    setImageUrl('');
   };
 
   const handleDeleteService = async () => {
@@ -110,8 +113,13 @@ export const ServicesPage: React.FC = () => {
         {filteredServices.map((service) => (
           <div
             key={service.id}
-            className="crm-card p-5 flex flex-col justify-between hover:shadow-md transition-all duration-200 space-y-4"
+            className="crm-card p-5 flex flex-col justify-between hover:shadow-md transition-all duration-200 space-y-4 overflow-hidden"
           >
+            {service.imageUrl && (
+              <div className="h-32 -mx-5 -mt-5 mb-1 overflow-hidden bg-slate-100">
+                <img src={service.imageUrl} alt={service.name} className="w-full h-full object-cover" />
+              </div>
+            )}
             <div>
               <div className="flex justify-between items-start gap-2">
                 <span className="text-[10px] font-bold tracking-wider text-forest-850 uppercase">
@@ -155,13 +163,23 @@ export const ServicesPage: React.FC = () => {
       {/* Add Service Modal */}
       <Modal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setImageUrl('');
+          setName('');
+          setDescription('');
+        }}
         title="Add Treatment Service"
         subtitle="Introduce a new spa therapy or medical aesthetics service"
         maxWidth="md"
         footer={
           <>
-            <Button variant="outline" size="sm" onClick={() => setIsAddModalOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => {
+              setIsAddModalOpen(false);
+              setImageUrl('');
+              setName('');
+              setDescription('');
+            }}>
               Cancel
             </Button>
             <Button variant="primary" size="sm" onClick={handleAddService}>
@@ -208,6 +226,13 @@ export const ServicesPage: React.FC = () => {
             value={price}
             onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
             required
+          />
+
+          <Input
+            label="Service Image URL"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="e.g. /hero_massage.webp or https://images.unsplash.com/..."
           />
 
           <div>

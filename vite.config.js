@@ -185,6 +185,20 @@ function apiDevPlugin() {
             return sendJson(200, { success: true, bookings: getAllBookings() });
           }
 
+          // CRM API Delegation for Services, Packages, Gallery, and Dashboard
+          if (
+            url.startsWith('/api/services') ||
+            url.startsWith('/api/packages') ||
+            url.startsWith('/api/gallery') ||
+            url.startsWith('/api/dashboard') ||
+            url.startsWith('/api/auth') ||
+            url.startsWith('/api/clients') ||
+            url.startsWith('/api/appointments')
+          ) {
+            const { default: crmHandler } = await import('./api/crm.js');
+            return await crmHandler(req, res);
+          }
+
           next();
         } catch (err) {
           console.error('[Vite Dev API] Error:', err);

@@ -4,9 +4,10 @@ import { galleryApi, servicesApi, packagesApi } from './apiClient';
 function mapGallery(g: any): GalleryItem {
   return {
     id: g.id,
-    title: g.title,
-    category: (g.category || 'Lounge') as any,
-    imageUrl: g.imageUrl,
+    title: g.title || 'Sanctuary Scene',
+    category: (g.category || 'Treatments') as any,
+    imageUrl: g.imageUrl || g.image || '',
+    description: g.description || g.desc || '',
     status: (g.status || 'Published') as any,
     dateAdded: typeof g.createdAt === 'string' ? g.createdAt.split('T')[0] : (g.dateAdded || new Date().toISOString().split('T')[0])
   };
@@ -15,19 +16,20 @@ function mapGallery(g: any): GalleryItem {
 function mapService(s: any): ServiceItem {
   return {
     id: s.id,
-    name: s.name,
+    name: s.name || s.title || '',
     category: (s.category || 'Massage Therapy') as any,
     duration: s.duration || '60 min',
     price: s.price ?? 0,
+    imageUrl: s.imageUrl || s.image || '',
     status: (s.status || 'Active') as any,
-    description: s.description || ''
+    description: s.description || s.desc || ''
   };
 }
 
 function mapPackage(p: any): PackageItem {
   return {
     id: p.id,
-    name: p.name,
+    name: p.name || p.title || '',
     category: p.category || 'Wellness',
     servicesIncluded: Array.isArray(p.servicesIncluded)
       ? p.servicesIncluded.map((s: any) => typeof s === 'string' ? s : (s.serviceName || s.name || 'Service'))
@@ -36,8 +38,9 @@ function mapPackage(p: any): PackageItem {
     price: p.price ?? 0,
     originalPrice: p.originalPrice ?? p.price ?? 0,
     discount: p.discount ?? 0,
+    imageUrl: p.imageUrl || p.image || '',
     status: (p.status || 'Active') as any,
-    description: p.description || ''
+    description: p.description || p.desc || ''
   };
 }
 
@@ -60,6 +63,7 @@ export const websiteService = {
         title: item.title,
         category: item.category,
         imageUrl: item.imageUrl,
+        description: item.description,
         status: item.status
       });
       if (res.success && res.data) {
@@ -99,6 +103,7 @@ export const websiteService = {
         category: service.category,
         duration: service.duration,
         price: service.price,
+        imageUrl: service.imageUrl,
         description: service.description,
         status: service.status
       });
@@ -143,6 +148,7 @@ export const websiteService = {
         discount: pkg.discount,
         sessions: pkg.sessions,
         servicesIncluded: pkg.servicesIncluded,
+        imageUrl: pkg.imageUrl,
         status: pkg.status
       });
       if (res.success && res.data) {
@@ -155,7 +161,7 @@ export const websiteService = {
   },
   async deletePackage(id: string): Promise<boolean> {
     try {
-      const res = await packagesApi.update(id, { status: 'Inactive' });
+      const res = await packagesApi.delete(id);
       return res.success;
     } catch (e) {
       console.error('[websiteService] Failed to delete package', e);

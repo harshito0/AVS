@@ -216,6 +216,7 @@ export const packagesApi = {
   },
   create: (data: unknown) => apiPost<any>('/packages', data),
   update: (id: string, data: unknown) => apiPatch<any>(`/packages/${id}`, data),
+  delete: (id: string) => apiDelete<any>(`/packages/${id}`),
 };
 
 // Gallery (CMS)

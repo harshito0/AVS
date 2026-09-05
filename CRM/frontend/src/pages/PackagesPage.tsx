@@ -24,6 +24,7 @@ export const PackagesPage: React.FC = () => {
   const [price, setPrice] = useState<number>(399);
   const [originalPrice, setOriginalPrice] = useState<number>(480);
   const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
     loadPackages();
@@ -51,7 +52,8 @@ export const PackagesPage: React.FC = () => {
       originalPrice,
       discount,
       status: 'Active',
-      description
+      description,
+      imageUrl: imageUrl || '/hero_relaxation.webp'
     });
 
     setPackages((prev) => [...prev, newPkg]);
@@ -59,6 +61,7 @@ export const PackagesPage: React.FC = () => {
     setIsAddModalOpen(false);
     setName('');
     setDescription('');
+    setImageUrl('');
   };
 
   const handleDeletePackage = async () => {
@@ -112,6 +115,11 @@ export const PackagesPage: React.FC = () => {
               key={pkg.id}
               className="crm-card p-6 flex flex-col justify-between border-[#DDE5E0] hover:border-[#CAD8CE] hover:shadow-md transition-all duration-200 relative overflow-hidden"
             >
+              {pkg.imageUrl && (
+                <div className="h-36 -mx-6 -mt-6 mb-4 overflow-hidden bg-slate-100">
+                  <img src={pkg.imageUrl} alt={pkg.name} className="w-full h-full object-cover" />
+                </div>
+              )}
               {/* Top Accent Strip */}
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
@@ -192,13 +200,23 @@ export const PackagesPage: React.FC = () => {
       {/* Add Package Modal */}
       <Modal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setImageUrl('');
+          setName('');
+          setDescription('');
+        }}
         title="Create Treatment Package"
         subtitle="Bundle treatments into a high-value wellness journey"
         maxWidth="lg"
         footer={
           <>
-            <Button variant="outline" size="sm" onClick={() => setIsAddModalOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => {
+              setIsAddModalOpen(false);
+              setImageUrl('');
+              setName('');
+              setDescription('');
+            }}>
               Cancel
             </Button>
             <Button variant="primary" size="sm" onClick={handleAddPackage}>
@@ -248,6 +266,13 @@ export const PackagesPage: React.FC = () => {
               onChange={(e) => setOriginalPrice(parseFloat(e.target.value) || 0)}
             />
           </div>
+
+          <Input
+            label="Package Cover Image URL"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="e.g. /hero_relaxation.webp or https://images.unsplash.com/..."
+          />
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
