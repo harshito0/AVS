@@ -116,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <img
                 src="/avs_logo.png"
                 alt="Aura Vital Star"
-                className="w-48 max-w-full object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-200"
+                className="w-48 max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
               />
             </div>
             <p className="text-[9px] font-semibold tracking-widest uppercase text-[#6B897C] mt-1">

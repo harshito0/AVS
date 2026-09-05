@@ -163,7 +163,7 @@ export const CrmShell: React.FC = () => {
               <img
                 src="/avs_logo.png"
                 alt=""
-                className="w-[520px] max-w-[60vw] opacity-[0.04] mix-blend-multiply"
+                className="w-[520px] max-w-[60vw] opacity-[0.05]"
                 aria-hidden="true"
               />
             </div>

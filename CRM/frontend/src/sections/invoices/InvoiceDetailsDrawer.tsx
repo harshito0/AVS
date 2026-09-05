@@ -85,16 +85,15 @@ export const InvoiceDetailsDrawer: React.FC<InvoiceDetailsDrawerProps> = ({
           {/* Subtle logo watermark inside the dark header */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
             <img src="/avs_logo.png" alt="" aria-hidden="true"
-              className="w-72 opacity-[0.06] mix-blend-screen" />
+              className="w-72 opacity-[0.07]" />
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              {/* Full Logo */}
               <div className="shrink-0">
                 <img
                   src="/avs_logo.png"
                   alt="Aura Vital Star"
-                  className="h-20 w-auto object-contain drop-shadow-xl"
+                  className="h-20 w-auto object-contain"
                 />
               </div>
               <div>
@@ -171,7 +170,7 @@ export const InvoiceDetailsDrawer: React.FC<InvoiceDetailsDrawerProps> = ({
           {/* Watermark inside the table */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
             <img src="/avs_logo.png" alt="" aria-hidden="true"
-              className="w-48 opacity-[0.04] mix-blend-multiply" />
+              className="w-48 opacity-[0.05]" />
           </div>
           <table className="w-full text-left text-xs relative z-10">
             <thead>
