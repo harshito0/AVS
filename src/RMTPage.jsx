@@ -229,7 +229,7 @@ export default function RMTPage({ onBookClick, onBackToHome, onNavClick }) {
                   <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.4C17.25 22.15 21 17.25 21 12V6L12 2z" stroke="#C59A3F" strokeWidth="1.5" strokeLinejoin="round" />
                   <path d="M9 12l2 2 4-4" stroke="#C59A3F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span>RMP Certified</span>
+                <span>RMT Certified</span>
               </div>
               <div className="rmt-hero-badge">
                 <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
