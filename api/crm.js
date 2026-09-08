@@ -29,12 +29,12 @@ import {
 // Helper to dispatch confirmation email to client and notification to admin
 async function sendCrmBookingEmails(booking) {
   try {
-    const host = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+    const host = (process.env.SMTP_HOST || 'neo.herosite.pro').trim();
     const port = parseInt(process.env.SMTP_PORT || '587', 10);
-    const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-    const user = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
-    const pass = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
-    const adminEmail = (process.env.ADMIN_EMAIL || user).trim();
+    const secure = process.env.SMTP_SECURE === 'true';
+    const user = (process.env.SMTP_USER || process.env.GMAIL_USER || 'noreply@auravitalstar.ca').trim();
+    const pass = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'C0d3kap#123').replace(/["'\s]/g, '');
+    const adminEmail = (process.env.ADMIN_EMAIL || 'auravitalstar@gmail.com').trim();
     const fromName = (process.env.FROM_NAME || 'Aura Vital Star Concierge').trim();
     const fromEmail = (process.env.FROM_EMAIL || user).trim();
 
@@ -46,9 +46,9 @@ async function sendCrmBookingEmails(booking) {
       secure,
       auth: { user, pass },
       tls: { rejectUnauthorized: false },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 15000
     });
 
     const isQr = (booking.source || '').toLowerCase().includes('qr');

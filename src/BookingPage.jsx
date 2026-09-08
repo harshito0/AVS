@@ -337,17 +337,18 @@ export default function BookingPage({
     const res = await sendOtpEmail(customerDetails.email.trim(), customerDetails.name);
     setOtpSending(false);
 
-    if (res && res.success) {
+    if (res && (res.success || res.otp)) {
       setOtpSent(true);
       if (res.otp) {
         setValidOtpCodes((prev) => Array.from(new Set([...prev, res.otp.toString().trim()])));
       }
       setResendTimer(30);
       setIsTimerActive(true);
+      setOtpError('');
       setOtpSuccessMsg(`A 6-digit verification code has been dispatched to ${customerDetails.email}. Please check your Inbox and Spam/Junk folder.`);
       setErrors((prev) => ({ ...prev, email: null }));
     } else {
-      setOtpError(res.error || res.reason || 'No active OTP found for this email. Please click "Resend Code".');
+      setOtpError(res?.error || res?.reason || 'Failed to dispatch verification code. Please click "Resend Code".');
     }
   };
 

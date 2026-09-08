@@ -1,11 +1,11 @@
 import nodemailer from 'nodemailer';
 
-const SMTP_HOST = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+const SMTP_HOST = (process.env.SMTP_HOST || 'neo.herosite.pro').trim();
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
-const SMTP_SECURE = process.env.SMTP_SECURE === 'true' || SMTP_PORT === 465;
-const SMTP_USER = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
-const SMTP_PASS = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || SMTP_USER).trim();
+const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
+const SMTP_USER = (process.env.SMTP_USER || process.env.GMAIL_USER || 'noreply@auravitalstar.ca').trim();
+const SMTP_PASS = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'C0d3kap#123').replace(/["'\s]/g, '');
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'auravitalstar@gmail.com').trim();
 const FROM_NAME = (process.env.FROM_NAME || 'Aura Vital Star Concierge').trim();
 const FROM_EMAIL = (process.env.FROM_EMAIL || SMTP_USER).trim();
 
@@ -22,9 +22,9 @@ function getTransporter() {
       rejectUnauthorized: false,
       servername: SMTP_HOST
     },
-    connectionTimeout: 25000,
-    greetingTimeout: 25000,
-    socketTimeout: 25000
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 20000
   });
 }
 

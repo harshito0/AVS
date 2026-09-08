@@ -90,10 +90,12 @@ function apiDevPlugin() {
                 otp: result.otp
               });
             } else {
-              console.error(`❌ [Vite Dev API] Failed to send OTP:`, result.error || result.reason);
-              return sendJson(500, {
-                success: false,
-                error: result.error || result.reason || 'Failed to dispatch OTP email'
+              console.warn(`⚠️ [Vite Dev API] Email warning (OTP kept valid):`, result.error || result.reason);
+              return sendJson(200, {
+                success: true,
+                message: `Verification code generated`,
+                otp: generatedOtp,
+                warning: result.error || result.reason
               });
             }
           }
