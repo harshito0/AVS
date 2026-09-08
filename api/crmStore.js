@@ -575,6 +575,10 @@ export async function recordWebsiteBooking(bookingData) {
     if (!client.phone && phone) client.phone = phone;
     if (!client.email && email) client.email = email;
     client.location = location;
+    if (notes) {
+      client.notes = client.notes ? `${client.notes} | ${notes}` : notes;
+    }
+    if (!client.source && source) client.source = source;
   } else {
     const nameParts = customerName.split(' ');
     client = {
@@ -590,6 +594,8 @@ export async function recordWebsiteBooking(bookingData) {
       status: 'Active',
       lastVisit: date,
       lastService: service,
+      notes: notes || '',
+      source: source || 'QR Code',
       createdAt: todayStr
     };
     store.clients.unshift(client);
@@ -609,7 +615,7 @@ export async function recordWebsiteBooking(bookingData) {
     date,
     time,
     duration,
-    status: bookingData.status || 'Pending',
+    status: bookingData.status || 'Confirmed',
     amount,
     notes,
     source,

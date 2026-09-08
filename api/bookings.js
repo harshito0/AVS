@@ -165,13 +165,23 @@ export default async function handler(req, res) {
     let emailSent = false;
     let emailError = null;
 
+    const isQrBooking = (fullBooking.source || '').toLowerCase().includes('qr');
+
+    const customerSubject = isQrBooking
+      ? `Appointment Confirmation: ${fullBooking.service} — Aura Vital Star [${fullBooking.id}]`
+      : `Your Aura Vital Star Verification OTP: ${otpCode} [${fullBooking.id}]`;
+
+    const adminSubject = isQrBooking
+      ? `[NEW QR APPOINTMENT] ${customerName} - ${fullBooking.service} [${fullBooking.id}]`
+      : `NEW APPOINTMENT: ${customerName} - ${fullBooking.service} [${fullBooking.id}]`;
+
     // 1. Send confirmation + OTP to customer (if email provided)
     if (fullBooking.email) {
       try {
         await transporter.sendMail({
           from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
           to: fullBooking.email,
-          subject: `Your Aura Vital Star Verification OTP: ${otpCode} [${fullBooking.id}]`,
+          subject: customerSubject,
           html: customerHtml
         });
         emailSent = true;
@@ -186,7 +196,7 @@ export default async function handler(req, res) {
       await transporter.sendMail({
         from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
         to: ADMIN_EMAIL,
-        subject: `NEW APPOINTMENT: ${customerName} - ${fullBooking.service} [${fullBooking.id}]`,
+        subject: adminSubject,
         html: adminHtml
       });
     } catch (adminErr) {

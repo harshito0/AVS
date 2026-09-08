@@ -167,16 +167,36 @@ function apiDevPlugin() {
             const body = await readBody();
             const { insertBooking } = await import('./server/db.js');
             const { sendBookingEmails } = await import('./server/email.js');
+            const { recordWebsiteBooking } = await import('./api/crmStore.js');
 
             const savedRecord = insertBooking(body);
+
+            // Record into CRM store (Clients & Appointments)
+            let crmResult = null;
+            try {
+              crmResult = await recordWebsiteBooking(savedRecord);
+            } catch (crmErr) {
+              console.error('[Vite Dev API] CRM store error:', crmErr.message);
+            }
+
             let emailResult = { success: false };
             try {
-              emailResult = await sendBookingEmails(savedRecord);
+              emailResult = await sendBookingEmails({
+                ...savedRecord,
+                source: body.source || savedRecord.source || 'Website'
+              });
             } catch (err) {
               console.error('[Vite Dev API] Booking email error:', err);
             }
 
-            return sendJson(201, { success: true, booking: savedRecord, emailResult });
+            return sendJson(201, {
+              success: true,
+              booking: savedRecord,
+              crmAppointment: crmResult?.appointment,
+              crmClient: crmResult?.client,
+              bookingId: savedRecord.id,
+              emailResult
+            });
           }
 
           // GET /api/bookings

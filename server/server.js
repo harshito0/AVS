@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getAllBookings, insertBooking, updateStatus } from './db.js';
 import { sendBookingEmails, sendOtpEmail, sendContactInquiryEmail } from './email.js';
+import { recordWebsiteBooking, loadCrmStore } from '../api/crmStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -133,10 +134,21 @@ app.post('/api/bookings', async (req, res) => {
     const savedRecord = insertBooking(bookingData);
     console.log(`📝 Stored booking ${savedRecord.id} for ${savedRecord.customerName} in database.`);
 
-    // 2. Dispatch real confirmation email + OTP via Gmail SMTP
+    // 2. Synchronously record to CRM store (clients & appointments)
+    let crmResult = null;
+    try {
+      crmResult = await recordWebsiteBooking(savedRecord);
+    } catch (crmErr) {
+      console.error('Error saving to CRM store:', crmErr.message);
+    }
+
+    // 3. Dispatch real confirmation email + OTP via SMTP
     let emailResult = { success: false, reason: 'Pending' };
     try {
-      emailResult = await sendBookingEmails(savedRecord);
+      emailResult = await sendBookingEmails({
+        ...savedRecord,
+        source: bookingData.source || savedRecord.source || 'Website'
+      });
     } catch (emailErr) {
       console.error('Non-blocking email error:', emailErr);
       emailResult = { success: false, error: emailErr.message };
@@ -145,11 +157,83 @@ app.post('/api/bookings', async (req, res) => {
     res.status(201).json({
       success: true,
       booking: savedRecord,
+      crmAppointment: crmResult?.appointment,
+      crmClient: crmResult?.client,
+      bookingId: savedRecord.id,
       emailResult
     });
   } catch (err) {
     console.error('Error creating booking:', err);
     res.status(500).json({ success: false, error: 'Failed to process booking' });
+  }
+});
+
+// POST /api/appointments — Public website & QR booking endpoint
+app.post('/api/appointments', async (req, res) => {
+  try {
+    const bookingData = req.body || {};
+    const customerName = (bookingData.customerName || bookingData.name || bookingData.clientName || 'Valued Guest').trim();
+    const cleanData = {
+      ...bookingData,
+      customerName,
+      source: bookingData.source || 'QR Code'
+    };
+
+    // 1. Store in bookings database
+    const savedRecord = insertBooking(cleanData);
+
+    // 2. Record in CRM store (creates Client & Appointment)
+    let crmResult = null;
+    try {
+      crmResult = await recordWebsiteBooking(savedRecord);
+    } catch (crmErr) {
+      console.error('Error saving to CRM store:', crmErr.message);
+    }
+
+    // 3. Dispatch confirmation to Client & notification to Admin
+    let emailResult = { success: false };
+    try {
+      emailResult = await sendBookingEmails({
+        ...savedRecord,
+        source: cleanData.source
+      });
+    } catch (emailErr) {
+      console.error('Non-blocking email error:', emailErr);
+    }
+
+    res.status(201).json({
+      success: true,
+      data: crmResult?.appointment || savedRecord,
+      client: crmResult?.client,
+      booking: savedRecord,
+      bookingId: savedRecord.id,
+      emailResult
+    });
+  } catch (err) {
+    console.error('Error creating appointment:', err);
+    res.status(500).json({ success: false, error: 'Failed to process appointment' });
+  }
+});
+
+// GET /api/appointments — Fetch appointments from CRM store
+app.get('/api/appointments', async (req, res) => {
+  try {
+    const store = await loadCrmStore();
+    res.json({ success: true, data: store.appointments || [] });
+  } catch (err) {
+    console.error('Error fetching appointments:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch appointments' });
+  }
+});
+
+// GET /api/clients — Fetch clients from CRM store
+app.get('/api/clients', async (req, res) => {
+  try {
+    const store = await loadCrmStore();
+    res.json({ success: true, data: store.clients || [] });
+  } catch (err) {
+    console.error('Error fetching clients:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch clients' });
   }
 });
 

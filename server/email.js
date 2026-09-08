@@ -125,6 +125,15 @@ export async function sendBookingEmails(booking) {
   }
 
   const otpCode = booking.otp || Math.floor(100000 + Math.random() * 900000).toString();
+  const isQrBooking = (booking.source || '').toLowerCase().includes('qr');
+
+  const customerSubject = isQrBooking
+    ? `Appointment Confirmation: ${booking.service} — Aura Vital Star [${booking.id}]`
+    : `Your Aura Vital Star Verification OTP: ${otpCode} [${booking.id}]`;
+
+  const adminSubject = isQrBooking
+    ? `[NEW QR APPOINTMENT] ${booking.customerName} - ${booking.service} [${booking.id}]`
+    : `NEW APPOINTMENT: ${booking.customerName} - ${booking.service} [${booking.id}]`;
 
   const customerHtml = `
     <!DOCTYPE html>
@@ -148,21 +157,22 @@ export async function sendBookingEmails(booking) {
     <body>
       <div class="card">
         <div class="header">
-          <p>AURA VITAL STAR</p>
+          <p>AURA VITAL STAR REJUVENATION CENTRE</p>
           <h1>Registration &amp; Appointment Confirmation</h1>
         </div>
         <div class="content">
           <p>Dear <strong>${booking.customerName}</strong>,</p>
-          <p>Thank you for choosing Aura Vital Star. Your email registration verification code is below:</p>
+          <p>Thank you for choosing Aura Vital Star${isQrBooking ? ' via our QR Booking portal' : ''}. Your appointment details have been registered:</p>
           
-          <div class="otp-badge">${otpCode}</div>
+          ${!isQrBooking ? `<div class="otp-badge">${otpCode}</div>` : ''}
 
           <div class="recap-box">
             <div class="recap-row"><span class="recap-label">Reference:</span> <strong>${booking.id}</strong></div>
-            <div class="recap-row"><span class="recap-label">Service:</span> ${booking.service} (${booking.duration || '60 min'})</div>
+            <div class="recap-row"><span class="recap-label">Service:</span> <strong>${booking.service}</strong> (${booking.duration || '60 min'})</div>
             <div class="recap-row"><span class="recap-label">Location:</span> ${booking.location}</div>
             <div class="recap-row"><span class="recap-label">Date:</span> ${booking.date}</div>
             <div class="recap-row"><span class="recap-label">Time:</span> ${booking.time}</div>
+            <div class="recap-row"><span class="recap-label">Status:</span> <strong style="color:#062C22;">Confirmed</strong></div>
             ${booking.notes ? `<div class="recap-row"><span class="recap-label">Notes:</span> <em>"${booking.notes}"</em></div>` : ''}
           </div>
 
@@ -183,21 +193,21 @@ export async function sendBookingEmails(booking) {
     <html>
     <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
       <div style="max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; border-left: 5px solid #062C22;">
-        <h2 style="color: #062C22; margin-top: 0;">✨ New Appointment Booking Received</h2>
+        <h2 style="color: #062C22; margin-top: 0;">✨ ${isQrBooking ? 'New QR Booking Received' : 'New Appointment Booking Received'}</h2>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
           <tr><td style="padding: 8px; font-weight: bold; width: 140px;">Booking Ref:</td><td style="padding: 8px;">${booking.id}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Channel / Source:</td><td style="padding: 8px; font-weight: bold; color: #062C22;">${booking.source || (isQrBooking ? 'QR Code' : 'Website')}</td></tr>
           <tr><td style="padding: 8px; font-weight: bold;">Customer:</td><td style="padding: 8px;">${booking.customerName}</td></tr>
-          <tr><td style="padding: 8px; font-weight: bold;">Email:</td><td style="padding: 8px;">${booking.email}</td></tr>
-          <tr><td style="padding: 8px; font-weight: bold;">Phone:</td><td style="padding: 8px;">${booking.phone}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Email:</td><td style="padding: 8px;"><a href="mailto:${booking.email}">${booking.email}</a></td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Phone:</td><td style="padding: 8px;"><a href="tel:${booking.phone}">${booking.phone}</a></td></tr>
           <tr><td style="padding: 8px; font-weight: bold;">Service:</td><td style="padding: 8px;">${booking.service}</td></tr>
           <tr><td style="padding: 8px; font-weight: bold;">Date & Time:</td><td style="padding: 8px;">${booking.date} at ${booking.time}</td></tr>
           <tr><td style="padding: 8px; font-weight: bold;">Location:</td><td style="padding: 8px;">${booking.location}</td></tr>
           <tr><td style="padding: 8px; font-weight: bold;">Staff Pref:</td><td style="padding: 8px;">${booking.staff || 'Any available specialist'}</td></tr>
           <tr><td style="padding: 8px; font-weight: bold;">Notes:</td><td style="padding: 8px;">${booking.notes || 'None'}</td></tr>
-          <tr><td style="padding: 8px; font-weight: bold;">OTP Code:</td><td style="padding: 8px; font-weight: bold; color: #062C22;">${otpCode}</td></tr>
         </table>
         <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #888;">
-          Aura Vital Star Booking Management System
+          Aura Vital Star Booking Management System &bull; ${new Date().toLocaleString()}
         </div>
       </div>
     </body>
@@ -210,7 +220,7 @@ export async function sendBookingEmails(booking) {
       await transporter.sendMail({
         from: `"${fromName}" <${fromEmail}>`,
         to: booking.email,
-        subject: `Your Aura Vital Star Verification OTP: ${otpCode} [${booking.id}]`,
+        subject: customerSubject,
         html: customerHtml
       });
       console.log(`✅ Customer confirmation email sent to: ${booking.email}`);
@@ -220,7 +230,7 @@ export async function sendBookingEmails(booking) {
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
       to: adminEmail,
-      subject: `NEW APPOINTMENT: ${booking.customerName} - ${booking.service} [${booking.id}]`,
+      subject: adminSubject,
       html: adminHtml
     });
     console.log(`✅ Admin notification email sent to: ${adminEmail}`);

@@ -6,6 +6,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import nodemailer from 'nodemailer';
 import {
   loadCrmStore,
   saveCrmStore,
@@ -24,6 +25,136 @@ import {
   deleteGalleryItem,
   deleteAppointment
 } from './crmStore.js';
+
+// Helper to dispatch confirmation email to client and notification to admin
+async function sendCrmBookingEmails(booking) {
+  try {
+    const host = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+    const user = (process.env.SMTP_USER || process.env.GMAIL_USER || 'auravitalstar@gmail.com').trim();
+    const pass = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'cqknfoboepgqhlyw').replace(/\s+/g, '');
+    const adminEmail = (process.env.ADMIN_EMAIL || user).trim();
+    const fromName = (process.env.FROM_NAME || 'Aura Vital Star Concierge').trim();
+    const fromEmail = (process.env.FROM_EMAIL || user).trim();
+
+    if (!user || !pass) return;
+
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass },
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000
+    });
+
+    const isQr = (booking.source || '').toLowerCase().includes('qr');
+    const customerName = booking.clientName || booking.customerName || 'Valued Guest';
+
+    const customerSubject = isQr
+      ? `Appointment Confirmation: ${booking.service} — Aura Vital Star [${booking.id}]`
+      : `Your Aura Vital Star Booking Confirmation [${booking.id}]`;
+
+    const adminSubject = isQr
+      ? `[NEW QR APPOINTMENT] ${customerName} - ${booking.service} [${booking.id}]`
+      : `NEW APPOINTMENT: ${customerName} - ${booking.service} [${booking.id}]`;
+
+    const customerHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F7F3EC; margin: 0; padding: 24px; color: #1E2421; }
+          .card { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #E0D9CB; overflow: hidden; box-shadow: 0 8px 24px rgba(6,44,34,0.08); }
+          .header { background: #062C22; color: #FAF5EA; padding: 32px 24px; text-align: center; border-bottom: 2px solid #B9975B; }
+          .header h1 { font-family: Georgia, serif; margin: 0 0 6px 0; font-size: 26px; color: #FAF5EA; }
+          .header p { margin: 0; color: #DFBE77; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
+          .content { padding: 32px 28px; line-height: 1.6; }
+          .recap-box { background: #FAF7F2; border: 1px solid #E2D9CB; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .recap-row { margin: 8px 0; font-size: 15px; }
+          .recap-label { font-weight: 600; color: #062C22; display: inline-block; width: 110px; }
+          .footer { background: #F6F1E8; padding: 20px 28px; font-size: 13px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="header">
+            <p>AURA VITAL STAR REJUVENATION CENTRE</p>
+            <h1>Registration &amp; Appointment Confirmation</h1>
+          </div>
+          <div class="content">
+            <p>Dear <strong>${customerName}</strong>,</p>
+            <p>Thank you for choosing Aura Vital Star${isQr ? ' via our QR Booking portal' : ''}. Your appointment details have been successfully registered:</p>
+            
+            <div class="recap-box">
+              <div class="recap-row"><span class="recap-label">Reference:</span> <strong>${booking.id}</strong></div>
+              <div class="recap-row"><span class="recap-label">Service:</span> <strong>${booking.service}</strong> (${booking.duration || '60 min'})</div>
+              <div class="recap-row"><span class="recap-label">Location:</span> ${booking.location || 'Brampton Centre'}</div>
+              <div class="recap-row"><span class="recap-label">Date:</span> ${booking.date}</div>
+              <div class="recap-row"><span class="recap-label">Time:</span> ${booking.time}</div>
+              <div class="recap-row"><span class="recap-label">Status:</span> <strong style="color:#062C22;">Confirmed</strong></div>
+              ${booking.notes ? `<div class="recap-row"><span class="recap-label">Notes:</span> <em>"${booking.notes}"</em></div>` : ''}
+            </div>
+
+            <p>Our dedicated team looks forward to welcoming you. For any questions or adjustments, please call <strong>+1 647-987-5451</strong>.</p>
+            <p style="margin-top: 24px; color: #062C22; font-weight: 600;">Warm regards,<br>The Aura Vital Star Team</p>
+          </div>
+          <div class="footer">
+            157 Queen Street West, Brampton, ON L6Y 1P9 &bull; <a href="https://www.auravitalstar.ca" style="color: #B9975B; text-decoration: none;">www.auravitalstar.ca</a>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const adminHtml = `
+      <!DOCTYPE html>
+      <html>
+      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; border-left: 5px solid #062C22;">
+          <h2 style="color: #062C22; margin-top: 0;">✨ ${isQr ? 'New QR Booking Received' : 'New Appointment Booking Received'}</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr><td style="padding: 8px; font-weight: bold; width: 140px;">Booking Ref:</td><td style="padding: 8px;">${booking.id}</td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Channel / Source:</td><td style="padding: 8px; font-weight: bold; color: #062C22;">${booking.source || (isQr ? 'QR Code' : 'Website')}</td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Customer:</td><td style="padding: 8px;">${customerName}</td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Email:</td><td style="padding: 8px;"><a href="mailto:${booking.email}">${booking.email}</a></td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Phone:</td><td style="padding: 8px;"><a href="tel:${booking.phone}">${booking.phone}</a></td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Service:</td><td style="padding: 8px;">${booking.service}</td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Date & Time:</td><td style="padding: 8px;">${booking.date} at ${booking.time}</td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Location:</td><td style="padding: 8px;">${booking.location}</td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Notes:</td><td style="padding: 8px;">${booking.notes || 'None'}</td></tr>
+          </table>
+          <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #888;">
+            Aura Vital Star CRM Management System &bull; ${new Date().toLocaleString()}
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    if (booking.email) {
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to: booking.email,
+        subject: customerSubject,
+        html: customerHtml
+      }).catch(e => console.error('[CRM Email Client Error]', e.message));
+    }
+
+    await transporter.sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
+      to: adminEmail,
+      subject: adminSubject,
+      html: adminHtml
+    }).catch(e => console.error('[CRM Email Admin Error]', e.message));
+  } catch (err) {
+    console.error('[CRM Email Dispatch Warning]:', err.message);
+  }
+}
 
 // Initial Seed Data: Locations
 const DEFAULT_LOCATIONS = [
@@ -371,7 +502,16 @@ export default async function handler(req, res) {
         if (method === 'POST') {
           const body = await readBody(req);
           const result = await recordWebsiteBooking(body);
-          return json(201, { success: true, data: result.appointment, client: result.client });
+          // Trigger dual confirmation email (client + admin)
+          sendCrmBookingEmails({
+            ...result.appointment,
+            customerName: result.appointment.clientName || body.customerName || body.name,
+            phone: result.appointment.phone || body.phone,
+            email: result.appointment.email || body.email,
+            notes: result.appointment.notes || body.notes,
+            source: body.source || result.appointment.source || 'QR Code'
+          }).catch(e => console.error('[CRM Non-blocking Email Warning]:', e.message));
+          return json(201, { success: true, data: result.appointment, client: result.client, bookingId: result.appointment.id });
         }
       }
       // Status update actions & delete
