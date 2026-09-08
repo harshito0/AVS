@@ -572,13 +572,22 @@ export async function recordWebsiteBooking(bookingData) {
     client.totalSpent  = (client.totalSpent  || 0) + amount;
     client.lastVisit   = date;
     client.lastService = service;
-    if (!client.phone && phone) client.phone = phone;
-    if (!client.email && email) client.email = email;
+    if (phone) client.phone = phone;
+    if (email) client.email = email;
+    if (customerName && customerName !== 'Valued Guest') {
+      client.fullName = customerName;
+      const parts = customerName.split(' ');
+      client.firstName = parts[0] || client.firstName;
+      client.lastName  = parts.slice(1).join(' ') || client.lastName;
+    }
     client.location = location;
     if (notes) {
       client.notes = client.notes ? `${client.notes} | ${notes}` : notes;
     }
-    if (!client.source && source) client.source = source;
+    if (source) client.source = source;
+
+    // Bring updated client to the top of clients list so CRM displays it immediately
+    store.clients = [client, ...store.clients.filter(c => c.id !== client.id)];
   } else {
     const nameParts = customerName.split(' ');
     client = {

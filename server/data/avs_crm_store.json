@@ -1,6 +1,23 @@
 {
   "clients": [
     {
+      "id": "cl-1788697372505-431",
+      "firstName": "Harshit",
+      "lastName": "Singh",
+      "fullName": "Harshit Singh",
+      "phone": "9792303434",
+      "email": "sharshit.0211@gmail.com",
+      "location": "Brampton",
+      "totalVisits": 5,
+      "totalSpent": 500,
+      "status": "Active",
+      "lastVisit": "2026-09-12",
+      "lastService": "RMT Massage Therapy",
+      "createdAt": "2026-09-06",
+      "notes": "Special VIP Consultation requested. QR Booking.",
+      "source": "QR Code"
+    },
+    {
       "id": "cl-1788885412457-30",
       "firstName": "Rahul",
       "lastName": "Verma",
@@ -35,21 +52,6 @@
       "createdAt": "2026-09-08"
     },
     {
-      "id": "cl-1788697372505-431",
-      "firstName": "Harshit",
-      "lastName": "Singh",
-      "fullName": "Harshit Singh",
-      "phone": "09792303434",
-      "email": "harshitsingh19622@gmail.com",
-      "location": "Brampton",
-      "totalVisits": 4,
-      "totalSpent": 400,
-      "status": "Active",
-      "lastVisit": "2026-09-05",
-      "lastService": "RMT Massage Therapy",
-      "createdAt": "2026-09-06"
-    },
-    {
       "id": "cl-1788679831088",
       "firstName": "shubham",
       "lastName": "kumar",
@@ -59,7 +61,7 @@
       "location": "Brampton",
       "totalVisits": 0,
       "totalSpent": 0,
-      "status": "Active",
+      "status": "Inactive",
       "lastVisit": "2026-09-06",
       "lastService": "New Registration",
       "createdAt": "2026-09-06"
@@ -96,6 +98,25 @@
     }
   ],
   "appointments": [
+    {
+      "id": "AVS-2026-7207",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "phone": "9792303434",
+      "email": "sharshit.0211@gmail.com",
+      "service": "RMT Massage Therapy",
+      "serviceCategory": "General Wellness",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-09-12",
+      "time": "2:00 PM",
+      "duration": "60 min",
+      "status": "PENDING",
+      "amount": 100,
+      "notes": "Special VIP Consultation requested. QR Booking.",
+      "source": "QR Code",
+      "createdAt": "2026-09-08T17:07:32.122Z"
+    },
     {
       "id": "AVS-2026-4004",
       "clientId": "cl-1788885412457-30",
@@ -341,6 +362,14 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif-1788887252122",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh booked RMT Massage Therapy for 2026-09-12 at 2:00 PM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-08T17:07:32.122Z"
+    },
     {
       "id": "notif-1788885412457",
       "title": "New Appointment Booked",
@@ -637,5 +666,5 @@
       "dateAdded": "2026-09-01"
     }
   ],
-  "lastUpdated": "2026-09-08T16:36:53.214Z"
+  "lastUpdated": "2026-09-08T17:08:11.003Z"
 }
