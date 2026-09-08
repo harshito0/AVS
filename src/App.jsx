@@ -90,10 +90,31 @@ const services = [
   { title: 'Orthotics & Compression Socks', desc: 'Custom support. Better movement.', image: '/hero_orthotics2.webp', icon: 'orthotics' }
 ];
 
-const testimonials = [
-  { quote: 'The massage was incredible! I felt relaxed and recharged.', author: 'Priya M.' },
-  { quote: 'Amazing facial treatment. My skin has never felt this good.', author: 'Neha R.' },
-  { quote: 'The orthotics have made a huge difference in my daily comfort.', author: 'Arjun S.' }
+const INITIAL_TESTIMONIALS = [
+  {
+    id: 't-1',
+    quote: 'The massage was incredible! I felt relaxed and recharged.',
+    author: 'Priya M.',
+    service: 'Registered Massage Therapy',
+    rating: 5,
+    avatar: 'PM'
+  },
+  {
+    id: 't-2',
+    quote: 'Amazing facial treatment. My skin has never felt this good.',
+    author: 'Neha R.',
+    service: 'Aesthetic & Skin Therapy',
+    rating: 5,
+    avatar: 'NR'
+  },
+  {
+    id: 't-3',
+    quote: 'The orthotics have made a huge difference in my daily comfort.',
+    author: 'Arjun S.',
+    service: 'Custom Orthotics Care',
+    rating: 5,
+    avatar: 'AS'
+  }
 ];
 
 function Icon({ name, width = 28, height = 28 }) {
@@ -433,6 +454,180 @@ function App() {
     testimonialsPauseTimerRef.current = setTimeout(() => {
       setTestimonialsMarqueePaused(false);
     }, 1500);
+  };
+
+  const [clientReviews, setClientReviews] = useState(() => {
+    try {
+      const saved = localStorage.getItem('avs_client_reviews');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read saved reviews:', e);
+    }
+    return INITIAL_TESTIMONIALS;
+  });
+
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    name: '',
+    service: 'Registered Massage Therapy (RMT)',
+    rating: 5,
+    quote: ''
+  });
+  const [reviewHoverRating, setReviewHoverRating] = useState(0);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSuccessMsg, setReviewSuccessMsg] = useState('');
+  const [reviewErrorMsg, setReviewErrorMsg] = useState('');
+
+  // Fetch reviews from server on mount if available
+  useEffect(() => {
+    fetch('/api/reviews')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.success && Array.isArray(data.reviews) && data.reviews.length > 0) {
+          setClientReviews((prev) => {
+            const map = new Map();
+            data.reviews.forEach((r) => map.set(r.id || r.author, r));
+            prev.forEach((r) => {
+              if (!map.has(r.id || r.author)) {
+                map.set(r.id || r.author, r);
+              }
+            });
+            const merged = Array.from(map.values());
+            try {
+              localStorage.setItem('avs_client_reviews', JSON.stringify(merged));
+            } catch (e) {}
+            return merged;
+          });
+        }
+      })
+      .catch(() => {
+        // Local state & localStorage are fully active
+      });
+  }, []);
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    setReviewErrorMsg('');
+
+    if (!reviewForm.name.trim()) {
+      setReviewErrorMsg('Please enter your name.');
+      return;
+    }
+    if (!reviewForm.quote.trim()) {
+      setReviewErrorMsg('Please share a few words about your experience.');
+      return;
+    }
+
+    setReviewSubmitting(true);
+
+    const nameParts = reviewForm.name.trim().split(/\s+/);
+    const avatar = nameParts.length >= 2
+      ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+      : reviewForm.name.trim().slice(0, 2).toUpperCase();
+
+    const newReview = {
+      id: `rev-${Date.now()}`,
+      author: reviewForm.name.trim(),
+      service: reviewForm.service || 'Holistic Wellness Care',
+      rating: Number(reviewForm.rating) || 5,
+      quote: reviewForm.quote.trim(),
+      avatar,
+      date: 'Just now',
+      isNew: true
+    };
+
+    // 1. Immediately update UI state
+    const updated = [newReview, ...clientReviews];
+    setClientReviews(updated);
+
+    // 2. Persist to localStorage
+    try {
+      localStorage.setItem('avs_client_reviews', JSON.stringify(updated));
+    } catch (err) {
+      console.warn('Could not save review locally:', err);
+    }
+
+    // 3. Post to backend API
+    try {
+      fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: reviewForm.name.trim(),
+          service: reviewForm.service,
+          rating: reviewForm.rating,
+          quote: reviewForm.quote.trim()
+        })
+      }).catch(() => {});
+    } catch (e) {}
+
+    // Scroll horizontal track to newly added review at start
+    setTimeout(() => {
+      if (testimonialsSliderRef.current) {
+        testimonialsSliderRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        checkSliderScroll();
+      }
+    }, 80);
+
+    setReviewSuccessMsg('Thank you! Your review has been published.');
+    setReviewForm({
+      name: '',
+      service: 'Registered Massage Therapy (RMT)',
+      rating: 5,
+      quote: ''
+    });
+    setReviewSubmitting(false);
+
+    setTimeout(() => {
+      setIsReviewModalOpen(false);
+      setReviewSuccessMsg('');
+    }, 2200);
+  };
+
+  const testimonialsSliderRef = useRef(null);
+  const [sliderCanScrollLeft, setSliderCanScrollLeft] = useState(false);
+  const [sliderCanScrollRight, setSliderCanScrollRight] = useState(false);
+  const [sliderHasOverflow, setSliderHasOverflow] = useState(false);
+
+  const checkSliderScroll = () => {
+    if (!testimonialsSliderRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = testimonialsSliderRef.current;
+    const hasOverflow = scrollWidth > clientWidth + 8;
+    setSliderHasOverflow(hasOverflow);
+    setSliderCanScrollLeft(scrollLeft > 6);
+    setSliderCanScrollRight(scrollLeft < scrollWidth - clientWidth - 6);
+  };
+
+  useEffect(() => {
+    const el = testimonialsSliderRef.current;
+    if (!el) return;
+    checkSliderScroll();
+    const handleScroll = () => checkSliderScroll();
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      el.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [clientReviews]);
+
+  const scrollTestimonialsLeft = () => {
+    if (!testimonialsSliderRef.current) return;
+    const card = testimonialsSliderRef.current.querySelector('.t-card');
+    const scrollAmount = card ? card.offsetWidth + 24 : 370;
+    testimonialsSliderRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  };
+
+  const scrollTestimonialsRight = () => {
+    if (!testimonialsSliderRef.current) return;
+    const card = testimonialsSliderRef.current.querySelector('.t-card');
+    const scrollAmount = card ? card.offsetWidth + 24 : 370;
+    testimonialsSliderRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   };
 
   const handleNewsletterSubmit = (e) => {
@@ -1076,42 +1271,286 @@ function App() {
 
       <section className="testimonials" aria-labelledby="testimonials-heading">
         <div className="container">
-          <h2 className="testimonials-heading reveal-up" id="testimonials-heading">What Our Clients Say</h2>
-          <div className="testimonials-marquee-wrap">
-            <div
-              className={`testimonials-marquee-track ${testimonialsMarqueePaused ? 'is-paused' : ''}`}
-              onTouchStart={handleTestimonialsTouchStart}
-              onTouchEnd={handleTestimonialsTouchEnd}
-            >
-              <div className="testimonials-grid">
-                {testimonials.map((testimonial) => (
-                  <div className="t-card reveal-up" key={testimonial.author}>
-                    <div className="t-quote-mark">&ldquo;</div>
-                    <div className="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p className="t-quote">"{testimonial.quote}"</p>
-                    <p className="t-name">&ndash; {testimonial.author}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="testimonials-grid testimonials-grid--clone" aria-hidden="true">
-                {testimonials.map((testimonial, idx) => (
-                  <div className="t-card" key={`t-clone-${testimonial.author}-${idx}`}>
-                    <div className="t-quote-mark">&ldquo;</div>
-                    <div className="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p className="t-quote">"{testimonial.quote}"</p>
-                    <p className="t-name">&ndash; {testimonial.author}</p>
-                  </div>
-                ))}
-              </div>
+          <div className="testimonials-header-wrap">
+            <span className="testimonials-eyebrow reveal-up">Client Experiences</span>
+            <h2 className="testimonials-heading reveal-up" id="testimonials-heading">What Our Clients Say</h2>
+            <p className="testimonials-subheading reveal-up">Refined care and lasting rejuvenation, shared by those who experience Aura Vital Star.</p>
+            <div className="testimonials-cta-wrap reveal-up">
+              <button 
+                type="button" 
+                className="btn-open-review-modal"
+                onClick={() => {
+                  setReviewErrorMsg('');
+                  setReviewSuccessMsg('');
+                  setIsReviewModalOpen(true);
+                }}
+                id="btn-write-review"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"/>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                <span>Write a Review</span>
+              </button>
             </div>
           </div>
-          <div className="t-dots-row">
-            <span className="t-dot-sm active"></span>
-            <span className="t-dot-sm"></span>
-            <span className="t-dot-sm"></span>
+          <div className="testimonials-slider-wrapper reveal-up">
+            <button
+              type="button"
+              className={`t-slider-arrow t-slider-prev ${!sliderCanScrollLeft ? 'is-disabled' : ''}`}
+              onClick={scrollTestimonialsLeft}
+              disabled={!sliderCanScrollLeft}
+              aria-label="Previous reviews"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div
+              className="testimonials-slider-track"
+              ref={testimonialsSliderRef}
+              role="region"
+              aria-label="Client reviews carousel"
+              tabIndex={0}
+            >
+              {clientReviews.map((testimonial) => (
+                <div className={`t-card ${testimonial.isNew ? 't-card--highlight' : ''}`} key={testimonial.id || testimonial.author}>
+                  <div className="t-card-top">
+                    <div className="t-quote-badge" aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                      </svg>
+                    </div>
+                    <div className="t-stars" aria-label={`${testimonial.rating || 5} out of 5 stars`}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <svg 
+                          key={star} 
+                          className={`t-star-icon ${star <= (testimonial.rating || 5) ? 'is-active' : 'is-inactive'}`} 
+                          width="15" 
+                          height="15" 
+                          viewBox="0 0 20 20" 
+                          fill="currentColor"
+                        >
+                          <path d="M10 1.2l2.47 5.01 5.53.8-4 3.9 0.94 5.51L10 13.82 5.06 16.42 6 10.91 2 7.01l5.53-.8L10 1.2z"/>
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="t-quote">&ldquo;{testimonial.quote}&rdquo;</p>
+                  <div className="t-author-row">
+                    <div className="t-author-avatar" aria-hidden="true">
+                      {testimonial.avatar || 'AV'}
+                    </div>
+                    <div className="t-author-meta">
+                      <div className="t-name-row">
+                        <span className="t-name">{testimonial.author}</span>
+                        <span className="t-verified-tag">
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M13.78 4.22a.75.75 0 010 1.06l-6.5 6.5a.75.75 0 01-1.06 0l-3.25-3.25a.75.75 0 111.06-1.06L6.5 10.19l5.97-5.97a.75.75 0 011.06 0z"/>
+                          </svg>
+                          Verified
+                        </span>
+                      </div>
+                      <span className="t-service">{testimonial.service}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className={`t-slider-arrow t-slider-next ${!sliderCanScrollRight ? 'is-disabled' : ''}`}
+              onClick={scrollTestimonialsRight}
+              disabled={!sliderCanScrollRight}
+              aria-label="Next reviews"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+          <div className="t-trust-pill reveal-up">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="#C59A3F" aria-hidden="true">
+              <path d="M10 1.2l2.47 5.01 5.53.8-4 3.9 0.94 5.51L10 13.82 5.06 16.42 6 10.91 2 7.01l5.53-.8L10 1.2z"/>
+            </svg>
+            <span className="t-trust-score">5.0 Star Experience</span>
+            <span className="t-trust-sep" aria-hidden="true">&bull;</span>
+            <span className="t-trust-label">100% Verified Client Feedback</span>
           </div>
         </div>
       </section>
+
+      {/* Luxury Review Submission Modal */}
+      {isReviewModalOpen && (
+        <div 
+          className="review-modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsReviewModalOpen(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-review-title"
+        >
+          <div className="review-modal-container">
+            <div className="review-modal-header">
+              <div>
+                <span className="review-modal-eyebrow">Client Feedback</span>
+                <h3 className="review-modal-title" id="modal-review-title">Share Your Experience</h3>
+                <p className="review-modal-sub">Tell us about your visit to Aura Vital Star.</p>
+              </div>
+              <button 
+                type="button" 
+                className="review-modal-close" 
+                onClick={() => setIsReviewModalOpen(false)}
+                aria-label="Close review dialog"
+              >
+                &times;
+              </button>
+            </div>
+
+            {reviewSuccessMsg ? (
+              <div className="review-success-panel">
+                <div className="review-success-icon" aria-hidden="true">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C59A3F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <h4>Thank You!</h4>
+                <p>{reviewSuccessMsg}</p>
+              </div>
+            ) : (
+              <form className="review-modal-form" onSubmit={handleReviewSubmit}>
+                {reviewErrorMsg && (
+                  <div className="review-error-alert" role="alert">
+                    {reviewErrorMsg}
+                  </div>
+                )}
+
+                {/* Interactive Star Rating */}
+                <div className="review-form-group">
+                  <label className="review-form-label">
+                    Rating <span className="req-star">*</span>
+                  </label>
+                  <div className="star-picker-wrap">
+                    <div 
+                      className="star-picker" 
+                      onMouseLeave={() => setReviewHoverRating(0)}
+                      role="radiogroup" 
+                      aria-label="Rate from 1 to 5 stars"
+                    >
+                      {[1, 2, 3, 4, 5].map((star) => {
+                        const activeRating = reviewHoverRating || reviewForm.rating;
+                        const isFilled = star <= activeRating;
+                        return (
+                          <button
+                            type="button"
+                            key={star}
+                            className={`star-picker-btn ${isFilled ? 'is-filled' : ''}`}
+                            onMouseEnter={() => setReviewHoverRating(star)}
+                            onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
+                            aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                          >
+                            <svg width="28" height="28" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M10 1.2l2.47 5.01 5.53.8-4 3.9 0.94 5.51L10 13.82 5.06 16.42 6 10.91 2 7.01l5.53-.8L10 1.2z"/>
+                            </svg>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <span className="star-rating-hint">
+                      {(reviewHoverRating || reviewForm.rating) === 5 && '★★★★★ (5/5 — Exceptional)'}
+                      {(reviewHoverRating || reviewForm.rating) === 4 && '★★★★☆ (4/5 — Very Good)'}
+                      {(reviewHoverRating || reviewForm.rating) === 3 && '★★★☆☆ (3/5 — Good)'}
+                      {(reviewHoverRating || reviewForm.rating) === 2 && '★★☆☆☆ (2/5 — Fair)'}
+                      {(reviewHoverRating || reviewForm.rating) === 1 && '★☆☆☆☆ (1/5 — Needs Improvement)'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Client Name */}
+                <div className="review-form-group">
+                  <label htmlFor="review-author-name" className="review-form-label">
+                    Your Name <span className="req-star">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="review-author-name"
+                    className="review-form-input"
+                    placeholder="e.g. Eleanor Vance"
+                    value={reviewForm.name}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, name: e.target.value }))}
+                    maxLength={50}
+                    autoComplete="name"
+                    required
+                  />
+                </div>
+
+                {/* Service / Treatment */}
+                <div className="review-form-group">
+                  <label htmlFor="review-service-select" className="review-form-label">
+                    Treatment / Service Received
+                  </label>
+                  <select
+                    id="review-service-select"
+                    className="review-form-select"
+                    value={reviewForm.service}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, service: e.target.value }))}
+                  >
+                    <option value="Registered Massage Therapy (RMT)">Registered Massage Therapy (RMT)</option>
+                    <option value="Aesthetic Skin Therapy & Facial">Aesthetic Skin Therapy & Facial</option>
+                    <option value="Custom Orthotics & Foot Support">Custom Orthotics & Foot Support</option>
+                    <option value="Hair & Luxury Salon Rituals">Hair & Luxury Salon Rituals</option>
+                    <option value="Body Contouring & Holistic Wellness">Body Contouring & Holistic Wellness</option>
+                    <option value="Wellness Consultation">Wellness Consultation</option>
+                  </select>
+                </div>
+
+                {/* Review Quote / Feedback */}
+                <div className="review-form-group">
+                  <label htmlFor="review-quote-text" className="review-form-label">
+                    Your Experience <span className="req-star">*</span>
+                  </label>
+                  <textarea
+                    id="review-quote-text"
+                    className="review-form-textarea"
+                    rows="4"
+                    placeholder="Describe how you felt, the staff care, the environment, and the results of your treatment..."
+                    value={reviewForm.quote}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, quote: e.target.value }))}
+                    maxLength={350}
+                    required
+                  ></textarea>
+                  <span className="review-char-count">{reviewForm.quote.length} / 350 characters</span>
+                </div>
+
+                {/* Submit Button */}
+                <div className="review-form-actions">
+                  <button
+                    type="button"
+                    className="btn-review-cancel"
+                    onClick={() => setIsReviewModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-review-submit"
+                    disabled={reviewSubmitting}
+                  >
+                    {reviewSubmitting ? 'Posting...' : 'Post Your Review'}
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M3 8h10M9 4l4 4-4 4"/>
+                    </svg>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       <section id="blog" className="footer-cta" aria-labelledby="cta-heading">
         <div className="footer-cta-inner">

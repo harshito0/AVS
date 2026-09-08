@@ -219,6 +219,69 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
+// Reviews File Path
+const reviewsFile = path.join(__dirname, 'data', 'reviews.json');
+
+// GET /api/reviews — Fetch all client reviews
+app.get('/api/reviews', async (req, res) => {
+  try {
+    const fs = await import('fs');
+    if (fs.existsSync(reviewsFile)) {
+      const data = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
+      return res.json({ success: true, reviews: data });
+    }
+    return res.json({ success: true, reviews: [] });
+  } catch (err) {
+    console.error('Error reading reviews:', err);
+    res.status(500).json({ success: false, error: 'Failed to read reviews' });
+  }
+});
+
+// POST /api/reviews — Client submit a review
+app.post('/api/reviews', async (req, res) => {
+  try {
+    const { name, quote, rating, service } = req.body || {};
+    if (!name || !name.trim() || !quote || !quote.trim()) {
+      return res.status(400).json({ success: false, error: 'Name and review message are required.' });
+    }
+
+    const fs = await import('fs');
+    let reviews = [];
+    if (fs.existsSync(reviewsFile)) {
+      try {
+        reviews = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
+      } catch (pErr) {
+        reviews = [];
+      }
+    }
+
+    const nameParts = name.trim().split(/\s+/);
+    const avatar = nameParts.length >= 2
+      ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+      : name.trim().slice(0, 2).toUpperCase();
+
+    const newReview = {
+      id: `rev-${Date.now()}`,
+      author: name.trim(),
+      quote: quote.trim(),
+      rating: Math.min(5, Math.max(1, parseInt(rating, 10) || 5)),
+      service: service ? service.trim() : 'Holistic Wellness Care',
+      avatar,
+      date: 'Recent',
+      createdAt: new Date().toISOString()
+    };
+
+    reviews.unshift(newReview);
+    fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
+    console.log(`⭐ New review submitted by ${name.trim()} (${newReview.rating} stars)`);
+
+    res.status(201).json({ success: true, review: newReview, reviews });
+  } catch (err) {
+    console.error('Error posting review:', err);
+    res.status(500).json({ success: false, error: 'Failed to save review' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✨ AVS Booking Server & Database running on http://localhost:${PORT}`);
   console.log(`📧 Gmail notifications: ${process.env.GMAIL_USER || 'Add credentials to server/.env'}`);

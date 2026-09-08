@@ -1,0 +1,32 @@
+[
+  {
+    "id": "t-1",
+    "quote": "The massage was incredible! I felt relaxed and recharged.",
+    "author": "Priya M.",
+    "service": "Registered Massage Therapy",
+    "rating": 5,
+    "avatar": "PM",
+    "date": "Recent",
+    "createdAt": "2026-08-15T10:00:00.000Z"
+  },
+  {
+    "id": "t-2",
+    "quote": "Amazing facial treatment. My skin has never felt this good.",
+    "author": "Neha R.",
+    "service": "Aesthetic & Skin Therapy",
+    "rating": 5,
+    "avatar": "NR",
+    "date": "Recent",
+    "createdAt": "2026-08-20T14:30:00.000Z"
+  },
+  {
+    "id": "t-3",
+    "quote": "The orthotics have made a huge difference in my daily comfort.",
+    "author": "Arjun S.",
+    "service": "Custom Orthotics Care",
+    "rating": 5,
+    "avatar": "AS",
+    "date": "Recent",
+    "createdAt": "2026-08-28T09:15:00.000Z"
+  }
+]
