@@ -27,7 +27,6 @@ export const QRGenerator: React.FC = () => {
   const [qrPngUrl, setQrPngUrl] = useState<string>('');
   const [qrSvgString, setQrSvgString] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(true);
-  const [showSslHelp, setShowSslHelp] = useState(true);
   const printCardRef = useRef<HTMLDivElement>(null);
 
   const handleModeChange = (mode: 'production' | 'apex' | 'vercel' | 'wifi' | 'custom') => {
@@ -222,35 +221,6 @@ export const QRGenerator: React.FC = () => {
         </p>
       </div>
 
-      {/* SSL Advisory Banner */}
-      {showSslHelp && (
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-emerald-950 shadow-sm animate-fade-in">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <Sparkles className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-xs sm:text-sm text-emerald-950 flex items-center gap-1.5">
-                  Live SSL Status: www.auravitalstar.ca is Verified Active
-                </p>
-                <p className="text-xs text-emerald-900/90 mt-1 leading-relaxed">
-                  <code className="bg-emerald-100/70 px-1 py-0.5 rounded text-emerald-950 font-mono text-[11px]">https://www.auravitalstar.ca/book</code> is connected to Vercel with an active, trusted SSL certificate. Scan on any mobile device without warnings.
-                </p>
-                <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200/80 rounded-lg p-2 mt-2 leading-relaxed">
-                  ⚠️ <strong>Apex domain note:</strong> If scanning <code className="font-mono text-[10px]">https://auravitalstar.ca/book</code> (without <em>www</em>) gives NET::ERR_CERT_AUTHORITY_INVALID, update the DNS <strong className="font-mono">@</strong> A-record to Vercel IP <code className="font-mono font-bold">76.76.21.21</code>.
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowSslHelp(false)}
-              className="text-emerald-700 hover:text-emerald-900 text-xs font-bold p-1 shrink-0 cursor-pointer"
-              title="Dismiss"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Branded QR Card Preview */}
@@ -502,20 +472,6 @@ export const QRGenerator: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick DNS / SSL Resolution Guide */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
-            <p className="font-bold flex items-center gap-1.5 text-slate-900">
-              <Info className="w-4 h-4 text-forest-800" />
-              How to fix auravitalstar.ca (apex domain):
-            </p>
-            <ol className="list-decimal list-inside space-y-1.5 text-[11px] text-slate-600 leading-relaxed">
-              <li>Log in to your domain DNS provider (GoDaddy / Namecheap / Cloudflare).</li>
-              <li>Locate the <strong className="text-slate-800">A Record</strong> for <code className="text-[10px] font-mono bg-slate-200/70 px-1 py-0.5 rounded">@</code> (currently pointing to 103.108.220.145).</li>
-              <li>Change the IP address to Vercel's IP: <strong className="text-forest-900 font-mono font-bold">76.76.21.21</strong>.</li>
-              <li>Vercel will auto-provision SSL for the apex domain within 2 minutes.</li>
-              <li>Meanwhile, <strong className="text-emerald-800">https://www.auravitalstar.ca/book</strong> is already live with active SSL!</li>
-            </ol>
-          </div>
         </div>
       </div>
     </div>
