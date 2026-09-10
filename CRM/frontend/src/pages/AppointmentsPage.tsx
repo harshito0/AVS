@@ -175,7 +175,14 @@ export const AppointmentsPage: React.FC = () => {
       sortable: true,
       render: (apt) => (
         <div>
-          <p className="font-bold text-slate-900">{apt.clientName}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-bold text-slate-900">{apt.clientName}</p>
+            {apt.source && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                {apt.source}
+              </span>
+            )}
+          </div>
           <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
             <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
             <span>{apt.phone || 'No contact number'}</span>

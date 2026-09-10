@@ -124,6 +124,7 @@ export interface Appointment {
   status: AppointmentStatus;
   amount: number;
   notes?: string;
+  source?: string;
 }
 
 export interface GalleryItem {

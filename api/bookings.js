@@ -60,21 +60,38 @@ export default async function handler(req, res) {
     const year = new Date().getFullYear();
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const bookingId = booking.id || `AVS-${year}-${randomNum}`;
-    const customerName = booking.customerName || booking.name || 'Valued Guest';
-
-    // Generate 6-Digit Verification OTP for Email Registration/Booking
-    const otpCode = booking.otp || Math.floor(100000 + Math.random() * 900000).toString();
+    const customerName = (booking.customerName || booking.name || booking.clientName || booking.fullName || 'Valued Guest').trim();
+    const phone = (booking.phone || booking.guestPhone || booking.clientPhone || '').trim();
+    const email = (booking.email || booking.guestEmail || booking.clientEmail || '').toLowerCase().trim();
+    const service = booking.service || booking.serviceName || 'Signature Treatment';
+    const duration = booking.duration || '60 min';
+    const location = booking.location || booking.locationName || 'Brampton';
+    const date = booking.date || new Date().toISOString().split('T')[0];
+    const time = booking.time || '10:00 AM';
+    const notes = booking.notes || '';
+    const source = booking.source || 'QR Code';
+    const status = 'Confirmed';
 
     const fullBooking = {
       ...booking,
       id: bookingId,
       customerName,
-      otp: otpCode,
-      createdAt: new Date().toISOString(),
-      status: 'PENDING'
+      name: customerName,
+      clientName: customerName,
+      phone,
+      email,
+      service,
+      duration,
+      location,
+      date,
+      time,
+      notes,
+      source,
+      status,
+      createdAt: new Date().toISOString()
     };
 
-    // Save to CRM persistent database / store immediately
+    // Save to CRM persistent database (Redis on Vercel) immediately
     let crmResult = null;
     try {
       crmResult = await recordWebsiteBooking(fullBooking);
@@ -87,49 +104,78 @@ export default async function handler(req, res) {
       <html>
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F7F3EC; margin: 0; padding: 24px; color: #1E2421; }
-          .card { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #E0D9CB; overflow: hidden; box-shadow: 0 8px 24px rgba(6,44,34,0.08); }
-          .header { background: #062C22; color: #FAF5EA; padding: 32px 24px; text-align: center; border-bottom: 2px solid #B9975B; }
-          .header h1 { font-family: Georgia, serif; margin: 0 0 6px 0; font-size: 26px; color: #FAF5EA; }
-          .header p { margin: 0; color: #DFBE77; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
-          .content { padding: 32px 28px; line-height: 1.6; }
-          .otp-badge { background: #062C22; color: #DFBE77; border: 1px solid #B9975B; padding: 16px 28px; border-radius: 8px; font-size: 28px; font-weight: 700; letter-spacing: 0.25em; text-align: center; margin: 20px 0; display: block; }
-          .recap-box { background: #FAF7F2; border: 1px solid #E2D9CB; border-radius: 8px; padding: 20px; margin: 20px 0; }
-          .recap-row { margin: 8px 0; font-size: 15px; }
-          .recap-label { font-weight: 600; color: #062C22; display: inline-block; width: 110px; }
-          .footer { background: #F6F1E8; padding: 20px 28px; font-size: 13px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F7F3EC; margin: 0; padding: 24px 12px; color: #1E2421; -webkit-font-smoothing: antialiased; }
+          .card { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 16px; border: 1px solid #E0D9CB; overflow: hidden; box-shadow: 0 10px 30px rgba(6,44,34,0.08); }
+          .header { background: #062C22; color: #FAF5EA; padding: 34px 24px 28px; text-align: center; border-bottom: 3px solid #B9975B; }
+          .header-brand { font-family: Georgia, 'Times New Roman', serif; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase; color: #DFBE77; margin: 0 0 6px 0; font-weight: 600; }
+          .header h1 { font-family: Georgia, 'Times New Roman', serif; margin: 0 0 6px 0; font-size: 24px; color: #FAF5EA; font-weight: normal; }
+          .header-sub { margin: 0; color: #C5D5CF; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+          .content { padding: 32px 28px; line-height: 1.65; color: #2A332E; }
+          .status-banner { background: #EBF5F0; border: 1px solid #2D7A58; border-radius: 10px; padding: 12px 18px; margin: 18px 0 24px; text-align: center; color: #1E5C40; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; }
+          .recap-box { background: #FAF7F2; border: 1px solid #E2D9CB; border-radius: 12px; padding: 22px 24px; margin: 22px 0; }
+          .recap-title { font-size: 13px; font-weight: 700; color: #062C22; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 14px; border-bottom: 1px solid #EAE2D5; padding-bottom: 8px; }
+          .recap-row { margin: 10px 0; font-size: 14px; display: flex; align-items: baseline; }
+          .recap-label { font-weight: 700; color: #062C22; min-width: 130px; display: inline-block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+          .recap-value { color: #1E2421; flex: 1; }
+          .reminder-box { background: #F4F8F5; border-left: 4px solid #062C22; padding: 16px 20px; margin: 24px 0; border-radius: 0 10px 10px 0; }
+          .reminder-title { margin: 0 0 8px 0; font-weight: 700; color: #062C22; font-size: 14px; }
+          .reminder-list { margin: 0; padding-left: 18px; font-size: 13px; color: #3A443E; line-height: 1.6; }
+          .reminder-list li { margin: 5px 0; }
+          .action-center { text-align: center; margin: 28px 0 12px; }
+          .btn-primary { background: #062C22; color: #DFBE77 !important; padding: 13px 26px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-block; font-size: 14px; border: 1px solid #B9975B; letter-spacing: 0.04em; }
+          .footer { background: #F6F1E8; padding: 22px 24px; font-size: 12px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; line-height: 1.6; }
+          .footer a { color: #8A682D; text-decoration: none; font-weight: 600; }
         </style>
       </head>
       <body>
         <div class="card">
           <div class="header">
-            <p>AURA VITAL STAR</p>
-            <h1>Registration &amp; Appointment Confirmation</h1>
+            <p class="header-brand">Aura Vital Star</p>
+            <h1>Appointment Confirmation &amp; Visit Reminder</h1>
+            <p class="header-sub">Luxury Sanctuary &bull; Holistic Rejuvenation</p>
           </div>
           <div class="content">
-            <p>Dear <strong>${customerName}</strong>,</p>
-            <p>Thank you for choosing Aura Vital Star. Your email registration verification code is below:</p>
+            <p style="font-size: 16px;">Dear <strong>${customerName}</strong>,</p>
+            <p>Thank you for choosing <strong>Aura Vital Star Rejuvenation Centre</strong>! We are delighted to confirm your upcoming appointment. Please keep this email handy as your visit reminder so you have all your details in one place.</p>
             
-            <div class="otp-badge">${otpCode}</div>
-
-            <p style="font-size: 13px; color: #666; text-align: center;">Use this OTP code to verify your email registration. If you did not request this code, please ignore this email.</p>
-            
-            <div class="recap-box">
-              ${(fullBooking.serviceImage || fullBooking.image) ? `<div style="margin-bottom: 14px; border-radius: 8px; overflow: hidden; border: 1px solid #B9975B;"><img src="https://www.auravitalstar.ca${fullBooking.serviceImage || fullBooking.image}" alt="${fullBooking.service}" style="width: 100%; height: 160px; object-fit: cover; display: block;" /></div>` : ''}
-              <div class="recap-row"><span class="recap-label">Reference:</span> <strong>${fullBooking.id}</strong></div>
-              <div class="recap-row"><span class="recap-label">Service:</span> <strong>${fullBooking.service || 'Signature Treatment'}</strong> (${fullBooking.duration || '60 min'})</div>
-              <div class="recap-row"><span class="recap-label">Location:</span> ${fullBooking.location || 'Brampton Rejuvenation Centre (157 Queen St W)'}</div>
-              <div class="recap-row"><span class="recap-label">Date &amp; Time:</span> ${fullBooking.date} at ${fullBooking.time}</div>
-              ${fullBooking.notes ? `<div class="recap-row"><span class="recap-label">Notes:</span> <em>"${fullBooking.notes}"</em></div>` : ''}
+            <div class="status-banner">
+              &#10003; Appointment Status: Confirmed
             </div>
 
-            <p>Our dedicated team is preparing your sanctuary prior to your arrival. If you have any questions or need to adjust your time, please call us at <strong>+1 647-987-5451</strong>.</p>
-            <p>We look forward to welcoming you.</p>
-            <p style="margin-top: 24px; color: #062C22; font-weight: 600;">Warm regards,<br>The Aura Vital Star Team</p>
+            <div class="recap-box">
+              <div class="recap-title">Appointment Summary</div>
+              <div class="recap-row"><span class="recap-label">Reference ID:</span> <strong style="color: #8A682D; font-family: monospace; font-size: 15px;">${fullBooking.id}</strong></div>
+              <div class="recap-row"><span class="recap-label">Treatment:</span> <strong>${fullBooking.service}</strong> (${duration})</div>
+              <div class="recap-row"><span class="recap-label">Date:</span> <strong>${fullBooking.date}</strong></div>
+              <div class="recap-row"><span class="recap-label">Time:</span> <strong>${fullBooking.time}</strong></div>
+              <div class="recap-row"><span class="recap-label">Location:</span> <span><strong>${location} Centre</strong><br><span style="font-size: 12px; color: #666;">157 Queen Street West, Brampton, ON L6Y 1P9</span></span></div>
+              <div class="recap-row"><span class="recap-label">Guest Name:</span> <span>${customerName}</span></div>
+              ${phone ? `<div class="recap-row"><span class="recap-label">Phone:</span> <span>${phone}</span></div>` : ''}
+              ${notes ? `<div class="recap-row"><span class="recap-label">Notes:</span> <em>"${notes}"</em></div>` : ''}
+            </div>
+
+            <div class="reminder-box">
+              <div class="reminder-title">&#127807; Preparation &amp; Visit Reminders:</div>
+              <ul class="reminder-list">
+                <li><strong>Arrival:</strong> Please arrive 10 to 15 minutes before your scheduled appointment to unwind in our lounge and enjoy a complimentary botanical herbal tea.</li>
+                <li><strong>Complimentary Parking:</strong> Dedicated guest parking is available on-site at our facility.</li>
+                <li><strong>Rescheduling:</strong> If you need to adjust your time, please call or message us at least 24 hours in advance.</li>
+              </ul>
+            </div>
+
+            <div class="action-center">
+              <a href="tel:+16479875451" class="btn-primary">&#128222; Concierge Assistance: +1 647-987-5451</a>
+            </div>
+
+            <p style="margin-top: 26px; font-size: 14px; color: #4A544E;">Our specialist team is preparing your sanctuary prior to your arrival. We look forward to welcoming you.</p>
+            <p style="margin-top: 20px; color: #062C22; font-weight: 700;">Warm regards,<br>The Aura Vital Star Team</p>
           </div>
           <div class="footer">
-            157 Queen Street West, Brampton, ON L6Y 1P9 &bull; <a href="https://www.auravitalstar.ca" style="color: #B9975B; text-decoration: none;">www.auravitalstar.ca</a>
+            <strong>Aura Vital Star Rejuvenation Centre</strong><br>
+            157 Queen Street West, Brampton, ON L6Y 1P9 &bull; Phone: +1 647-987-5451<br>
+            <a href="https://www.auravitalstar.ca">www.auravitalstar.ca</a> &bull; <a href="mailto:info@auravitalstar.ca">info@auravitalstar.ca</a>
           </div>
         </div>
       </body>
@@ -139,23 +185,28 @@ export default async function handler(req, res) {
     const adminHtml = `
       <!DOCTYPE html>
       <html>
-      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 24px;">
-          <h2 style="color: #062C22; margin-top: 0;">✨ New Registration &amp; Appointment Received — Aura Vital Star</h2>
-          <p>A new appointment has been registered through the live website / QR portal:</p>
-          <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-            <tr><td style="padding: 6px; font-weight: bold; width: 140px;">Booking ID:</td><td>${fullBooking.id}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">OTP Code:</td><td><strong>${otpCode}</strong></td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Customer Name:</td><td>${customerName}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Phone:</td><td><a href="tel:${fullBooking.phone}">${fullBooking.phone}</a></td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Email:</td><td><a href="mailto:${fullBooking.email}">${fullBooking.email}</a></td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Service:</td><td>${fullBooking.service}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Location:</td><td>${fullBooking.location}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Date &amp; Time:</td><td>${fullBooking.date} at ${fullBooking.time}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Channel / Source:</td><td><strong>${fullBooking.source || 'Website'}</strong></td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Notes:</td><td>${fullBooking.notes || 'None'}</td></tr>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; background-color: #f4f4f4; padding: 20px; color: #222;">
+        <div style="max-width: 600px; margin: 0 auto; background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 28px; border-top: 6px solid #062C22;">
+          <h2 style="color: #062C22; margin-top: 0; font-size: 20px;">✨ New Appointment Received — Aura Vital Star</h2>
+          <p style="font-size: 14px; color: #555;">A new appointment has been registered and synced to the CRM portal:</p>
+          <table style="width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px;">
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; width: 140px; color: #062C22;">Booking ID:</td><td style="padding: 8px 6px;"><strong style="color: #8A682D; font-family: monospace;">${fullBooking.id}</strong></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Channel / Source:</td><td style="padding: 8px 6px;"><strong style="background: #EBF5F0; color: #1E5C40; padding: 3px 8px; border-radius: 4px;">${source}</strong></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Customer Name:</td><td style="padding: 8px 6px;"><strong>${customerName}</strong></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Phone:</td><td style="padding: 8px 6px;"><a href="tel:${phone}" style="color: #062C22; font-weight: bold;">${phone || 'Not provided'}</a></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Email:</td><td style="padding: 8px 6px;"><a href="mailto:${email}" style="color: #062C22;">${email || 'Not provided'}</a></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Service:</td><td style="padding: 8px 6px;"><strong>${fullBooking.service}</strong> (${duration})</td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Date &amp; Time:</td><td style="padding: 8px 6px;"><strong>${fullBooking.date}</strong> at <strong>${fullBooking.time}</strong></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Location:</td><td style="padding: 8px 6px;">${location} Centre (157 Queen St W)</td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Status:</td><td style="padding: 8px 6px;"><strong style="color: #2D7A58;">Confirmed</strong></td></tr>
+            <tr><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Notes:</td><td style="padding: 8px 6px;">${notes || 'None'}</td></tr>
           </table>
-          <p style="font-size: 12px; color: #888;">Recorded at ${new Date().toLocaleString()}</p>
+
+          <div style="text-align: center; margin: 24px 0 10px;">
+            <a href="https://www.auravitalstar.ca/crm/appointments" style="background: #062C22; color: #DFBE77; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 13px;">View in CRM Appointments Portal &rarr;</a>
+          </div>
+
+          <p style="font-size: 11px; color: #888; text-align: center; margin-top: 18px;">Recorded at ${new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' })}</p>
         </div>
       </body>
       </html>
@@ -165,22 +216,15 @@ export default async function handler(req, res) {
     let emailSent = false;
     let emailError = null;
 
-    const isQrBooking = (fullBooking.source || '').toLowerCase().includes('qr');
+    const customerSubject = `Appointment Confirmation & Visit Reminder: ${fullBooking.service} — Aura Vital Star [${fullBooking.id}]`;
+    const adminSubject = `[NEW APPOINTMENT - ${source}] ${customerName} - ${fullBooking.service} [${fullBooking.id}]`;
 
-    const customerSubject = isQrBooking
-      ? `Appointment Confirmation: ${fullBooking.service} — Aura Vital Star [${fullBooking.id}]`
-      : `Your Aura Vital Star Verification OTP: ${otpCode} [${fullBooking.id}]`;
-
-    const adminSubject = isQrBooking
-      ? `[NEW QR APPOINTMENT] ${customerName} - ${fullBooking.service} [${fullBooking.id}]`
-      : `NEW APPOINTMENT: ${customerName} - ${fullBooking.service} [${fullBooking.id}]`;
-
-    // 1. Send confirmation + OTP to customer (if email provided)
-    if (fullBooking.email) {
+    // 1. Send confirmation & reminder email to customer (if email provided)
+    if (email) {
       try {
         await transporter.sendMail({
           from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
-          to: fullBooking.email,
+          to: email,
           subject: customerSubject,
           html: customerHtml
         });
@@ -191,7 +235,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. Send alert to Admin
+    // 2. Send notification to Admin
     try {
       await transporter.sendMail({
         from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
@@ -208,7 +252,6 @@ export default async function handler(req, res) {
       booking: fullBooking,
       crmAppointment: crmResult?.appointment,
       crmClient: crmResult?.client,
-      otp: otpCode,
       emailSent,
       emailError
     });

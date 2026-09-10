@@ -52,59 +52,91 @@ async function sendCrmBookingEmails(booking) {
     });
 
     const isQr = (booking.source || '').toLowerCase().includes('qr');
-    const customerName = booking.clientName || booking.customerName || 'Valued Guest';
+    const source = booking.source || (isQr ? 'QR Code' : 'Website');
+    const customerName = (booking.clientName || booking.customerName || booking.name || 'Valued Guest').trim();
+    const duration = booking.duration || '60 min';
+    const location = booking.location || 'Brampton';
 
-    const customerSubject = isQr
-      ? `Appointment Confirmation: ${booking.service} — Aura Vital Star [${booking.id}]`
-      : `Your Aura Vital Star Booking Confirmation [${booking.id}]`;
-
-    const adminSubject = isQr
-      ? `[NEW QR APPOINTMENT] ${customerName} - ${booking.service} [${booking.id}]`
-      : `NEW APPOINTMENT: ${customerName} - ${booking.service} [${booking.id}]`;
+    const customerSubject = `Appointment Confirmation & Visit Reminder: ${booking.service} — Aura Vital Star [${booking.id}]`;
+    const adminSubject = `[NEW APPOINTMENT - ${source}] ${customerName} - ${booking.service} [${booking.id}]`;
 
     const customerHtml = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F7F3EC; margin: 0; padding: 24px; color: #1E2421; }
-          .card { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; border: 1px solid #E0D9CB; overflow: hidden; box-shadow: 0 8px 24px rgba(6,44,34,0.08); }
-          .header { background: #062C22; color: #FAF5EA; padding: 32px 24px; text-align: center; border-bottom: 2px solid #B9975B; }
-          .header h1 { font-family: Georgia, serif; margin: 0 0 6px 0; font-size: 26px; color: #FAF5EA; }
-          .header p { margin: 0; color: #DFBE77; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
-          .content { padding: 32px 28px; line-height: 1.6; }
-          .recap-box { background: #FAF7F2; border: 1px solid #E2D9CB; border-radius: 8px; padding: 20px; margin: 20px 0; }
-          .recap-row { margin: 8px 0; font-size: 15px; }
-          .recap-label { font-weight: 600; color: #062C22; display: inline-block; width: 110px; }
-          .footer { background: #F6F1E8; padding: 20px 28px; font-size: 13px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F7F3EC; margin: 0; padding: 24px 12px; color: #1E2421; -webkit-font-smoothing: antialiased; }
+          .card { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 16px; border: 1px solid #E0D9CB; overflow: hidden; box-shadow: 0 10px 30px rgba(6,44,34,0.08); }
+          .header { background: #062C22; color: #FAF5EA; padding: 34px 24px 28px; text-align: center; border-bottom: 3px solid #B9975B; }
+          .header-brand { font-family: Georgia, 'Times New Roman', serif; font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase; color: #DFBE77; margin: 0 0 6px 0; font-weight: 600; }
+          .header h1 { font-family: Georgia, 'Times New Roman', serif; margin: 0 0 6px 0; font-size: 24px; color: #FAF5EA; font-weight: normal; }
+          .header-sub { margin: 0; color: #C5D5CF; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+          .content { padding: 32px 28px; line-height: 1.65; color: #2A332E; }
+          .status-banner { background: #EBF5F0; border: 1px solid #2D7A58; border-radius: 10px; padding: 12px 18px; margin: 18px 0 24px; text-align: center; color: #1E5C40; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; }
+          .recap-box { background: #FAF7F2; border: 1px solid #E2D9CB; border-radius: 12px; padding: 22px 24px; margin: 22px 0; }
+          .recap-title { font-size: 13px; font-weight: 700; color: #062C22; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 14px; border-bottom: 1px solid #EAE2D5; padding-bottom: 8px; }
+          .recap-row { margin: 10px 0; font-size: 14px; display: flex; align-items: baseline; }
+          .recap-label { font-weight: 700; color: #062C22; min-width: 130px; display: inline-block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+          .recap-value { color: #1E2421; flex: 1; }
+          .reminder-box { background: #F4F8F5; border-left: 4px solid #062C22; padding: 16px 20px; margin: 24px 0; border-radius: 0 10px 10px 0; }
+          .reminder-title { margin: 0 0 8px 0; font-weight: 700; color: #062C22; font-size: 14px; }
+          .reminder-list { margin: 0; padding-left: 18px; font-size: 13px; color: #3A443E; line-height: 1.6; }
+          .reminder-list li { margin: 5px 0; }
+          .action-center { text-align: center; margin: 28px 0 12px; }
+          .btn-primary { background: #062C22; color: #DFBE77 !important; padding: 13px 26px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-block; font-size: 14px; border: 1px solid #B9975B; letter-spacing: 0.04em; }
+          .footer { background: #F6F1E8; padding: 22px 24px; font-size: 12px; color: #68706B; text-align: center; border-top: 1px solid #E8DCBE; line-height: 1.6; }
+          .footer a { color: #8A682D; text-decoration: none; font-weight: 600; }
         </style>
       </head>
       <body>
         <div class="card">
           <div class="header">
-            <p>AURA VITAL STAR REJUVENATION CENTRE</p>
-            <h1>Registration &amp; Appointment Confirmation</h1>
+            <p class="header-brand">Aura Vital Star</p>
+            <h1>Appointment Confirmation &amp; Visit Reminder</h1>
+            <p class="header-sub">Luxury Sanctuary &bull; Holistic Rejuvenation</p>
           </div>
           <div class="content">
-            <p>Dear <strong>${customerName}</strong>,</p>
-            <p>Thank you for choosing Aura Vital Star${isQr ? ' via our QR Booking portal' : ''}. Your appointment details have been successfully registered:</p>
+            <p style="font-size: 16px;">Dear <strong>${customerName}</strong>,</p>
+            <p>Thank you for choosing <strong>Aura Vital Star Rejuvenation Centre</strong>! We are delighted to confirm your upcoming appointment. Please keep this email handy as your visit reminder so you have all your details in one place.</p>
             
+            <div class="status-banner">
+              &#10003; Appointment Status: Confirmed
+            </div>
+
             <div class="recap-box">
-              <div class="recap-row"><span class="recap-label">Reference:</span> <strong>${booking.id}</strong></div>
-              <div class="recap-row"><span class="recap-label">Service:</span> <strong>${booking.service}</strong> (${booking.duration || '60 min'})</div>
-              <div class="recap-row"><span class="recap-label">Location:</span> ${booking.location || 'Brampton Centre'}</div>
-              <div class="recap-row"><span class="recap-label">Date:</span> ${booking.date}</div>
-              <div class="recap-row"><span class="recap-label">Time:</span> ${booking.time}</div>
-              <div class="recap-row"><span class="recap-label">Status:</span> <strong style="color:#062C22;">Confirmed</strong></div>
+              <div class="recap-title">Appointment Summary</div>
+              <div class="recap-row"><span class="recap-label">Reference ID:</span> <strong style="color: #8A682D; font-family: monospace; font-size: 15px;">${booking.id}</strong></div>
+              <div class="recap-row"><span class="recap-label">Treatment:</span> <strong>${booking.service}</strong> (${duration})</div>
+              <div class="recap-row"><span class="recap-label">Date:</span> <strong>${booking.date}</strong></div>
+              <div class="recap-row"><span class="recap-label">Time:</span> <strong>${booking.time}</strong></div>
+              <div class="recap-row"><span class="recap-label">Location:</span> <span><strong>${location} Centre</strong><br><span style="font-size: 12px; color: #666;">157 Queen Street West, Brampton, ON L6Y 1P9</span></span></div>
+              <div class="recap-row"><span class="recap-label">Guest Name:</span> <span>${customerName}</span></div>
+              ${booking.phone ? `<div class="recap-row"><span class="recap-label">Phone:</span> <span>${booking.phone}</span></div>` : ''}
               ${booking.notes ? `<div class="recap-row"><span class="recap-label">Notes:</span> <em>"${booking.notes}"</em></div>` : ''}
             </div>
 
-            <p>Our dedicated team looks forward to welcoming you. For any questions or adjustments, please call <strong>+1 647-987-5451</strong>.</p>
-            <p style="margin-top: 24px; color: #062C22; font-weight: 600;">Warm regards,<br>The Aura Vital Star Team</p>
+            <div class="reminder-box">
+              <div class="reminder-title">&#127807; Preparation &amp; Visit Reminders:</div>
+              <ul class="reminder-list">
+                <li><strong>Arrival:</strong> Please arrive 10 to 15 minutes before your scheduled appointment to unwind in our lounge and enjoy a complimentary botanical herbal tea.</li>
+                <li><strong>Complimentary Parking:</strong> Dedicated guest parking is available on-site at our facility.</li>
+                <li><strong>Rescheduling:</strong> If you need to adjust your time, please call or message us at least 24 hours in advance.</li>
+              </ul>
+            </div>
+
+            <div class="action-center">
+              <a href="tel:+16479875451" class="btn-primary">&#128222; Concierge Assistance: +1 647-987-5451</a>
+            </div>
+
+            <p style="margin-top: 26px; font-size: 14px; color: #4A544E;">Our specialist team is preparing your sanctuary prior to your arrival. We look forward to welcoming you.</p>
+            <p style="margin-top: 20px; color: #062C22; font-weight: 700;">Warm regards,<br>The Aura Vital Star Team</p>
           </div>
           <div class="footer">
-            157 Queen Street West, Brampton, ON L6Y 1P9 &bull; <a href="https://www.auravitalstar.ca" style="color: #B9975B; text-decoration: none;">www.auravitalstar.ca</a>
+            <strong>Aura Vital Star Rejuvenation Centre</strong><br>
+            157 Queen Street West, Brampton, ON L6Y 1P9 &bull; Phone: +1 647-987-5451<br>
+            <a href="https://www.auravitalstar.ca">www.auravitalstar.ca</a> &bull; <a href="mailto:info@auravitalstar.ca">info@auravitalstar.ca</a>
           </div>
         </div>
       </body>
@@ -114,23 +146,28 @@ async function sendCrmBookingEmails(booking) {
     const adminHtml = `
       <!DOCTYPE html>
       <html>
-      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; border-left: 5px solid #062C22;">
-          <h2 style="color: #062C22; margin-top: 0;">✨ ${isQr ? 'New QR Booking Received' : 'New Appointment Booking Received'}</h2>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-            <tr><td style="padding: 8px; font-weight: bold; width: 140px;">Booking Ref:</td><td style="padding: 8px;">${booking.id}</td></tr>
-            <tr><td style="padding: 8px; font-weight: bold;">Channel / Source:</td><td style="padding: 8px; font-weight: bold; color: #062C22;">${booking.source || (isQr ? 'QR Code' : 'Website')}</td></tr>
-            <tr><td style="padding: 8px; font-weight: bold;">Customer:</td><td style="padding: 8px;">${customerName}</td></tr>
-            <tr><td style="padding: 8px; font-weight: bold;">Email:</td><td style="padding: 8px;"><a href="mailto:${booking.email}">${booking.email}</a></td></tr>
-            <tr><td style="padding: 8px; font-weight: bold;">Phone:</td><td style="padding: 8px;"><a href="tel:${booking.phone}">${booking.phone}</a></td></tr>
-            <tr><td style="padding: 8px; font-weight: bold;">Service:</td><td style="padding: 8px;">${booking.service}</td></tr>
-            <tr><td style="padding: 8px; font-weight: bold;">Date & Time:</td><td style="padding: 8px;">${booking.date} at ${booking.time}</td></tr>
-            <tr><td style="padding: 8px; font-weight: bold;">Location:</td><td style="padding: 8px;">${booking.location}</td></tr>
-            <tr><td style="padding: 8px; font-weight: bold;">Notes:</td><td style="padding: 8px;">${booking.notes || 'None'}</td></tr>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; background-color: #f4f4f4; padding: 20px; color: #222;">
+        <div style="max-width: 600px; margin: 0 auto; background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 28px; border-top: 6px solid #062C22;">
+          <h2 style="color: #062C22; margin-top: 0; font-size: 20px;">✨ New Appointment Received — Aura Vital Star</h2>
+          <p style="font-size: 14px; color: #555;">A new appointment has been registered and synced to the CRM portal:</p>
+          <table style="width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px;">
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; width: 140px; color: #062C22;">Booking ID:</td><td style="padding: 8px 6px;"><strong style="color: #8A682D; font-family: monospace;">${booking.id}</strong></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Channel / Source:</td><td style="padding: 8px 6px;"><strong style="background: #EBF5F0; color: #1E5C40; padding: 3px 8px; border-radius: 4px;">${source}</strong></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Customer Name:</td><td style="padding: 8px 6px;"><strong>${customerName}</strong></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Phone:</td><td style="padding: 8px 6px;"><a href="tel:${booking.phone}" style="color: #062C22; font-weight: bold;">${booking.phone || 'Not provided'}</a></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Email:</td><td style="padding: 8px 6px;"><a href="mailto:${booking.email}" style="color: #062C22;">${booking.email || 'Not provided'}</a></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Service:</td><td style="padding: 8px 6px;"><strong>${booking.service}</strong> (${duration})</td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Date &amp; Time:</td><td style="padding: 8px 6px;"><strong>${booking.date}</strong> at <strong>${booking.time}</strong></td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Location:</td><td style="padding: 8px 6px;">${location} Centre (157 Queen St W)</td></tr>
+            <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Status:</td><td style="padding: 8px 6px;"><strong style="color: #2D7A58;">Confirmed</strong></td></tr>
+            <tr><td style="padding: 8px 6px; font-weight: bold; color: #062C22;">Notes:</td><td style="padding: 8px 6px;">${booking.notes || 'None'}</td></tr>
           </table>
-          <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #888;">
-            Aura Vital Star CRM Management System &bull; ${new Date().toLocaleString()}
+
+          <div style="text-align: center; margin: 24px 0 10px;">
+            <a href="https://www.auravitalstar.ca/crm/appointments" style="background: #062C22; color: #DFBE77; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 13px;">View in CRM Appointments Portal &rarr;</a>
           </div>
+
+          <p style="font-size: 11px; color: #888; text-align: center; margin-top: 18px;">Recorded at ${new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' })}</p>
         </div>
       </body>
       </html>

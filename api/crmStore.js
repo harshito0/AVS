@@ -270,8 +270,21 @@ function loadFromFile() {
       const raw = fs.readFileSync(STORE_PATH, 'utf-8');
       if (raw && raw.trim().length > 0) {
         const parsed = JSON.parse(raw);
+        const rawAppointments = Array.isArray(parsed.appointments) ? parsed.appointments : [];
+        store.appointments = rawAppointments.map(a => {
+          let status = a.status || 'Confirmed';
+          if (typeof status === 'string') {
+            const s = status.trim().toLowerCase();
+            if (s === 'pending') status = 'Pending';
+            else if (s === 'confirmed') status = 'Confirmed';
+            else if (s === 'completed') status = 'Completed';
+            else if (s === 'cancelled') status = 'Cancelled';
+            else if (s === 'no show' || s === 'no-show') status = 'No Show';
+            else status = 'Confirmed';
+          }
+          return { ...a, status, source: a.source || 'QR Code' };
+        });
         store.clients       = Array.isArray(parsed.clients)       ? parsed.clients       : [];
-        store.appointments  = Array.isArray(parsed.appointments)  ? parsed.appointments  : [];
         store.leads         = Array.isArray(parsed.leads)         ? parsed.leads         : [];
         store.invoices      = Array.isArray(parsed.invoices)      ? parsed.invoices      : [];
         store.giftCards     = Array.isArray(parsed.giftCards)     ? parsed.giftCards     : [];
@@ -309,8 +322,21 @@ async function loadFromRedis() {
     if (!data) return null;
     // Upstash returns already-parsed JSON objects
     const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+    const rawAppointments = Array.isArray(parsed.appointments) ? parsed.appointments : [];
+    store.appointments = rawAppointments.map(a => {
+      let status = a.status || 'Confirmed';
+      if (typeof status === 'string') {
+        const s = status.trim().toLowerCase();
+        if (s === 'pending') status = 'Pending';
+        else if (s === 'confirmed') status = 'Confirmed';
+        else if (s === 'completed') status = 'Completed';
+        else if (s === 'cancelled') status = 'Cancelled';
+        else if (s === 'no show' || s === 'no-show') status = 'No Show';
+        else status = 'Confirmed';
+      }
+      return { ...a, status, source: a.source || 'QR Code' };
+    });
     store.clients       = Array.isArray(parsed.clients)       ? parsed.clients       : [];
-    store.appointments  = Array.isArray(parsed.appointments)  ? parsed.appointments  : [];
     store.leads         = Array.isArray(parsed.leads)         ? parsed.leads         : [];
     store.invoices      = Array.isArray(parsed.invoices)      ? parsed.invoices      : [];
     store.giftCards     = Array.isArray(parsed.giftCards)     ? parsed.giftCards     : [];
@@ -532,9 +558,9 @@ export async function deleteGalleryItem(id) {
 export async function recordWebsiteBooking(bookingData) {
   await loadCrmStore();
 
-  const customerName    = (bookingData.name || bookingData.customerName || bookingData.clientName || 'Valued Guest').trim();
-  const phone           = (bookingData.phone || bookingData.guestPhone || '').trim();
-  const email           = (bookingData.email || bookingData.guestEmail || '').toLowerCase().trim();
+  const customerName    = (bookingData.customerName || bookingData.name || bookingData.clientName || bookingData.fullName || 'Valued Guest').trim();
+  const phone           = (bookingData.phone || bookingData.guestPhone || bookingData.clientPhone || '').trim();
+  const email           = (bookingData.email || bookingData.guestEmail || bookingData.clientEmail || '').toLowerCase().trim();
   const service         = bookingData.service || bookingData.serviceName || 'AVS Signature Treatment';
   const serviceCategory = bookingData.serviceCategory || 'Massage & Wellness';
   const rawLoc          = (bookingData.locationName || bookingData.location || 'Brampton').toString().toLowerCase();
@@ -543,8 +569,20 @@ export async function recordWebsiteBooking(bookingData) {
   const time            = bookingData.time || '10:00 AM';
   const duration        = bookingData.duration || '60 min';
   const notes           = bookingData.notes || '';
-  const source          = bookingData.source || 'Website';
+  const rawSource       = (bookingData.source || '').trim();
+  const source          = rawSource ? rawSource : 'QR Code';
   const amount          = Number(bookingData.amount) || 100;
+
+  // Normalize appointment status to valid CRM status - default to Confirmed
+  let status = 'Confirmed';
+  if (bookingData.status) {
+    const s = bookingData.status.toString().trim().toLowerCase();
+    if (s === 'pending') status = 'Pending';
+    else if (s === 'completed') status = 'Completed';
+    else if (s === 'cancelled') status = 'Cancelled';
+    else if (s === 'no show' || s === 'no-show') status = 'No Show';
+    else status = 'Confirmed';
+  }
 
   const year      = new Date().getFullYear();
   const randomNum = Math.floor(1000 + Math.random() * 9000);
@@ -624,7 +662,7 @@ export async function recordWebsiteBooking(bookingData) {
     date,
     time,
     duration,
-    status: bookingData.status || 'Confirmed',
+    status,
     amount,
     notes,
     source,
@@ -636,7 +674,7 @@ export async function recordWebsiteBooking(bookingData) {
   store.notifications.unshift({
     id: 'notif-' + Date.now(),
     title: 'New Appointment Booked',
-    message: `${customerName} booked ${service} for ${date} at ${time} (${location})`,
+    message: `${customerName} booked ${service} for ${date} at ${time} (${location}) [${source}]`,
     type: 'appointment',
     read: false,
     createdAt: new Date().toISOString()

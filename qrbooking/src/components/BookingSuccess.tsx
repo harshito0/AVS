@@ -108,9 +108,10 @@ export const BookingSuccess: React.FC<BookingSuccessProps> = ({ data, bookingId,
         </div>
 
         {/* Confirmation note */}
-        <p className="text-xs text-slate-500 mt-5 leading-relaxed">
-          Our team will contact you shortly via phone or email to confirm your appointment.
-        </p>
+        <div className="mt-5 p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/60 text-xs text-emerald-900 leading-relaxed text-center">
+          <p className="font-semibold">A confirmation &amp; visit reminder email has been sent to <span className="font-bold">{data.email}</span>.</p>
+          <p className="text-[11px] text-emerald-800 mt-1">Our concierge team is preparing your sanctuary prior to your arrival.</p>
+        </div>
 
         {/* Back to AVS / Reset Button */}
         <div className="mt-6 flex flex-col gap-2.5">

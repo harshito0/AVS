@@ -42,6 +42,14 @@ function mapAppointment(a: any): Appointment {
 
   const location = (a.location?.shortName || a.location || 'Brampton') as 'Brampton' | 'Mississauga';
 
+  let status: AppointmentStatus = 'Confirmed';
+  const rawStatus = (a.status || 'Confirmed').toString().trim();
+  if (/^pending$/i.test(rawStatus)) status = 'Pending';
+  else if (/^confirmed$/i.test(rawStatus)) status = 'Confirmed';
+  else if (/^completed$/i.test(rawStatus)) status = 'Completed';
+  else if (/^cancelled$/i.test(rawStatus)) status = 'Cancelled';
+  else if (/^no[-_\s]?show$/i.test(rawStatus)) status = 'No Show';
+
   return {
     id: a.id,
     clientName,
@@ -55,9 +63,10 @@ function mapAppointment(a: any): Appointment {
     date: a.date || '',
     time: a.time || '',
     duration: a.duration || '60 min',
-    status: (a.status || 'Pending') as AppointmentStatus,
+    status,
     amount: typeof a.amount === 'number' ? a.amount : (Number(a.amount) || 0),
-    notes: a.notes || undefined
+    notes: a.notes || undefined,
+    source: a.source || 'QR Code'
   };
 }
 

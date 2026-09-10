@@ -89,6 +89,20 @@ export const AppointmentDetailsDrawer: React.FC<AppointmentDetailsDrawerProps> =
       }
     >
       <div className="space-y-6">
+        {/* Reference ID & Channel/Source Banner */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500 font-medium">Reference:</span>
+            <span className="font-mono font-bold text-forest-900 bg-white px-2 py-0.5 rounded border border-slate-200">{appointment.id}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500 font-medium">Source:</span>
+            <span className="font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+              {appointment.source || 'QR Code'}
+            </span>
+          </div>
+        </div>
+
         {/* Service Highlight Card */}
         <div className="p-5 rounded-xl border border-forest-100 bg-forest-50/50 space-y-3">
           <div className="flex justify-between items-start">
