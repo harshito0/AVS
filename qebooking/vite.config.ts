@@ -1,10 +1,22 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
+  base: command === 'build' ? '/book/' : '/',
+  build: {
+    outDir: '../dist/book',
+    emptyOutDir: true,
+  },
   server: {
     port: 5175,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5173',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   }
-});
+}));

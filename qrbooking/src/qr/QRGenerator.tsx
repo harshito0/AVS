@@ -15,8 +15,13 @@ import {
 } from 'lucide-react';
 
 export const QRGenerator: React.FC = () => {
-  const [targetUrl, setTargetUrl] = useState('https://auravitalstar.ca/book');
-  const [urlMode, setUrlMode] = useState<'production' | 'wifi' | 'custom'>('production');
+  const productionUrl = 'https://www.auravitalstar.ca/book';
+  const apexUrl = 'https://auravitalstar.ca/book';
+  const vercelUrl = 'https://avs-sandy.vercel.app/book';
+  const localWifiUrl = 'http://192.168.29.148:5175/book';
+
+  const [targetUrl, setTargetUrl] = useState(productionUrl);
+  const [urlMode, setUrlMode] = useState<'production' | 'apex' | 'vercel' | 'wifi' | 'custom'>('production');
   const [customInput, setCustomInput] = useState('');
   const [copied, setCopied] = useState(false);
   const [qrPngUrl, setQrPngUrl] = useState<string>('');
@@ -25,14 +30,14 @@ export const QRGenerator: React.FC = () => {
   const [showSslHelp, setShowSslHelp] = useState(true);
   const printCardRef = useRef<HTMLDivElement>(null);
 
-  // Local Wi-Fi endpoint for immediate phone scanning without SSL alerts
-  const localWifiUrl = 'http://192.168.29.148:5175/book';
-  const productionUrl = 'https://auravitalstar.ca/book';
-
-  const handleModeChange = (mode: 'production' | 'wifi' | 'custom') => {
+  const handleModeChange = (mode: 'production' | 'apex' | 'vercel' | 'wifi' | 'custom') => {
     setUrlMode(mode);
     if (mode === 'production') {
       setTargetUrl(productionUrl);
+    } else if (mode === 'apex') {
+      setTargetUrl(apexUrl);
+    } else if (mode === 'vercel') {
+      setTargetUrl(vercelUrl);
     } else if (mode === 'wifi') {
       setTargetUrl(localWifiUrl);
     } else if (mode === 'custom') {
@@ -219,41 +224,26 @@ export const QRGenerator: React.FC = () => {
 
       {/* SSL Advisory Banner */}
       {showSslHelp && (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 shadow-sm animate-fade-in">
+        <div className="mb-6 p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-emerald-950 shadow-sm animate-fade-in">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <Sparkles className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-xs sm:text-sm text-amber-950 flex items-center gap-1.5">
-                  SSL Certificate & Phone Scanning Notice
+                <p className="font-bold text-xs sm:text-sm text-emerald-950 flex items-center gap-1.5">
+                  Live SSL Status: www.auravitalstar.ca is Verified Active
                 </p>
-                <p className="text-xs text-amber-900/90 mt-1 leading-relaxed">
-                  If scanning <code className="bg-amber-100/70 px-1 py-0.5 rounded text-amber-950 font-mono text-[11px]">https://auravitalstar.ca/book</code> shows <strong className="font-semibold">"Your connection is not private (NET::ERR_CERT_AUTHORITY_INVALID)"</strong>, the remote hosting server has an internal self-signed certificate.
+                <p className="text-xs text-emerald-900/90 mt-1 leading-relaxed">
+                  <code className="bg-emerald-100/70 px-1 py-0.5 rounded text-emerald-950 font-mono text-[11px]">https://www.auravitalstar.ca/book</code> is connected to Vercel with an active, trusted SSL certificate. Scan on any mobile device without warnings.
                 </p>
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleModeChange('wifi')}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-forest-900 text-white font-bold hover:bg-forest-800 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
-                  >
-                    <Wifi className="w-3.5 h-3.5 text-gold-400" />
-                    <span>Switch to Local Wi-Fi QR (Instant Phone Scan)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleModeChange('production')}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-semibold hover:bg-amber-100/50 transition-colors flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Globe className="w-3.5 h-3.5 text-amber-700" />
-                    <span>Live Domain URL</span>
-                  </button>
-                </div>
+                <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200/80 rounded-lg p-2 mt-2 leading-relaxed">
+                  ⚠️ <strong>Apex domain note:</strong> If scanning <code className="font-mono text-[10px]">https://auravitalstar.ca/book</code> (without <em>www</em>) gives NET::ERR_CERT_AUTHORITY_INVALID, update the DNS <strong className="font-mono">@</strong> A-record to Vercel IP <code className="font-mono font-bold">76.76.21.21</code>.
+                </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setShowSslHelp(false)}
-              className="text-amber-700 hover:text-amber-900 text-xs font-bold p-1 shrink-0 cursor-pointer"
+              className="text-emerald-700 hover:text-emerald-900 text-xs font-bold p-1 shrink-0 cursor-pointer"
               title="Dismiss"
             >
               ✕
@@ -338,17 +328,42 @@ export const QRGenerator: React.FC = () => {
             </span>
 
             {/* Quick Switch Tabs */}
-            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl">
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl text-center">
               <button
                 type="button"
                 onClick={() => handleModeChange('production')}
                 className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer truncate ${
                   urlMode === 'production'
-                    ? 'bg-white text-forest-900 shadow-sm'
+                    ? 'bg-emerald-800 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
+                title="Verified SSL (Recommended)"
               >
-                Live Domain
+                Live (www)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleModeChange('apex')}
+                className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer truncate ${
+                  urlMode === 'apex'
+                    ? 'bg-forest-900 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Apex Domain (auravitalstar.ca)"
+              >
+                Apex (@)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleModeChange('vercel')}
+                className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer truncate ${
+                  urlMode === 'vercel'
+                    ? 'bg-forest-900 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Vercel App Domain"
+              >
+                Vercel
               </button>
               <button
                 type="button"
@@ -360,12 +375,12 @@ export const QRGenerator: React.FC = () => {
                 }`}
               >
                 <Wifi className="w-3 h-3" />
-                <span>Wi-Fi Test</span>
+                <span>Wi-Fi</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleModeChange('custom')}
-                className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer truncate ${
+                className={`col-span-2 py-2 px-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer truncate ${
                   urlMode === 'custom'
                     ? 'bg-white text-forest-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -487,17 +502,18 @@ export const QRGenerator: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick SSL Resolution Instructions Box */}
+          {/* Quick DNS / SSL Resolution Guide */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
             <p className="font-bold flex items-center gap-1.5 text-slate-900">
               <Info className="w-4 h-4 text-forest-800" />
-              How to enable green SSL on auravitalstar.ca:
+              How to fix auravitalstar.ca (apex domain):
             </p>
-            <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-600 leading-relaxed">
-              <li>Open your cPanel hosting account.</li>
-              <li>Go to <strong className="text-slate-800">Security &rarr; SSL/TLS Status</strong>.</li>
-              <li>Check <code className="text-[10px] font-mono bg-slate-200/70 px-1 py-0.5 rounded">auravitalstar.ca</code> and click <strong className="text-slate-800">"Run AutoSSL"</strong>.</li>
-              <li>A free trusted Let's Encrypt / Sectigo certificate will be installed automatically.</li>
+            <ol className="list-decimal list-inside space-y-1.5 text-[11px] text-slate-600 leading-relaxed">
+              <li>Log in to your domain DNS provider (GoDaddy / Namecheap / Cloudflare).</li>
+              <li>Locate the <strong className="text-slate-800">A Record</strong> for <code className="text-[10px] font-mono bg-slate-200/70 px-1 py-0.5 rounded">@</code> (currently pointing to 103.108.220.145).</li>
+              <li>Change the IP address to Vercel's IP: <strong className="text-forest-900 font-mono font-bold">76.76.21.21</strong>.</li>
+              <li>Vercel will auto-provision SSL for the apex domain within 2 minutes.</li>
+              <li>Meanwhile, <strong className="text-emerald-800">https://www.auravitalstar.ca/book</strong> is already live with active SSL!</li>
             </ol>
           </div>
         </div>

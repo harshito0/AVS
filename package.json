@@ -8,11 +8,12 @@
     "server": "node server/server.js",
     "start": "concurrently -n \"API,VITE\" -c \"cyan,green\" \"node server/server.js\" \"vite\"",
     "dev:all": "concurrently -n \"API,VITE\" -c \"cyan,green\" \"node server/server.js\" \"vite\"",
-    "postinstall": "npm --prefix CRM/frontend install",
+    "postinstall": "npm --prefix CRM/frontend install && npm --prefix qrbooking install",
     "crm:backend": "npm --prefix CRM/backend run dev",
     "crm:frontend": "npm --prefix CRM/frontend run dev",
     "crm": "concurrently -n \"CRM-API,CRM-UI\" -c \"magenta,cyan\" \"npm run crm:backend\" \"npm run crm:frontend\"",
-    "build": "vite build && npm --prefix CRM/frontend run build",
+    "qr": "npm --prefix qrbooking run dev",
+    "build": "vite build && npm --prefix CRM/frontend run build && npm --prefix qrbooking run build",
     "preview": "vite preview"
   },
   "dependencies": {

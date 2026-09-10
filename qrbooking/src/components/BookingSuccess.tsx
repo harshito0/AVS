@@ -117,7 +117,7 @@ export const BookingSuccess: React.FC<BookingSuccessProps> = ({ data, bookingId,
           <button
             type="button"
             onClick={() => {
-              window.location.href = 'https://auravitalstar.ca';
+              window.location.href = '/';
             }}
             className="w-full py-3.5 px-6 rounded-xl bg-forest-900 hover:bg-forest-850 text-white font-bold text-sm tracking-wide shadow-md shadow-forest-900/15 transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
           >

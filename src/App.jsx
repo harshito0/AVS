@@ -268,6 +268,10 @@ function App() {
     if (pathname === '/gallery' || pathname.startsWith('/gallery')) return 'gallery';
     if (pathname === '/contact' || pathname.startsWith('/contact')) return 'contact';
     if (pathname === '/booking' || pathname.startsWith('/booking')) return 'booking';
+    if (pathname === '/book' || pathname.startsWith('/book') || pathname === '/qr-booking') {
+      window.location.href = '/book/';
+      return 'booking';
+    }
 
     return 'home';
   };
