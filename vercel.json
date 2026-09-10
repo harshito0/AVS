@@ -6,6 +6,16 @@
       "source": "/crm",
       "destination": "/crm/",
       "permanent": false
+    },
+    {
+      "source": "/qr-booking",
+      "destination": "/book",
+      "permanent": false
+    },
+    {
+      "source": "/qrbooking",
+      "destination": "/book",
+      "permanent": false
     }
   ],
   "rewrites": [
@@ -19,14 +29,6 @@
     },
     {
       "source": "/book/:match*",
-      "destination": "/book/index.html"
-    },
-    {
-      "source": "/qr-booking",
-      "destination": "/book/index.html"
-    },
-    {
-      "source": "/qrbooking",
       "destination": "/book/index.html"
     },
     {
