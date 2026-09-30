@@ -75,11 +75,41 @@ export const appointmentService = {
     try {
       const res = await appointmentsApi.getAll({ limit: '100' });
       if (res.success && Array.isArray(res.data)) {
-        return res.data.map(mapAppointment);
+        const apiApts = res.data.map(mapAppointment);
+        // Also merge any bookings from website localStorage by ID
+        try {
+          const raw = localStorage.getItem('avs_crm_bookings');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const localApts = parsed.map(mapAppointment);
+              const existingIds = new Set(apiApts.map((a: Appointment) => a.id));
+              const extras = localApts.filter((a: Appointment) => !existingIds.has(a.id));
+              return [...extras, ...apiApts];
+            }
+          }
+        } catch {
+          // ignore parsing error
+        }
+        return apiApts;
       }
     } catch (e) {
       console.error('[appointmentService] Failed to fetch appointments from API', e);
     }
+
+    // Fallback if API is offline
+    try {
+      const raw = localStorage.getItem('avs_crm_bookings');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed.map(mapAppointment);
+        }
+      }
+    } catch {
+      // ignore
+    }
+
     return [];
   },
 

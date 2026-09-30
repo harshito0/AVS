@@ -28,11 +28,65 @@ export const clientService = {
     try {
       const res = await clientsApi.getAll({ limit: '100' });
       if (res.success && Array.isArray(res.data)) {
-        return res.data.map(mapClient);
+        const apiClients = res.data.map(mapClient);
+        // Also check if any clients exist in website localStorage bookings
+        try {
+          const raw = localStorage.getItem('avs_crm_bookings');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const localClients: Client[] = parsed.map((b: any, idx: number) => mapClient({
+                id: 'cl-web-' + (b.id || idx),
+                firstName: (b.customerName || b.name || 'Valued Guest').split(' ')[0],
+                lastName: (b.customerName || b.name || '').split(' ').slice(1).join(' '),
+                fullName: b.customerName || b.name || 'Valued Guest',
+                phone: b.phone || '',
+                email: b.email || '',
+                location: b.location?.includes('Mississauga') ? 'Mississauga' : 'Brampton',
+                totalVisits: 1,
+                totalSpent: 120,
+                lastVisit: b.date || new Date().toISOString().split('T')[0],
+                lastService: b.service || 'AVS Signature Treatment',
+                status: 'Active',
+                createdAt: b.createdAt ? b.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]
+              }));
+              const existingEmails = new Set(apiClients.map(c => c.email.toLowerCase()));
+              const extras = localClients.filter(c => !c.email || !existingEmails.has(c.email.toLowerCase()));
+              return [...extras, ...apiClients];
+            }
+          }
+        } catch {}
+        return apiClients;
       }
     } catch (e) {
       console.error('[clientService] Failed to fetch from API', e);
     }
+
+    // Fallback if API offline
+    try {
+      const raw = localStorage.getItem('avs_crm_bookings');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((b: any, idx: number) => mapClient({
+            id: 'cl-web-' + (b.id || idx),
+            firstName: (b.customerName || b.name || 'Valued Guest').split(' ')[0],
+            lastName: (b.customerName || b.name || '').split(' ').slice(1).join(' '),
+            fullName: b.customerName || b.name || 'Valued Guest',
+            phone: b.phone || '',
+            email: b.email || '',
+            location: b.location?.includes('Mississauga') ? 'Mississauga' : 'Brampton',
+            totalVisits: 1,
+            totalSpent: 120,
+            lastVisit: b.date || new Date().toISOString().split('T')[0],
+            lastService: b.service || 'AVS Signature Treatment',
+            status: 'Active',
+            createdAt: b.createdAt ? b.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]
+          }));
+        }
+      }
+    } catch {}
+
     return [];
   },
 

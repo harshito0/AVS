@@ -3,7 +3,6 @@ import './booking.css';
 import {
   getBookings,
   createBooking,
-  sendOtpEmail,
   updateBookingStatus,
   deleteBooking,
   detectBookingSource,
@@ -186,7 +185,7 @@ export default function BookingPage({
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
 
-  // Customer Details & OTP Verification
+  // Customer Details
   const [customerDetails, setCustomerDetails] = useState({
     name: '',
     phone: '',
@@ -194,20 +193,6 @@ export default function BookingPage({
     notes: ''
   });
   const [errors, setErrors] = useState({});
-
-  // OTP Verification state
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpInput, setOtpInput] = useState('');
-  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
-  const [validOtpCodes, setValidOtpCodes] = useState([]);
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [otpError, setOtpError] = useState('');
-  const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
-  const [resendTimer, setResendTimer] = useState(30);
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [verifiedEmail, setVerifiedEmail] = useState('');
 
   // Confirmed booking record
   const [confirmedBooking, setConfirmedBooking] = useState(null);
@@ -285,151 +270,14 @@ export default function BookingPage({
 
   const availableSlots = getTimeSlotsForDate(selectedDate);
 
-  // Resend Countdown Timer
-  useEffect(() => {
-    let timer = null;
-    if (isTimerActive && resendTimer > 0) {
-      timer = setInterval(() => {
-        setResendTimer((prev) => prev - 1);
-      }, 1000);
-    } else if (resendTimer === 0) {
-      setIsTimerActive(false);
-    }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isTimerActive, resendTimer]);
-
   // Form Field Handling
   const handleInputChange = (field, value) => {
     if (field === 'phone') {
       value = formatPhoneNumber(value);
     }
-    if (field === 'email') {
-      setIsEmailVerified(false);
-      setVerifiedEmail('');
-      setOtpSent(false);
-      setValidOtpCodes([]);
-      setOtpInput('');
-      setOtpDigits(['', '', '', '', '', '']);
-      setOtpError('');
-      setOtpSuccessMsg('');
-    }
     setCustomerDetails((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
-    }
-  };
-
-  // OTP Dispatch & Verification Handlers
-  const handleSendOtp = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!customerDetails.email || !emailRegex.test(customerDetails.email.trim())) {
-      setErrors((prev) => ({ ...prev, email: 'Please provide a valid email address first.' }));
-      return;
-    }
-
-    setOtpSending(true);
-    setOtpError('');
-    setOtpSuccessMsg('');
-    setOtpSent(true);
-
-    const res = await sendOtpEmail(customerDetails.email.trim(), customerDetails.name);
-    setOtpSending(false);
-
-    if (res && (res.success || res.otp)) {
-      setOtpSent(true);
-      if (res.otp) {
-        setValidOtpCodes((prev) => Array.from(new Set([...prev, res.otp.toString().trim()])));
-      }
-      setResendTimer(30);
-      setIsTimerActive(true);
-      setOtpError('');
-      setOtpSuccessMsg(`A 6-digit verification code has been dispatched to ${customerDetails.email}. Please check your Inbox and Spam/Junk folder.`);
-      setErrors((prev) => ({ ...prev, email: null }));
-    } else {
-      setOtpError(res?.error || res?.reason || 'Failed to dispatch verification code. Please click "Resend Code".');
-    }
-  };
-
-  const handleVerifyOtp = (codeOverride) => {
-    const code = (codeOverride !== undefined ? codeOverride : (otpDigits.join('') || otpInput)).trim();
-    if (!code || code.length < 6) {
-      setOtpError('Please enter the complete 6-digit verification code.');
-      return;
-    }
-
-    // Accept code if it matches ANY generated active OTP in session or fallback
-    const isMatch = validOtpCodes.includes(code) || (validOtpCodes.length === 0 && code.length === 6);
-
-    if (isMatch) {
-      setIsEmailVerified(true);
-      setVerifiedEmail(customerDetails.email.trim().toLowerCase());
-      setOtpError('');
-      setOtpSuccessMsg('✓ Email verified successfully!');
-      setShowOtpModal(false);
-      setErrors((prev) => ({ ...prev, email: null }));
-      if (step === 4) {
-        setStep(5);
-      }
-    } else {
-      setOtpError('No active OTP found for this email. Please click "Resend Code".');
-    }
-  };
-
-  const getOtpInputEl = (idx) => document.getElementById(`avs-otp-digit-inline-${idx}`) || document.getElementById(`avs-otp-digit-${idx}`);
-
-  const handleOtpDigitChange = (index, value) => {
-    const cleanVal = value.replace(/\D/g, '');
-    if (!cleanVal) {
-      const newDigits = [...otpDigits];
-      newDigits[index] = '';
-      setOtpDigits(newDigits);
-      return;
-    }
-
-    const digit = cleanVal.slice(-1);
-    const newDigits = [...otpDigits];
-    newDigits[index] = digit;
-    setOtpDigits(newDigits);
-    setOtpInput(newDigits.join(''));
-
-    if (index < 5) {
-      const nextInput = getOtpInputEl(index + 1);
-      if (nextInput) nextInput.focus();
-    }
-
-    const fullCode = newDigits.join('');
-    if (fullCode.length === 6) {
-      handleVerifyOtp(fullCode);
-    }
-  };
-
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      const prevInput = getOtpInputEl(index - 1);
-      if (prevInput) prevInput.focus();
-    }
-  };
-
-  const handleOtpPaste = (e) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pastedData) {
-      const digitsArr = pastedData.split('');
-      const newDigits = ['', '', '', '', '', ''];
-      digitsArr.forEach((d, i) => {
-        newDigits[i] = d;
-      });
-      setOtpDigits(newDigits);
-      setOtpInput(pastedData);
-      if (pastedData.length === 6) {
-        handleVerifyOtp(pastedData);
-      } else {
-        const targetIdx = Math.min(pastedData.length, 5);
-        const nextInput = getOtpInputEl(targetIdx);
-        if (nextInput) nextInput.focus();
-      }
     }
   };
 
@@ -457,12 +305,6 @@ export default function BookingPage({
     if (step === 3 && (!selectedDate || !selectedTime)) return;
     if (step === 4) {
       if (!validateStep4()) return;
-      const cleanEmail = customerDetails.email.trim().toLowerCase();
-      // If email is not yet verified, send OTP and show verification modal
-      if (!isEmailVerified || verifiedEmail !== cleanEmail) {
-        handleSendOtp();
-        return;
-      }
     }
     setStep((prev) => Math.min(prev + 1, 5));
     window.scrollTo({ top: 100, behavior: 'smooth' });
@@ -901,102 +743,15 @@ export default function BookingPage({
                   </div>
 
                   <div className="avs-form-group avs-full-width">
-                    <label className="avs-form-label">Email Address * (OTP Verification Required)</label>
-                    <div className="avs-email-otp-input-row">
-                      <input
-                        type="email"
-                        className={`avs-form-input ${errors.email ? 'error' : ''} ${isEmailVerified ? 'verified' : ''}`}
-                        placeholder="Enter your email address"
-                        value={customerDetails.email}
-                        onChange={(e) => {
-                          setCustomerDetails({ ...customerDetails, email: e.target.value });
-                          if (isEmailVerified && e.target.value.trim().toLowerCase() !== verifiedEmail) {
-                            setIsEmailVerified(false);
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        className={`avs-btn-send-otp ${isEmailVerified ? 'verified' : ''}`}
-                        onClick={handleSendOtp}
-                        disabled={otpSending || !customerDetails.email.includes('@')}
-                      >
-                        {isEmailVerified ? '✓ VERIFIED' : otpSending ? 'SENDING...' : 'SEND OTP'}
-                      </button>
-                    </div>
+                    <label className="avs-form-label">Email Address *</label>
+                    <input
+                      type="email"
+                      className={`avs-form-input ${errors.email ? 'error' : ''}`}
+                      placeholder="Enter your email address"
+                      value={customerDetails.email}
+                      onChange={(e) => setCustomerDetails({ ...customerDetails, email: e.target.value })}
+                    />
                     {errors.email && <span className="avs-form-error">{errors.email}</span>}
-                    {isEmailVerified && (
-                      <p className="avs-verified-badge-line">✓ Email verified successfully! You may proceed to review.</p>
-                    )}
-
-                    {/* Inline 6-Digit OTP Verification Card */}
-                    {otpSent && !isEmailVerified && (
-                      <div className="avs-inline-otp-card">
-                        <div className="avs-otp-card-header">
-                          <h4 className="avs-otp-card-title">VERIFY YOUR EMAIL</h4>
-                          <p className="avs-otp-card-subtitle">
-                            A 6-digit verification code was sent to: <strong>{customerDetails.email}</strong>
-                          </p>
-                        </div>
-
-                        {otpError && (
-                          <div className="avs-otp-alert-box avs-otp-alert-error">
-                            <span className="avs-otp-alert-icon">!</span>
-                            <span>{otpError}</span>
-                          </div>
-                        )}
-
-                        {otpSuccessMsg && !otpError && (
-                          <div className="avs-otp-alert-box avs-otp-alert-success">
-                            <span className="avs-otp-alert-icon">✓</span>
-                            <span>{otpSuccessMsg}</span>
-                          </div>
-                        )}
-
-                        <div className="avs-otp-digit-row" onPaste={handleOtpPaste}>
-                          {otpDigits.map((digit, idx) => (
-                            <input
-                              key={idx}
-                              id={`avs-otp-digit-inline-${idx}`}
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={1}
-                              className={`avs-otp-digit-input ${otpError ? 'error' : ''} ${digit ? 'filled' : ''}`}
-                              value={digit}
-                              onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                              onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                              autoFocus={idx === 0}
-                            />
-                          ))}
-                        </div>
-
-                        <div className="avs-otp-card-footer">
-                          <button
-                            type="button"
-                            className="avs-btn-verify-proceed"
-                            onClick={() => handleVerifyOtp()}
-                            disabled={otpDigits.join('').length < 6 && (!otpInput || otpInput.length < 6)}
-                          >
-                            VERIFY EMAIL &rarr;
-                          </button>
-
-                          <span className="avs-otp-resend-status">
-                            {isTimerActive ? (
-                              <>Resend in <strong>00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong></>
-                            ) : (
-                              <button
-                                type="button"
-                                className="avs-otp-resend-btn"
-                                onClick={handleSendOtp}
-                                disabled={otpSending}
-                              >
-                                {otpSending ? 'Sending...' : 'Resend Code'}
-                              </button>
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   <div className="avs-form-group avs-full-width">
@@ -1017,7 +772,7 @@ export default function BookingPage({
                     type="button"
                     className="avs-btn-continue"
                     onClick={goToNextStep}
-                    disabled={!customerDetails.name.trim() || !customerDetails.phone.trim() || !isEmailVerified}
+                    disabled={!customerDetails.name.trim() || !customerDetails.phone.trim() || !customerDetails.email.trim()}
                   >
                     <span>CONTINUE TO REVIEW</span> &rarr;
                   </button>
@@ -1073,7 +828,6 @@ export default function BookingPage({
                     <p className="avs-review-value-sub">{customerDetails.phone}</p>
                     <div className="avs-review-email-verified-line">
                       <span>{customerDetails.email}</span>
-                      <span className="avs-verified-mini-badge">✓ Verified</span>
                     </div>
                     {customerDetails.notes && (
                       <p className="avs-review-notes-line">
@@ -1137,7 +891,7 @@ export default function BookingPage({
                     <div>
                       <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Contact Info</span>
                       <span className="avs-review-value" style={{ fontSize: '0.92rem', color: '#062C22', display: 'block' }}>{confirmedBooking.phone}</span>
-                      <span style={{ fontSize: '0.8rem', color: '#0E6245', fontWeight: 600 }}>{confirmedBooking.email} (Verified ✓)</span>
+                      <span style={{ fontSize: '0.8rem', color: '#0E6245', fontWeight: 600 }}>{confirmedBooking.email}</span>
                     </div>
 
                     <div>
@@ -1179,102 +933,7 @@ export default function BookingPage({
           </div>
         </div>
 
-        {/* OTP VERIFICATION MODAL OVERLAY */}
-        {showOtpModal && (
-          <div className="avs-modal-overlay" onClick={() => setShowOtpModal(false)}>
-            <div className="avs-otp-modal-container" onClick={(e) => e.stopPropagation()}>
-              <button 
-                type="button" 
-                className="avs-modal-close-btn"
-                onClick={() => setShowOtpModal(false)}
-                aria-label="Close modal"
-              >
-                &times;
-              </button>
 
-              <div className="avs-otp-modal-header">
-                <div className="avs-otp-shield-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#DFBE77" strokeWidth="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    <path d="M9 12l2 2 4-4" stroke="#DFBE77" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <h3 className="avs-otp-modal-title">Verify Your Email</h3>
-                <p className="avs-otp-modal-subtitle">
-                  We've dispatched a 6-digit verification code to<br />
-                  <u>{customerDetails.email}</u>
-                </p>
-              </div>
-
-              <div className="avs-otp-modal-body">
-                {otpError && (
-                  <div className="avs-otp-alert-box avs-otp-alert-error">
-                    <span className="avs-otp-alert-icon">!</span>
-                    <span>{otpError}</span>
-                  </div>
-                )}
-
-                {otpSuccessMsg && !otpError && (
-                  <div className="avs-otp-alert-box avs-otp-alert-success">
-                    <span className="avs-otp-alert-icon">✓</span>
-                    <span>{otpSuccessMsg}</span>
-                  </div>
-                )}
-
-                <div className="avs-otp-digit-row" onPaste={handleOtpPaste}>
-                  {otpDigits.map((digit, idx) => (
-                    <input
-                      key={idx}
-                      id={`avs-otp-digit-${idx}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      className={`avs-otp-digit-input ${otpError ? 'error' : ''} ${digit ? 'filled' : ''}`}
-                      value={digit}
-                      onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                      autoFocus={idx === 0}
-                    />
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  className="avs-btn-verify-proceed"
-                  onClick={() => handleVerifyOtp()}
-                  disabled={otpDigits.join('').length < 6 && (!otpInput || otpInput.length < 6)}
-                >
-                  VERIFY &amp; PROCEED &rarr;
-                </button>
-              </div>
-
-              <div className="avs-otp-modal-footer">
-                <span className="avs-otp-resend-status">
-                  {isTimerActive ? (
-                    <>Resend code in <strong>00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong></>
-                  ) : (
-                    <button
-                      type="button"
-                      className="avs-otp-resend-btn"
-                      onClick={handleSendOtp}
-                      disabled={otpSending}
-                    >
-                      {otpSending ? 'Sending code...' : 'Resend Code'}
-                    </button>
-                  )}
-                </span>
-
-                <button
-                  type="button"
-                  className="avs-otp-edit-email-btn"
-                  onClick={() => setShowOtpModal(false)}
-                >
-                  Edit Email
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -1931,75 +1590,19 @@ export default function BookingPage({
                       </div>
 
                       <div className="avs-form-field span-full">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                          <label className="avs-form-label" htmlFor="cust-email" style={{ margin: 0 }}>
-                            EMAIL ADDRESS <span className="required">*</span>
-                          </label>
-                          {!isEmailVerified ? (
-                            <button
-                              type="button"
-                              className="avs-btn-send-otp"
-                              onClick={handleSendOtp}
-                              disabled={otpSending || !customerDetails.email}
-                            >
-                              {otpSending ? 'Sending...' : 'Send OTP Code'}
-                            </button>
-                          ) : (
-                            <span style={{ fontSize: '0.82rem', color: '#0E6245', fontWeight: 600 }}>✓ Verified</span>
-                          )}
-                        </div>
+                        <label className="avs-form-label" htmlFor="cust-email">
+                          EMAIL ADDRESS <span className="required">*</span>
+                        </label>
+                        <input
+                          id="cust-email"
+                          type="email"
+                          className={`avs-form-input ${errors.email ? 'error' : ''}`}
+                          placeholder="Enter your email address"
+                          value={customerDetails.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          autoComplete="email"
+                        />
                         {errors.email && <span className="avs-form-error-msg">{errors.email}</span>}
-
-                        {/* Inline OTP Verification Area */}
-                        {otpSent && !isEmailVerified && (
-                          <div className="avs-otp-inline-box">
-                            <div className="avs-otp-header">
-                              <span className="avs-otp-title">Enter 6-Digit Code</span>
-                              <span className="avs-otp-subtitle">A verification code has been dispatched to <strong>{customerDetails.email}</strong>.</span>
-                            </div>
-
-                            <div className="avs-otp-inputs" onPaste={handleOtpPaste}>
-                              {otpDigits.map((digit, idx) => (
-                                <input
-                                  key={idx}
-                                  id={`avs-otp-digit-${idx}`}
-                                  type="text"
-                                  inputMode="numeric"
-                                  maxLength={1}
-                                  className={`avs-otp-digit ${otpError ? 'error' : ''} ${digit ? 'filled' : ''}`}
-                                  value={digit}
-                                  onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                                  onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                                  placeholder="0 0 0 0 0 0"
-                                  autoFocus={idx === 0}
-                                />
-                              ))}
-                            </div>
-
-                            {otpError && <p className="avs-otp-error-msg">{otpError}</p>}
-                            {otpSuccessMsg && <p className="avs-otp-success-msg">{otpSuccessMsg}</p>}
-
-                            <div className="avs-otp-actions">
-                              <button
-                                type="button"
-                                className="avs-btn-verify-otp"
-                                onClick={() => handleVerifyOtp()}
-                                disabled={otpDigits.join('').length < 6}
-                              >
-                                Verify &amp; Continue
-                              </button>
-
-                              <button
-                                type="button"
-                                className="avs-btn-resend-otp"
-                                onClick={handleSendOtp}
-                                disabled={isTimerActive || otpSending}
-                              >
-                                {isTimerActive ? `Resend code in ${resendTimer}s` : 'Resend Code'}
-                              </button>
-                            </div>
-                          </div>
-                        )}
                       </div>
 
                       <div className="avs-form-field span-full">
@@ -2099,18 +1702,6 @@ export default function BookingPage({
                               <span className="avs-review-value">{customerDetails.name}</span>
                               <span className="avs-review-subtext">
                                 {customerDetails.phone} &bull; {customerDetails.email}
-                                <span
-                                  className="avs-otp-status-badge verified"
-                                  style={{
-                                    display: 'inline-flex',
-                                    verticalAlign: 'middle',
-                                    marginLeft: '8px',
-                                    fontSize: '0.68rem',
-                                    padding: '1px 8px'
-                                  }}
-                                >
-                                  ✓ Verified
-                                </span>
                               </span>
                               {customerDetails.notes && (
                                 <span className="avs-review-subtext" style={{ marginTop: '4px', fontStyle: 'italic' }}>
@@ -2156,7 +1747,8 @@ export default function BookingPage({
                         disabled={
                           (step === 1 && !selectedLocation) ||
                           (step === 2 && !selectedService) ||
-                          (step === 3 && (!selectedDate || !selectedTime))
+                          (step === 3 && (!selectedDate || !selectedTime)) ||
+                          (step === 4 && (!customerDetails.name.trim() || !customerDetails.phone.trim() || !customerDetails.email.trim()))
                         }
                       >
                         <span>CONTINUE</span>
@@ -2225,7 +1817,7 @@ export default function BookingPage({
                 <div>
                   <span className="avs-review-label" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', color: '#8C734B', fontWeight: 600, display: 'block', textTransform: 'uppercase' }}>Contact Info</span>
                   <span className="avs-review-value" style={{ fontSize: '0.92rem', color: '#062C22', display: 'block' }}>{confirmedBooking.phone}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#0E6245', fontWeight: 600 }}>{confirmedBooking.email} (Verified ✓)</span>
+                  <span style={{ fontSize: '0.8rem', color: '#0E6245', fontWeight: 600 }}>{confirmedBooking.email}</span>
                 </div>
 
                 <div>
@@ -2653,104 +2245,7 @@ export default function BookingPage({
         </div>
       )}
 
-      {/* --------------------------------------------------------
-          OTP VERIFICATION MODAL OVERLAY
-          -------------------------------------------------------- */}
-      {showOtpModal && (
-        <div className="avs-modal-overlay" onClick={() => setShowOtpModal(false)}>
-          <div className="avs-otp-modal-container" onClick={(e) => e.stopPropagation()}>
-            <button 
-              type="button" 
-              className="avs-modal-close-btn"
-              onClick={() => setShowOtpModal(false)}
-              aria-label="Close modal"
-            >
-              &times;
-            </button>
 
-            <div className="avs-otp-modal-header">
-              <div className="avs-otp-shield-icon">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#DFBE77" strokeWidth="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  <path d="M9 12l2 2 4-4" stroke="#DFBE77" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <h3 className="avs-otp-modal-title">Verify Your Email</h3>
-              <p className="avs-otp-modal-subtitle">
-                We've dispatched a 6-digit verification code to<br />
-                <u>{customerDetails.email}</u>
-              </p>
-            </div>
-
-            <div className="avs-otp-modal-body">
-              {otpError && (
-                <div className="avs-otp-alert-box avs-otp-alert-error">
-                  <span className="avs-otp-alert-icon">!</span>
-                  <span>{otpError}</span>
-                </div>
-              )}
-
-              {otpSuccessMsg && !otpError && (
-                <div className="avs-otp-alert-box avs-otp-alert-success">
-                  <span className="avs-otp-alert-icon">✓</span>
-                  <span>{otpSuccessMsg}</span>
-                </div>
-              )}
-
-              <div className="avs-otp-digit-row" onPaste={handleOtpPaste}>
-                {otpDigits.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    id={`avs-otp-digit-${idx}`}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    className={`avs-otp-digit-input ${otpError ? 'error' : ''} ${digit ? 'filled' : ''}`}
-                    value={digit}
-                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    autoFocus={idx === 0}
-                  />
-                ))}
-              </div>
-
-              <button
-                type="button"
-                className="avs-btn-verify-proceed"
-                onClick={() => handleVerifyOtp()}
-                disabled={otpDigits.join('').length < 6 && (!otpInput || otpInput.length < 6)}
-              >
-                VERIFY &amp; PROCEED &rarr;
-              </button>
-            </div>
-
-            <div className="avs-otp-modal-footer">
-              <span className="avs-otp-resend-status">
-                {isTimerActive ? (
-                  <>Resend code in <strong>00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong></>
-                ) : (
-                  <button
-                    type="button"
-                    className="avs-otp-resend-btn"
-                    onClick={handleSendOtp}
-                    disabled={otpSending}
-                  >
-                    {otpSending ? 'Sending code...' : 'Resend Code'}
-                  </button>
-                )}
-              </span>
-
-              <button
-                type="button"
-                className="avs-otp-edit-email-btn"
-                onClick={() => setShowOtpModal(false)}
-              >
-                Edit Email
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
