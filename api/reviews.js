@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,DELETE');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
@@ -106,6 +106,30 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('Error submitting review:', err);
       return res.status(500).json({ success: false, error: 'Failed to process review' });
+    }
+  }
+
+  if (req.method === 'DELETE') {
+    try {
+      const { id } = req.query || req.body || {};
+      if (!id) {
+        return res.status(400).json({ success: false, error: 'Review ID is required to delete' });
+      }
+
+      let reviews = [];
+      if (fs.existsSync(reviewsFile)) {
+        reviews = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
+      }
+      reviews = reviews.filter((r) => r.id !== id && String(r.id) !== String(id));
+      try {
+        fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
+      } catch (writeErr) {
+        console.warn('Could not persist to file in serverless mode:', writeErr);
+      }
+      return res.status(200).json({ success: true, deleted: true, id, reviews });
+    } catch (err) {
+      console.error('Error deleting review:', err);
+      return res.status(500).json({ success: false, error: 'Failed to delete review' });
     }
   }
 

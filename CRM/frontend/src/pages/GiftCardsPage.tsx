@@ -292,7 +292,7 @@ export const GiftCardsPage: React.FC = () => {
             onClick={() => setIsCreateModalOpen(true)}
             icon={<Plus className="w-3.5 h-3.5" />}
           >
-            + Create Gift Card
+            Create Gift Card
           </Button>
 
           {/* Prominent Redeem Flow Trigger */}

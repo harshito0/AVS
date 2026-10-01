@@ -115,24 +115,30 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 
   const handleServiceChange = (id: string, serviceName: string) => {
     const found = AVAILABLE_SERVICES.find(s => s.name === serviceName);
-    const price = found ? found.price : 100;
-    setItems(prev => prev.map(it =>
-      it.id === id ? { ...it, service: serviceName, price, amount: price * it.quantity } : it
-    ));
+    const price = found ? Number(found.price) : 100;
+    setItems(prev => prev.map(it => {
+      if (it.id !== id) return it;
+      const qty = Number(it.quantity) || 1;
+      return { ...it, service: serviceName, price, amount: Math.round(price * qty * 100) / 100 };
+    }));
   };
 
   const handleQuantityChange = (id: string, qty: number) => {
-    const safeQty = Math.max(1, qty);
-    setItems(prev => prev.map(it =>
-      it.id === id ? { ...it, quantity: safeQty, amount: it.price * safeQty } : it
-    ));
+    const safeQty = Math.max(1, isNaN(qty) ? 1 : qty);
+    setItems(prev => prev.map(it => {
+      if (it.id !== id) return it;
+      const price = Number(it.price) || 0;
+      return { ...it, quantity: safeQty, amount: Math.round(price * safeQty * 100) / 100 };
+    }));
   };
 
   const handlePriceChange = (id: string, price: number) => {
-    const safePrice = Math.max(0, price);
-    setItems(prev => prev.map(it =>
-      it.id === id ? { ...it, price: safePrice, amount: safePrice * it.quantity } : it
-    ));
+    const safePrice = Math.max(0, isNaN(price) ? 0 : price);
+    setItems(prev => prev.map(it => {
+      if (it.id !== id) return it;
+      const qty = Number(it.quantity) || 1;
+      return { ...it, price: safePrice, amount: Math.round(safePrice * qty * 100) / 100 };
+    }));
   };
 
   const handleTaxPresetChange = (val: string) => {
@@ -178,8 +184,16 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
     setVoucherRedeemAmount(0);
   };
 
-  // Calculations
-  const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+  // Calculations: rigorously sum all items' amount
+  const subtotal = Math.round(
+    items.reduce((sum, item) => {
+      const itPrice = Number(item.price) || 0;
+      const itQty = Number(item.quantity) || 1;
+      const itAmount = item.amount !== undefined ? Number(item.amount) : (itPrice * itQty);
+      return sum + itAmount;
+    }, 0) * 100
+  ) / 100;
+
   const taxAmount = taxEnabled
     ? Math.round(subtotal * (effectiveTaxRate / 100) * 100) / 100
     : 0;
@@ -194,12 +208,29 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
     const clientPhone = client ? client.phone : '';
     const clientId = client ? client.id : `cli-${Date.now()}`;
 
+    const formattedItems = items.map(it => {
+      const q = Number(it.quantity) || 1;
+      const p = Number(it.price) || 0;
+      const a = Number(it.amount) || Math.round(q * p * 100) / 100;
+      return {
+        id: it.id,
+        service: it.service,
+        serviceName: it.service,
+        quantity: q,
+        price: p,
+        amount: a
+      };
+    });
+
     onCreateInvoice({
       clientId, clientName, clientEmail, clientPhone,
       clientAddress: `${location}, ON`,
-      date: invoiceDate, dueDate, location,
+      date: invoiceDate,
+      invoiceDate,
+      dueDate,
+      location,
       status: 'Pending' as const,
-      items,
+      items: formattedItems,
       subtotal,
       tax: taxAmount,
       taxRate: taxEnabled ? effectiveTaxRate : 0,

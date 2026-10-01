@@ -285,7 +285,7 @@ export const AppointmentsPage: React.FC = () => {
             onClick={() => setIsAddModalOpen(true)}
             icon={<Plus className="w-3.5 h-3.5" />}
           >
-            + Book Appointment
+            Book Appointment
           </Button>
 
           {/* View Toggle */}

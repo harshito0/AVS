@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   Sparkles,
   Package,
+  Star,
   BarChart3,
   Settings,
   LogOut,
@@ -37,6 +38,7 @@ const WEBSITE_NAV: NavItemConfig[] = [
   { path: '/gallery', label: 'Gallery', icon: ImageIcon },
   { path: '/services', label: 'Services', icon: Sparkles },
   { path: '/packages', label: 'Packages', icon: Package },
+  { path: '/reviews', label: 'Reviews', icon: Star },
 ];
 
 const SYSTEM_NAV: NavItemConfig[] = [

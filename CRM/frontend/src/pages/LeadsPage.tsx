@@ -322,7 +322,7 @@ export const LeadsPage: React.FC = () => {
             onClick={() => setIsAddModalOpen(true)}
             icon={<Plus className="w-3.5 h-3.5" />}
           >
-            + Add New Lead
+            Add New Lead
           </Button>
           <Button
             variant="outline"

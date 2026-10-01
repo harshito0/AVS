@@ -352,7 +352,7 @@ export const ClientsPage: React.FC = () => {
             onClick={() => setIsAddModalOpen(true)}
             icon={<UserPlus className="w-3.5 h-3.5" />}
           >
-            + Add New Client
+            Add New Client
           </Button>
           <Button
             variant="outline"

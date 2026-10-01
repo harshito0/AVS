@@ -124,8 +124,14 @@ import { DashboardOverviewData } from '../types';
 // Dashboard
 export const dashboardApi = {
   getSummary: () => apiGet<any>('/dashboard/summary'),
-  getOverview: (params?: Record<string, string>) => {
-    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+  getOverview: (params?: Record<string, string | undefined>) => {
+    const cleanParams: Record<string, string> = {};
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined && v !== null && v !== '') cleanParams[k] = v;
+      }
+    }
+    const qs = Object.keys(cleanParams).length > 0 ? '?' + new URLSearchParams(cleanParams).toString() : '';
     return apiGet<DashboardOverviewData>(`/dashboard/overview${qs}`);
   },
 };
@@ -228,6 +234,13 @@ export const galleryApi = {
   },
   add: (data: unknown) => apiPost<any>('/gallery', data),
   delete: (id: string) => apiDelete<any>(`/gallery/${id}`),
+};
+
+// Reviews (CMS & Website sync)
+export const reviewsApi = {
+  getAll: () => apiGet<any>('/reviews'),
+  create: (data: unknown) => apiPost<any>('/reviews', data),
+  delete: (id: string) => apiDelete<any>(`/reviews/${id}`),
 };
 
 // Notifications

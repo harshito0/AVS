@@ -207,7 +207,7 @@ function apiDevPlugin() {
             return sendJson(200, { success: true, bookings: getAllBookings() });
           }
 
-          // CRM API Delegation for Services, Packages, Gallery, and Dashboard
+          // CRM API Delegation for Services, Packages, Gallery, Invoices, Reviews, and Dashboard
           if (
             url.startsWith('/api/services') ||
             url.startsWith('/api/packages') ||
@@ -215,7 +215,12 @@ function apiDevPlugin() {
             url.startsWith('/api/dashboard') ||
             url.startsWith('/api/auth') ||
             url.startsWith('/api/clients') ||
-            url.startsWith('/api/appointments')
+            url.startsWith('/api/appointments') ||
+            url.startsWith('/api/leads') ||
+            url.startsWith('/api/invoices') ||
+            url.startsWith('/api/gift-cards') ||
+            url.startsWith('/api/notifications') ||
+            url.startsWith('/api/reviews')
           ) {
             const { default: crmHandler } = await import('./api/crm.js');
             return await crmHandler(req, res);

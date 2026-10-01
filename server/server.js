@@ -369,6 +369,25 @@ app.post('/api/reviews', async (req, res) => {
   }
 });
 
+// DELETE /api/reviews/:id — Remove a review
+app.delete('/api/reviews/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const fs = await import('fs');
+    if (fs.existsSync(reviewsFile)) {
+      let reviews = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
+      reviews = reviews.filter((r) => r.id !== id && String(r.id) !== String(id));
+      fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
+      console.log(`🗑️ Deleted review: ${id}`);
+      return res.json({ success: true, deleted: true, id, reviews });
+    }
+    return res.status(404).json({ success: false, error: 'Reviews store not found' });
+  } catch (err) {
+    console.error('Error deleting review:', err);
+    res.status(500).json({ success: false, error: 'Failed to delete review' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✨ AVS Booking Server & Database running on http://localhost:${PORT}`);
   console.log(`📧 Gmail notifications: ${process.env.GMAIL_USER || 'Add credentials to server/.env'}`);

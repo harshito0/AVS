@@ -162,6 +162,17 @@ export interface PackageItem {
   description: string;
 }
 
+export interface ReviewItem {
+  id: string;
+  author: string;
+  quote: string;
+  rating: number;
+  service?: string;
+  avatar?: string;
+  date?: string;
+  createdAt?: string;
+}
+
 export interface NotificationItem {
   id: string;
   title: string;

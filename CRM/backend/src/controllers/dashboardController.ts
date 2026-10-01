@@ -9,38 +9,58 @@ function parseDateFilter(query: Record<string, string>): { startDate?: string; e
   if (startDate && endDate) return { startDate, endDate };
 
   if (dateRange) {
+    const raw = dateRange.trim();
+    if (raw.includes('All Time')) {
+      return { startDate: undefined, endDate: undefined };
+    }
+
+    const rangeMatch = raw.match(/(\d{4}-\d{2}-\d{2})\s*(?:to|–|-)\s*(\d{4}-\d{2}-\d{2})/);
+    if (rangeMatch) {
+      return { startDate: rangeMatch[1], endDate: rangeMatch[2] };
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return { startDate: raw, endDate: raw };
+    }
+
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
-    if (dateRange.includes('Today')) {
+    if (raw.includes('Today')) {
       return { startDate: todayStr, endDate: todayStr };
     }
-    if (dateRange.includes('Yesterday')) {
+    if (raw.includes('Yesterday')) {
       const y = new Date(today);
       y.setDate(y.getDate() - 1);
       const yStr = y.toISOString().split('T')[0];
       return { startDate: yStr, endDate: yStr };
     }
-    if (dateRange.includes('Last 7 Days')) {
+    if (raw.includes('Last 7 Days')) {
       const d7 = new Date(today);
       d7.setDate(d7.getDate() - 7);
       return { startDate: d7.toISOString().split('T')[0], endDate: todayStr };
     }
-    if (dateRange.includes('Last 30 Days')) {
+    if (raw.includes('Last 30 Days')) {
       const d30 = new Date(today);
       d30.setDate(d30.getDate() - 30);
       return { startDate: d30.toISOString().split('T')[0], endDate: todayStr };
     }
-    if (dateRange.includes('May') && dateRange.includes('2025')) {
+    if (raw.includes('September 2026') || raw.includes('Sep 2026') || raw.includes('2026-09')) {
+      return { startDate: '2026-09-01', endDate: '2026-09-30' };
+    }
+    if (raw.includes('October 2026') || raw.includes('Oct 2026') || raw.includes('2026-10')) {
+      return { startDate: '2026-10-01', endDate: '2026-10-31' };
+    }
+    if (raw.includes('May') && raw.includes('2025')) {
       return { startDate: '2025-05-01', endDate: '2025-05-31' };
     }
-    if (dateRange.includes('This Month')) {
+    if (raw.includes('This Month')) {
       const y = today.getFullYear();
       const m = String(today.getMonth() + 1).padStart(2, '0');
       const lastDay = new Date(y, today.getMonth() + 1, 0).getDate();
       return { startDate: `${y}-${m}-01`, endDate: `${y}-${m}-${String(lastDay).padStart(2, '0')}` };
     }
-    if (dateRange.includes('Year to Date')) {
+    if (raw.includes('Year to Date')) {
       const y = today.getFullYear();
       return { startDate: `${y}-01-01`, endDate: todayStr };
     }

@@ -44,10 +44,29 @@ export async function createInvoice(req: AuthRequest, res: Response) {
     if (!clientName || !items?.length) return fail(res, 'VALIDATION_ERROR', 'Client name and at least one item required');
 
     const invoiceItems = Array.isArray(items) ? items : [];
-    const subtotal = invoiceItems.reduce((s: number, i: any) => s + (parseFloat(i.price) * parseInt(i.quantity)), 0);
-    const taxAmount = parseFloat(tax) || 0;
-    const discountAmount = parseFloat(discount) || 0;
-    const total = subtotal + taxAmount - discountAmount;
+    const cleanItems = invoiceItems.map((i: any) => {
+      const qty = Number(i.quantity) || 1;
+      const price = Number(i.price) || 0;
+      const amount = Number(i.amount) !== undefined && !isNaN(Number(i.amount)) && Number(i.amount) > 0
+        ? Number(i.amount)
+        : Math.round(price * qty * 100) / 100;
+      return {
+        serviceName: i.service || i.serviceName || 'Service',
+        quantity: qty,
+        price,
+        amount
+      };
+    });
+
+    const itemsSum = Math.round(cleanItems.reduce((s: number, it: any) => s + it.amount, 0) * 100) / 100;
+    const subtotal = req.body.subtotal !== undefined && !isNaN(Number(req.body.subtotal)) && Number(req.body.subtotal) > 0
+      ? Number(req.body.subtotal)
+      : itemsSum;
+    const taxAmount = Number(tax) || 0;
+    const discountAmount = Number(discount) || 0;
+    const total = req.body.total !== undefined && !isNaN(Number(req.body.total)) && Number(req.body.total) > 0
+      ? Number(req.body.total)
+      : Math.max(0, Math.round((subtotal + taxAmount - discountAmount) * 100) / 100);
 
     const invoice = await prisma.invoice.create({
       data: {
@@ -62,7 +81,7 @@ export async function createInvoice(req: AuthRequest, res: Response) {
         paymentMethod: paymentMethod || null,
         status: status || 'Pending',
         notes: notes || null,
-        items: { create: invoiceItems.map((i: any) => ({ serviceName: i.service || i.serviceName, quantity: parseInt(i.quantity), price: parseFloat(i.price), amount: parseFloat(i.price) * parseInt(i.quantity) })) },
+        items: { create: cleanItems },
       },
       include: { items: true, location: true },
     });

@@ -6,16 +6,50 @@
       "lastName": "Singh",
       "fullName": "Harshit Singh",
       "phone": "9792303434",
-      "email": "sharshit.0211@gmail.com",
+      "email": "harshitsingh19622@gmail.com",
       "location": "Brampton",
-      "totalVisits": 5,
-      "totalSpent": 500,
+      "totalVisits": 13,
+      "totalSpent": 1300,
       "status": "Active",
-      "lastVisit": "2026-09-12",
-      "lastService": "RMT Massage Therapy",
+      "lastVisit": "2026-10-08",
+      "lastService": "Deep Tissue Massage",
       "createdAt": "2026-09-06",
-      "notes": "Special VIP Consultation requested. QR Booking.",
-      "source": "QR Code"
+      "notes": "Special VIP Consultation requested. QR Booking. | Hlooo | hloooo crm | hloo crm | Hlooo crmmmm | for testing",
+      "source": "Website CTA"
+    },
+    {
+      "id": "cl-1789038795681-702",
+      "firstName": "Ashmit",
+      "lastName": "Srivastav",
+      "fullName": "Ashmit Srivastav",
+      "phone": "+918081180087",
+      "email": "ashmitsrivastav62@gmail.com",
+      "location": "Brampton",
+      "totalVisits": 1,
+      "totalSpent": 100,
+      "status": "Active",
+      "lastVisit": "2026-09-10",
+      "lastService": "Facials",
+      "notes": "",
+      "source": "QR Code",
+      "createdAt": "2026-09-10"
+    },
+    {
+      "id": "cl-1789020266005-679",
+      "firstName": "VIP",
+      "lastName": "Test Guest",
+      "fullName": "VIP Test Guest",
+      "phone": "+1 647-987-5451",
+      "email": "auravitalstar@gmail.com",
+      "location": "Brampton",
+      "totalVisits": 3,
+      "totalSpent": 300,
+      "status": "Active",
+      "lastVisit": "2026-09-20",
+      "lastService": "Hair Spa & Head Massage",
+      "notes": "QR Booking test verification | QR scan live test - customer reminder email verification | QR Code Booking verification test",
+      "source": "QR Code",
+      "createdAt": "2026-09-10"
     },
     {
       "id": "cl-1788885412457-30",
@@ -99,6 +133,139 @@
   ],
   "appointments": [
     {
+      "id": "AVS-2026-6521",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "phone": "9792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "service": "Deep Tissue Massage",
+      "serviceCategory": "MASSAGE & RMT",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-10-08",
+      "time": "1:00 PM",
+      "duration": "60 min",
+      "status": "Confirmed",
+      "amount": 100,
+      "notes": "for testing",
+      "source": "Website CTA",
+      "createdAt": "2026-10-01T09:48:50.788Z"
+    },
+    {
+      "id": "AVS-2026-4702",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh qr",
+      "phone": "+919792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "service": "Facials",
+      "serviceCategory": "Massage & Wellness",
+      "staff": "Staff Specialist",
+      "location": "Mississauga",
+      "date": "2026-10-15",
+      "time": "1:30 PM",
+      "duration": "60 min",
+      "status": "Completed",
+      "amount": 100,
+      "notes": "Hlooo crmmmm",
+      "source": "QR Code",
+      "createdAt": "2026-09-30T18:46:55.817Z"
+    },
+    {
+      "id": "AVS-2026-9393",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh form",
+      "phone": "+919792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "service": "Deep Tissue Massage",
+      "serviceCategory": "Massage & Wellness",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-10-08",
+      "time": "5:00 PM",
+      "duration": "60 min",
+      "status": "Confirmed",
+      "amount": 100,
+      "notes": "hloo crm",
+      "source": "QR Code",
+      "createdAt": "2026-09-30T18:39:13.004Z"
+    },
+    {
+      "id": "AVS-2026-3908",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "phone": "9792303434",
+      "email": "harshitsingh19622@gmail.com",
+      "service": "RMT Massage Therapy",
+      "serviceCategory": "MASSAGE & RMT",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-10-24",
+      "time": "2:00 PM",
+      "duration": "60 min",
+      "status": "Cancelled",
+      "amount": 100,
+      "notes": "hloooo crm",
+      "source": "Website CTA",
+      "createdAt": "2026-09-30T18:33:17.158Z"
+    },
+    {
+      "id": "AVS-2026-5095",
+      "clientId": "cl-1789038795681-702",
+      "clientName": "Ashmit Srivastav",
+      "phone": "+918081180087",
+      "email": "ashmitsrivastav62@gmail.com",
+      "service": "Facials",
+      "serviceCategory": "Massage & Wellness",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-09-10",
+      "time": "10:00 AM",
+      "duration": "60 min",
+      "status": "Cancelled",
+      "amount": 100,
+      "notes": "",
+      "source": "QR Code",
+      "createdAt": "2026-09-10T11:13:15.681Z"
+    },
+    {
+      "id": "AVS-2026-6528",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit raghuvanshi",
+      "phone": "+919792303434",
+      "email": "s.harshit0211@gmail.com",
+      "service": "Hot Stone Therapy",
+      "serviceCategory": "Massage & Wellness",
+      "staff": "Staff Specialist",
+      "location": "Mississauga",
+      "date": "2026-09-11",
+      "time": "1:30 PM",
+      "duration": "60 min",
+      "status": "Completed",
+      "amount": 100,
+      "notes": "Hlooo",
+      "source": "QR Code",
+      "createdAt": "2026-09-10T11:08:26.590Z"
+    },
+    {
+      "id": "AVS-2026-4945",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "phone": "09792303434",
+      "email": "sharshit.0211@gmail.com",
+      "service": "Deep Tissue Massage",
+      "serviceCategory": "MASSAGE & RMT",
+      "staff": "Staff Specialist",
+      "location": "Brampton",
+      "date": "2026-09-10",
+      "time": "11:30 AM",
+      "duration": "60 min",
+      "status": "Confirmed",
+      "amount": 100,
+      "notes": "",
+      "source": "Website CTA",
+      "createdAt": "2026-09-08T17:59:24.396Z"
+    },
+    {
       "id": "AVS-2026-7207",
       "clientId": "cl-1788697372505-431",
       "clientName": "Harshit Singh",
@@ -111,7 +278,7 @@
       "date": "2026-09-12",
       "time": "2:00 PM",
       "duration": "60 min",
-      "status": "PENDING",
+      "status": "Completed",
       "amount": 100,
       "notes": "Special VIP Consultation requested. QR Booking.",
       "source": "QR Code",
@@ -149,7 +316,7 @@
       "date": "2026-09-12",
       "time": "2:30 PM",
       "duration": "60 min",
-      "status": "PENDING",
+      "status": "Pending",
       "amount": 100,
       "notes": "Allergic to strong fragrances. QR Booking test.",
       "source": "QR Code",
@@ -157,6 +324,30 @@
     }
   ],
   "leads": [
+    {
+      "id": "ld-1789038795681",
+      "name": "Ashmit Srivastav",
+      "phone": "+918081180087",
+      "email": "ashmitsrivastav62@gmail.com",
+      "source": "QR Code",
+      "status": "Converted",
+      "service": "Facials",
+      "location": "Brampton",
+      "notes": "Booked online via QR Code. Notes: ",
+      "createdAt": "2026-09-10"
+    },
+    {
+      "id": "ld-1789020266005",
+      "name": "Test Booking User",
+      "phone": "647-987-5451",
+      "email": "test@auravitalstar.ca",
+      "source": "QR Code",
+      "status": "Converted",
+      "service": "Deep Tissue Massage",
+      "location": "Brampton",
+      "notes": "Booked online via QR Code. Notes: QR Booking test verification",
+      "createdAt": "2026-09-10"
+    },
     {
       "id": "ld-1788885412457",
       "name": "Rahul Verma",
@@ -219,6 +410,68 @@
     }
   ],
   "invoices": [
+    {
+      "id": "inv-1790848224256",
+      "invoiceNo": "INV-224256",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "clientEmail": "harshitsingh19622@gmail.com",
+      "clientPhone": "9792303434",
+      "date": "2026-10-01",
+      "dueDate": "2026-10-08",
+      "location": "Brampton",
+      "status": "Pending",
+      "items": [
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        },
+        {
+          "service": "Custom Service",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        }
+      ],
+      "subtotal": 100,
+      "tax": 26,
+      "discount": 0,
+      "total": 113,
+      "paymentMethod": "Credit Card"
+    },
+    {
+      "id": "inv-1790794681013",
+      "invoiceNo": "INV-681013",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh qr",
+      "clientEmail": "harshitsingh19622@gmail.com",
+      "clientPhone": "+919792303434",
+      "date": "2026-09-30",
+      "dueDate": "2026-10-07",
+      "location": "Brampton",
+      "status": "Pending",
+      "items": [
+        {
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        },
+        {
+          "service": "Custom Service",
+          "quantity": 2,
+          "price": 100,
+          "amount": 200
+        }
+      ],
+      "subtotal": 100,
+      "tax": 39,
+      "discount": 111,
+      "total": 113,
+      "paymentMethod": "Credit Card"
+    },
     {
       "id": "inv-1788696956574",
       "invoiceNo": "INV-956574",
@@ -362,6 +615,102 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif-1790848130788",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh booked Deep Tissue Massage for 2026-10-08 at 1:00 PM (Brampton) [Website CTA]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-10-01T09:48:50.788Z"
+    },
+    {
+      "id": "notif-1790794015817",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh qr booked Facials for 2026-10-15 at 1:30 PM (Mississauga) [QR Code]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-30T18:46:55.817Z"
+    },
+    {
+      "id": "notif-1790793553004",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh form booked Deep Tissue Massage for 2026-10-08 at 5:00 PM (Brampton) [QR Code]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-30T18:39:13.004Z"
+    },
+    {
+      "id": "notif-1790793197158",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh booked RMT Massage Therapy for 2026-10-24 at 2:00 PM (Brampton) [Website CTA]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-30T18:33:17.158Z"
+    },
+    {
+      "id": "notif-1789099929079",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh booked Deep Tissue Massage for 2026-09-18 at 1:00 PM (Brampton) [Website CTA]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-11T04:12:09.079Z"
+    },
+    {
+      "id": "notif-1789038795681",
+      "title": "New Appointment Booked",
+      "message": "Ashmit Srivastav booked Facials for 2026-09-10 at 10:00 AM (Brampton) [QR Code]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-10T11:13:15.681Z"
+    },
+    {
+      "id": "notif-1789038506590",
+      "title": "New Appointment Booked",
+      "message": "Harshit raghuvanshi booked Hot Stone Therapy for 2026-09-11 at 1:30 PM (Mississauga) [QR Code]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-10T11:08:26.590Z"
+    },
+    {
+      "id": "notif-1789024468473",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh booked Laser Hair Removal for 2026-09-26 at 3:30 PM (Mississauga) [QR Code]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-10T07:14:28.473Z"
+    },
+    {
+      "id": "notif-1789020336685",
+      "title": "New Appointment Booked",
+      "message": "VIP Test Guest booked Hair Spa & Head Massage for 2026-09-20 at 03:00 PM (Brampton) [QR Code]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-10T06:05:36.685Z"
+    },
+    {
+      "id": "notif-1789020290835",
+      "title": "New Appointment Booked",
+      "message": "Valued Guest booked Body Massage & Pain Relief Therapy for 2026-09-18 at 02:30 PM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-10T06:04:50.835Z"
+    },
+    {
+      "id": "notif-1789020266005",
+      "title": "New Appointment Booked",
+      "message": "Test Booking User booked Deep Tissue Massage for 2026-09-15 at 11:00 AM (Brampton) [QR Code]",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-10T06:04:26.005Z"
+    },
+    {
+      "id": "notif-1788890364397",
+      "title": "New Appointment Booked",
+      "message": "Harshit Singh booked Deep Tissue Massage for 2026-09-10 at 11:30 AM (Brampton)",
+      "type": "appointment",
+      "read": false,
+      "createdAt": "2026-09-08T17:59:24.397Z"
+    },
     {
       "id": "notif-1788887252122",
       "title": "New Appointment Booked",
@@ -603,31 +952,13 @@
   ],
   "gallery": [
     {
-      "id": "gal-1788699108814",
-      "title": "Harmony Couples Retreat",
-      "category": "Treatments",
-      "description": "Immerse together in a private candlelit suite with dual treatment beds and hot aromatic towel compresses.",
-      "imageUrl": "blob:https://avs-sandy.vercel.app/8f23bc3f-3b9b-474b-b5e3-360aee164d0e",
+      "id": "gal-1790847933345",
+      "title": "svc hair head",
+      "category": "Spa Suites",
+      "description": "hloo for testing",
+      "imageUrl": "blob:https://auravitalstar.ca/0dadbc48-30bc-4929-8b88-6a0682a3e5af",
       "status": "Published",
-      "dateAdded": "2026-09-06"
-    },
-    {
-      "id": "gal-1",
-      "title": "Basalt Hot Stone Ritual",
-      "category": "Treatments",
-      "description": "Heated volcanic basalt stones combined with organic essential oils melt deep muscular tension, restoring vital energy.",
-      "imageUrl": "/gallery_hot_stones.webp",
-      "status": "Published",
-      "dateAdded": "2026-09-01"
-    },
-    {
-      "id": "gal-2",
-      "title": "Glow & Rejuvenate Facial",
-      "category": "Treatments",
-      "description": "Personalized luxury botanical facial designed to deeply nourish, refresh, and restore natural luminosity.",
-      "imageUrl": "/hero_facial.webp",
-      "status": "Published",
-      "dateAdded": "2026-09-01"
+      "dateAdded": "2026-10-01"
     },
     {
       "id": "gal-3",
@@ -666,5 +997,5 @@
       "dateAdded": "2026-09-01"
     }
   ],
-  "lastUpdated": "2026-09-08T17:21:45.733Z"
+  "lastUpdated": "2026-10-01T12:44:07.388Z"
 }

@@ -1,7 +1,34 @@
 import { Request, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
 import prisma from '../config/prisma';
 import { ok, created, notFound, fail, serverError } from '../utils/apiResponse';
 import { AuthRequest } from '../middleware/auth';
+
+const REVIEWS_FILE = path.resolve(__dirname, '../../../../server/data/reviews.json');
+
+function readReviewsFile(): any[] {
+  try {
+    if (fs.existsSync(REVIEWS_FILE)) {
+      return JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Error reading reviews file:', err);
+  }
+  return [];
+}
+
+function writeReviewsFile(data: any[]): boolean {
+  try {
+    const dir = path.dirname(REVIEWS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(REVIEWS_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (err) {
+    console.error('Error writing reviews file:', err);
+    return false;
+  }
+}
 
 // Services
 export async function getServices(req: Request, res: Response) {
@@ -156,4 +183,64 @@ export async function getLocations(_req: Request, res: Response) {
     const locations = await prisma.location.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } });
     return ok(res, locations);
   } catch { return serverError(res); }
+}
+
+// Client Reviews (Website & CRM synchronized)
+export async function getReviews(_req: Request, res: Response) {
+  try {
+    const reviews = readReviewsFile();
+    return ok(res, reviews);
+  } catch {
+    return serverError(res);
+  }
+}
+
+export async function createReview(req: Request, res: Response) {
+  try {
+    const { name, quote, rating, service } = req.body || {};
+    if (!name || !name.trim() || !quote || !quote.trim()) {
+      return fail(res, 'VALIDATION_ERROR', 'Name and review message are required');
+    }
+
+    const reviews = readReviewsFile();
+    const nameParts = name.trim().split(/\s+/);
+    const avatar = nameParts.length >= 2
+      ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+      : name.trim().slice(0, 2).toUpperCase();
+
+    const newReview = {
+      id: `rev-${Date.now()}`,
+      author: name.trim(),
+      quote: quote.trim(),
+      rating: Math.min(5, Math.max(1, parseInt(rating, 10) || 5)),
+      service: service ? service.trim() : 'Holistic Wellness Care',
+      avatar,
+      date: 'Recent',
+      createdAt: new Date().toISOString()
+    };
+
+    reviews.unshift(newReview);
+    writeReviewsFile(reviews);
+    return created(res, newReview);
+  } catch {
+    return serverError(res);
+  }
+}
+
+export async function deleteReview(req: AuthRequest, res: Response) {
+  try {
+    const id = req.params.id as string;
+    let reviews = readReviewsFile();
+    const initialLen = reviews.length;
+    reviews = reviews.filter((r: any) => r.id !== id && String(r.id) !== String(id));
+
+    if (reviews.length === initialLen) {
+      return notFound(res, 'Review');
+    }
+
+    writeReviewsFile(reviews);
+    return ok(res, { deleted: true, id });
+  } catch {
+    return serverError(res);
+  }
 }

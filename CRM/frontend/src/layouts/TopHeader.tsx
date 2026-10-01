@@ -18,6 +18,7 @@ import { Location, NotificationItem } from '../types';
 import { INITIAL_NOTIFICATIONS } from '../data/notifications';
 import { useToast } from '../hooks/useToast';
 import { useNavigate } from 'react-router-dom';
+import { clearToken } from '../services/apiClient';
 
 export interface TopHeaderProps {
   title: string;
@@ -26,7 +27,9 @@ export interface TopHeaderProps {
   currentLocation: Location;
   onLocationChange: (loc: Location) => void;
   dateRange: string;
-  onDateRangeChange: (range: string) => void;
+  startDate?: string;
+  endDate?: string;
+  onDateRangeChange: (range: string, startDate?: string, endDate?: string) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onToggleMobileMenu: () => void;
@@ -39,6 +42,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   currentLocation,
   onLocationChange,
   dateRange,
+  startDate,
+  endDate,
   onDateRangeChange,
   searchQuery,
   onSearchChange,
@@ -108,6 +113,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           {/* Date Range Selector */}
           <DatePicker
             currentRange={dateRange}
+            startDate={startDate}
+            endDate={endDate}
             onChange={onDateRangeChange}
           />
 
@@ -245,11 +252,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   <button
                     onClick={() => {
                       setShowProfile(false);
-                      info('Signed out', 'Session closed.');
+                      clearToken();
+                      info('Session Logged Out', 'You have been safely signed out of the CRM session.');
+                      navigate('/login');
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-left cursor-pointer"
                   >
-                    <LogOut className="w-3.5 h-3.5" />
+                    <LogOut className="w-3.5 h-3.5 text-rose-500" />
                     <span>Sign Out</span>
                   </button>
                 </div>

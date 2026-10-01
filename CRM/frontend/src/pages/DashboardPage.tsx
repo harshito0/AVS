@@ -35,7 +35,7 @@ import { CreateInvoiceModal } from '../sections/invoices/CreateInvoiceModal';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentLocation, dateRange } = useCrmContext();
+  const { currentLocation, dateRange, startDate, endDate } = useCrmContext();
   const { success, error: toastError, info } = useToast();
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -55,6 +55,8 @@ export const DashboardPage: React.FC = () => {
       const res = await dashboardApi.getOverview({
         location: currentLocation,
         dateRange: dateRange,
+        startDate: startDate,
+        endDate: endDate,
       });
 
       if (res.success && res.data) {
@@ -69,7 +71,7 @@ export const DashboardPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentLocation, dateRange]);
+  }, [currentLocation, dateRange, startDate, endDate]);
 
   // Modal Submission Handlers
   const handleAddAppointment = async (apptData: any) => {

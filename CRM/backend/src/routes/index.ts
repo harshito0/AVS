@@ -31,6 +31,7 @@ import {
   getPackages, createPackage, updatePackage,
   getGallery, addGalleryImage, deleteGalleryImage,
   getLocations,
+  getReviews, createReview, deleteReview,
 } from '../controllers/websiteController';
 import { getNotifications, markRead, markAllRead } from '../controllers/notificationController';
 
@@ -106,6 +107,11 @@ router.patch('/packages/:id', authenticate, requireManagerOrAdmin, updatePackage
 router.get('/gallery', getGallery);
 router.post('/gallery', authenticate, requireManagerOrAdmin, addGalleryImage);
 router.delete('/gallery/:id', authenticate, requireManagerOrAdmin, deleteGalleryImage);
+
+// ---- Reviews (public GET/POST, admin delete) ----
+router.get('/reviews', getReviews);
+router.post('/reviews', createReview);
+router.delete('/reviews/:id', authenticate, requireManagerOrAdmin, deleteReview);
 
 // ---- Clients ----
 router.get('/clients', authenticate, getClients);

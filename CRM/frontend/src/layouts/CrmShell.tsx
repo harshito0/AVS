@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Sparkles,
   Package,
+  Star,
   BarChart3,
   Settings
 } from 'lucide-react';
@@ -21,7 +22,9 @@ interface CrmContextType {
   currentLocation: Location;
   setCurrentLocation: (loc: Location) => void;
   dateRange: string;
-  setDateRange: (range: string) => void;
+  startDate?: string;
+  endDate?: string;
+  setDateRange: (range: string, start?: string, end?: string) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
 }
@@ -37,9 +40,17 @@ export const useCrmContext = () => {
 export const CrmShell: React.FC = () => {
   const location = useLocation();
   const [currentLocation, setCurrentLocation] = useState<Location>('All Locations');
-  const [dateRange, setDateRange] = useState<string>('May 1 – May 31, 2025');
+  const [dateRange, setDateRangeState] = useState<string>('All Time');
+  const [startDate, setStartDate] = useState<string | undefined>(undefined);
+  const [endDate, setEndDate] = useState<string | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+
+  const setDateRange = (range: string, start?: string, end?: string) => {
+    setDateRangeState(range);
+    setStartDate(start);
+    setEndDate(end);
+  };
 
   // Derive title, subtitle and icon from current route
   const getHeaderInfo = () => {
@@ -100,6 +111,12 @@ export const CrmShell: React.FC = () => {
           subtitle: 'Manage multi-session treatment bundles and promotional combinations',
           icon: <Package className="w-5 h-5" />
         };
+      case '/reviews':
+        return {
+          title: 'Client Reviews',
+          subtitle: 'Moderate guest testimonials and live ratings displayed on the public website',
+          icon: <Star className="w-5 h-5 text-gold-500 fill-current" />
+        };
       case '/reports':
         return {
           title: 'Reports & Analytics',
@@ -129,6 +146,8 @@ export const CrmShell: React.FC = () => {
         currentLocation,
         setCurrentLocation,
         dateRange,
+        startDate,
+        endDate,
         setDateRange,
         searchQuery,
         setSearchQuery
@@ -150,6 +169,8 @@ export const CrmShell: React.FC = () => {
             currentLocation={currentLocation}
             onLocationChange={setCurrentLocation}
             dateRange={dateRange}
+            startDate={startDate}
+            endDate={endDate}
             onDateRangeChange={setDateRange}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}

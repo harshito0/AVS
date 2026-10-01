@@ -234,33 +234,66 @@ function readBody(req) {
 // Dynamic Dashboard Aggregation Engine
 function computeDashboardMetrics(store, locationParam, dateRangeParam, startDateParam, endDateParam) {
   const { clients, appointments, invoices, leads } = store;
-  let start = startDateParam;
-  let end = endDateParam;
+  let start = startDateParam || undefined;
+  let end = endDateParam || undefined;
   const todayStr = new Date().toISOString().split('T')[0];
 
-  if (!start && !end && dateRangeParam) {
-    if (dateRangeParam.includes('Today')) {
-      start = todayStr;
-      end = todayStr;
-    } else if (dateRangeParam.includes('Yesterday')) {
-      const y = new Date();
-      y.setDate(y.getDate() - 1);
-      start = y.toISOString().split('T')[0];
-      end = start;
-    } else if (dateRangeParam.includes('Last 7 Days')) {
-      const d7 = new Date();
-      d7.setDate(d7.getDate() - 7);
-      start = d7.toISOString().split('T')[0];
-      end = todayStr;
-    } else if (dateRangeParam.includes('Last 30 Days')) {
-      const d30 = new Date();
-      d30.setDate(d30.getDate() - 30);
-      start = d30.toISOString().split('T')[0];
-      end = todayStr;
-    } else if (dateRangeParam.includes('May') && dateRangeParam.includes('2025')) {
-      start = '2025-05-01';
-      end = '2025-05-31';
+  if ((!start || !end) && dateRangeParam) {
+    const raw = dateRangeParam.trim();
+    if (raw.includes('All Time')) {
+      start = undefined;
+      end = undefined;
+    } else {
+      const rangeMatch = raw.match(/(\d{4}-\d{2}-\d{2})\s*(?:to|–|-)\s*(\d{4}-\d{2}-\d{2})/);
+      if (rangeMatch) {
+        start = rangeMatch[1];
+        end = rangeMatch[2];
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        start = raw;
+        end = raw;
+      } else if (raw.includes('Today')) {
+        start = todayStr;
+        end = todayStr;
+      } else if (raw.includes('Yesterday')) {
+        const y = new Date();
+        y.setDate(y.getDate() - 1);
+        start = y.toISOString().split('T')[0];
+        end = start;
+      } else if (raw.includes('Last 7 Days')) {
+        const d7 = new Date();
+        d7.setDate(d7.getDate() - 7);
+        start = d7.toISOString().split('T')[0];
+        end = todayStr;
+      } else if (raw.includes('Last 30 Days')) {
+        const d30 = new Date();
+        d30.setDate(d30.getDate() - 30);
+        start = d30.toISOString().split('T')[0];
+        end = todayStr;
+      } else if (raw.includes('September 2026') || raw.includes('Sep 2026') || raw.includes('2026-09')) {
+        start = '2026-09-01';
+        end = '2026-09-30';
+      } else if (raw.includes('October 2026') || raw.includes('Oct 2026') || raw.includes('2026-10')) {
+        start = '2026-10-01';
+        end = '2026-10-31';
+      } else if (raw.includes('May') && raw.includes('2025')) {
+        start = '2025-05-01';
+        end = '2025-05-31';
+      } else if (raw.includes('This Month')) {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+        start = `${y}-${m}-01`;
+        end = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+      }
     }
+  }
+
+  // Ensure start <= end
+  if (start && end && start > end) {
+    const tmp = start;
+    start = end;
+    end = tmp;
   }
 
   const isAllLocations = !locationParam || locationParam === 'All Locations' || locationParam === 'all';
@@ -274,14 +307,15 @@ function computeDashboardMetrics(store, locationParam, dateRangeParam, startDate
   const matchDate = (itemDate) => {
     if (!start && !end) return true;
     if (!itemDate) return true;
-    if (start && itemDate < start) return false;
-    if (end && itemDate > end) return false;
+    const cleanDate = itemDate.includes('T') ? itemDate.split('T')[0] : itemDate;
+    if (start && cleanDate < start) return false;
+    if (end && cleanDate > end) return false;
     return true;
   };
 
   const filteredClients      = clients.filter(c => matchLocation(c.location));
   const filteredAppointments = appointments.filter(a => matchLocation(a.location) && matchDate(a.date));
-  const filteredInvoices     = invoices.filter(i => matchLocation(i.location) && matchDate(i.date) && i.status === 'Paid');
+  const filteredInvoices     = invoices.filter(i => matchLocation(i.location) && matchDate(i.date || i.invoiceDate) && i.status === 'Paid');
   const filteredLeads        = leads.filter(l => matchLocation(l.location));
 
   // KPIs
@@ -647,6 +681,32 @@ export default async function handler(req, res) {
       if (method === 'GET') return json(200, { success: true, data: invoices });
       if (method === 'POST') {
         const body = await readBody(req);
+        const rawItems = Array.isArray(body.items) && body.items.length > 0 ? body.items : [];
+        const cleanItems = rawItems.map((it, idx) => {
+          const qty = Number(it.quantity) || 1;
+          const price = Number(it.price) || 0;
+          const amount = it.amount !== undefined && !isNaN(Number(it.amount)) && Number(it.amount) > 0
+            ? Number(it.amount)
+            : Math.round(price * qty * 100) / 100;
+          return {
+            id: it.id || `it-${Date.now()}-${idx + 1}`,
+            service: it.service || it.serviceName || 'Clinical Treatment',
+            quantity: qty,
+            price,
+            amount
+          };
+        });
+
+        const itemsSum = Math.round(cleanItems.reduce((s, it) => s + it.amount, 0) * 100) / 100;
+        const subtotal = body.subtotal !== undefined && !isNaN(Number(body.subtotal)) && Number(body.subtotal) > 0
+          ? Number(body.subtotal)
+          : (itemsSum > 0 ? itemsSum : 100);
+        const tax = Number(body.tax) || 0;
+        const discount = Number(body.discount) || 0;
+        const total = body.total !== undefined && !isNaN(Number(body.total)) && Number(body.total) > 0
+          ? Number(body.total)
+          : Math.max(0, Math.round((subtotal + tax - discount) * 100) / 100);
+
         const newInv = {
           id: 'inv-' + Date.now(),
           invoiceNo: 'INV-' + Date.now().toString().slice(-6),
@@ -654,16 +714,19 @@ export default async function handler(req, res) {
           clientName:  body.clientName  || 'Valued Client',
           clientEmail: body.clientEmail || '',
           clientPhone: body.clientPhone || '',
-          date:     body.date    || new Date().toISOString().split('T')[0],
+          clientAddress: body.clientAddress || '',
+          date:     body.date || body.invoiceDate || new Date().toISOString().split('T')[0],
+          invoiceDate: body.invoiceDate || body.date || new Date().toISOString().split('T')[0],
           dueDate:  body.dueDate || new Date().toISOString().split('T')[0],
           location: body.location || 'Brampton',
-          status:   body.status   || 'Paid',
-          items:    body.items    || [{ id: 'it-1', service: 'Clinical Treatment', quantity: 1, price: 100, amount: 100 }],
-          subtotal: parseFloat(body.subtotal || 100),
-          tax:      parseFloat(body.tax      || 13),
-          discount: parseFloat(body.discount || 0),
-          total:    parseFloat(body.total    || 113),
-          paymentMethod: body.paymentMethod || 'Credit Card'
+          status:   body.status   || 'Pending',
+          items:    cleanItems.length > 0 ? cleanItems : [{ id: 'it-1', service: 'Clinical Treatment', quantity: 1, price: subtotal, amount: subtotal }],
+          subtotal,
+          tax,
+          discount,
+          total,
+          paymentMethod: body.paymentMethod || 'Credit Card',
+          notes: body.notes || ''
         };
         invoices.unshift(newInv);
         await saveCrmStore({ invoices });
@@ -787,6 +850,68 @@ export default async function handler(req, res) {
         if (method === 'DELETE') {
           const result = await deleteGalleryItem(id);
           return json(200, { success: true, data: result });
+        }
+      }
+    }
+
+    // 15. REVIEWS
+    if (pathname.startsWith('/api/reviews')) {
+      const parts = pathname.split('/').filter(Boolean);
+      const reviewsFile = path.join(process.cwd(), 'server', 'data', 'reviews.json');
+      let reviews = [];
+      try {
+        if (fs.existsSync(reviewsFile)) {
+          reviews = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
+        }
+      } catch (e) {
+        reviews = [];
+      }
+
+      if (parts.length === 2) {
+        if (method === 'GET') {
+          return json(200, { success: true, reviews, data: reviews });
+        }
+        if (method === 'POST') {
+          const body = await readBody(req);
+          const { name, quote, rating, service } = body || {};
+          if (!name || !name.trim() || !quote || !quote.trim()) {
+            return json(400, { success: false, error: 'Name and review message are required.' });
+          }
+          const nameParts = name.trim().split(/\s+/);
+          const avatar = nameParts.length >= 2
+            ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+            : name.trim().slice(0, 2).toUpperCase();
+
+          const newReview = {
+            id: `rev-${Date.now()}`,
+            author: name.trim(),
+            quote: quote.trim(),
+            rating: Math.min(5, Math.max(1, parseInt(rating, 10) || 5)),
+            service: service ? service.trim() : 'Holistic Wellness Care',
+            avatar,
+            date: 'Recent',
+            createdAt: new Date().toISOString()
+          };
+          reviews.unshift(newReview);
+          try {
+            fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
+          } catch (wErr) {
+            console.error('Failed to write reviews.json:', wErr);
+          }
+          return json(201, { success: true, review: newReview, data: newReview, reviews });
+        }
+      }
+
+      if (parts.length === 3) {
+        const id = parts[2];
+        if (method === 'DELETE') {
+          reviews = reviews.filter((r) => r.id !== id && String(r.id) !== String(id));
+          try {
+            fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
+          } catch (wErr) {
+            console.error('Failed to write reviews.json on delete:', wErr);
+          }
+          return json(200, { success: true, deleted: true, id, reviews });
         }
       }
     }

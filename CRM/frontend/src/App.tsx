@@ -13,6 +13,7 @@ import { GiftCardsPage } from './pages/GiftCardsPage';
 import { GalleryPage } from './pages/GalleryPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { PackagesPage } from './pages/PackagesPage';
+import { ReviewsPage } from './pages/ReviewsPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
 
@@ -43,6 +44,7 @@ export const App: React.FC = () => {
             <Route path="gallery" element={<GalleryPage />} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="packages" element={<PackagesPage />} />
+            <Route path="reviews" element={<ReviewsPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<SettingsPage />} />
             {/* Catch-all fallback */}
