@@ -360,6 +360,15 @@ app.post('/api/reviews', async (req, res) => {
 
     reviews.unshift(newReview);
     fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
+    const storePath = path.join(__dirname, 'data', 'avs_crm_store.json');
+    if (fs.existsSync(storePath)) {
+      try {
+        const storeData = JSON.parse(fs.readFileSync(storePath, 'utf8'));
+        storeData.reviews = reviews;
+        storeData.lastUpdated = new Date().toISOString();
+        fs.writeFileSync(storePath, JSON.stringify(storeData, null, 2), 'utf8');
+      } catch {}
+    }
     console.log(`⭐ New review submitted by ${name.trim()} (${newReview.rating} stars)`);
 
     res.status(201).json({ success: true, review: newReview, reviews });
@@ -378,6 +387,15 @@ app.delete('/api/reviews/:id', async (req, res) => {
       let reviews = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
       reviews = reviews.filter((r) => r.id !== id && String(r.id) !== String(id));
       fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
+      const storePath = path.join(__dirname, 'data', 'avs_crm_store.json');
+      if (fs.existsSync(storePath)) {
+        try {
+          const storeData = JSON.parse(fs.readFileSync(storePath, 'utf8'));
+          storeData.reviews = reviews;
+          storeData.lastUpdated = new Date().toISOString();
+          fs.writeFileSync(storePath, JSON.stringify(storeData, null, 2), 'utf8');
+        } catch {}
+      }
       console.log(`🗑️ Deleted review: ${id}`);
       return res.json({ success: true, deleted: true, id, reviews });
     }

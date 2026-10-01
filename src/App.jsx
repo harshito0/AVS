@@ -92,12 +92,28 @@ const services = [
 
 const INITIAL_TESTIMONIALS = [
   {
-    id: 't-1',
-    quote: 'The massage was incredible! I felt relaxed and recharged.',
-    author: 'Priya M.',
-    service: 'Registered Massage Therapy',
+    id: 'rev-1790848000001',
+    author: 'Harshit Singh',
+    quote: 'for testing',
     rating: 5,
-    avatar: 'PM'
+    service: 'Registered Massage Therapy (RMT)',
+    avatar: 'HS'
+  },
+  {
+    id: 'rev-1790848000002',
+    author: 'Harshit Singh',
+    quote: 'hllooo test',
+    rating: 5,
+    service: 'Registered Massage Therapy (RMT)',
+    avatar: 'HS'
+  },
+  {
+    id: 't-3',
+    quote: 'The orthotics have made a huge difference in my daily comfort.',
+    author: 'Arjun S.',
+    service: 'Custom Orthotics Care',
+    rating: 5,
+    avatar: 'AS'
   },
   {
     id: 't-2',
@@ -108,12 +124,12 @@ const INITIAL_TESTIMONIALS = [
     avatar: 'NR'
   },
   {
-    id: 't-3',
-    quote: 'The orthotics have made a huge difference in my daily comfort.',
-    author: 'Arjun S.',
-    service: 'Custom Orthotics Care',
+    id: 't-1',
+    quote: 'The massage was incredible! I felt relaxed and recharged.',
+    author: 'Priya M.',
+    service: 'Registered Massage Therapy',
     rating: 5,
-    avatar: 'AS'
+    avatar: 'PM'
   }
 ];
 
@@ -487,31 +503,34 @@ function App() {
   const [reviewSuccessMsg, setReviewSuccessMsg] = useState('');
   const [reviewErrorMsg, setReviewErrorMsg] = useState('');
 
-  // Fetch reviews from server on mount if available
-  useEffect(() => {
+  // Fetch reviews from server on mount & sync live with CRM changes
+  const fetchReviewsFromServer = () => {
     fetch('/api/reviews')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data && data.success && Array.isArray(data.reviews) && data.reviews.length > 0) {
-          setClientReviews((prev) => {
-            const map = new Map();
-            data.reviews.forEach((r) => map.set(r.id || r.author, r));
-            prev.forEach((r) => {
-              if (!map.has(r.id || r.author)) {
-                map.set(r.id || r.author, r);
-              }
-            });
-            const merged = Array.from(map.values());
-            try {
-              localStorage.setItem('avs_client_reviews', JSON.stringify(merged));
-            } catch (e) {}
-            return merged;
-          });
+        const list = data?.reviews || data?.data;
+        if (Array.isArray(list)) {
+          setClientReviews(list);
+          try {
+            localStorage.setItem('avs_client_reviews', JSON.stringify(list));
+          } catch (e) {}
         }
       })
       .catch(() => {
-        // Local state & localStorage are fully active
+        // Local state & localStorage fallback active
       });
+  };
+
+  useEffect(() => {
+    fetchReviewsFromServer();
+    // Auto-sync when user returns to website tab or periodically every 10s
+    const onFocus = () => fetchReviewsFromServer();
+    window.addEventListener('focus', onFocus);
+    const interval = setInterval(fetchReviewsFromServer, 10000);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleReviewSubmit = async (e) => {
@@ -537,7 +556,7 @@ function App() {
     const newReview = {
       id: `rev-${Date.now()}`,
       author: reviewForm.name.trim(),
-      service: reviewForm.service || 'Holistic Wellness Care',
+      service: reviewForm.service || 'Registered Massage Therapy (RMT)',
       rating: Number(reviewForm.rating) || 5,
       quote: reviewForm.quote.trim(),
       avatar,
@@ -545,30 +564,38 @@ function App() {
       isNew: true
     };
 
-    // 1. Immediately update UI state
-    const updated = [newReview, ...clientReviews];
+    // 1. Immediately update UI state optimistically
+    const updated = [newReview, ...clientReviews.filter(r => r.id !== newReview.id)];
     setClientReviews(updated);
-
-    // 2. Persist to localStorage
     try {
       localStorage.setItem('avs_client_reviews', JSON.stringify(updated));
-    } catch (err) {
-      console.warn('Could not save review locally:', err);
-    }
+    } catch (err) {}
 
-    // 3. Post to backend API
+    // 2. Post to backend API and sync exact persisted record
     try {
-      fetch('/api/reviews', {
+      const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: reviewForm.name.trim(),
-          service: reviewForm.service,
-          rating: reviewForm.rating,
+          service: reviewForm.service || 'Registered Massage Therapy (RMT)',
+          rating: Number(reviewForm.rating) || 5,
           quote: reviewForm.quote.trim()
         })
-      }).catch(() => {});
-    } catch (e) {}
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        const serverReviews = data.reviews || (data.review ? [data.review, ...clientReviews] : null);
+        if (Array.isArray(serverReviews) && serverReviews.length > 0) {
+          setClientReviews(serverReviews);
+          try {
+            localStorage.setItem('avs_client_reviews', JSON.stringify(serverReviews));
+          } catch (e) {}
+        }
+      }
+    } catch (apiErr) {
+      console.warn('API review submission fallback to local:', apiErr);
+    }
 
     // Scroll horizontal track to newly added review at start
     setTimeout(() => {
@@ -590,7 +617,7 @@ function App() {
     setTimeout(() => {
       setIsReviewModalOpen(false);
       setReviewSuccessMsg('');
-    }, 2200);
+    }, 2000);
   };
 
   const testimonialsSliderRef = useRef(null);

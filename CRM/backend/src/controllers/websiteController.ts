@@ -6,11 +6,16 @@ import { ok, created, notFound, fail, serverError } from '../utils/apiResponse';
 import { AuthRequest } from '../middleware/auth';
 
 const REVIEWS_FILE = path.resolve(__dirname, '../../../../server/data/reviews.json');
+const STORE_FILE = path.resolve(__dirname, '../../../../server/data/avs_crm_store.json');
 
 function readReviewsFile(): any[] {
   try {
     if (fs.existsSync(REVIEWS_FILE)) {
       return JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8'));
+    }
+    if (fs.existsSync(STORE_FILE)) {
+      const store = JSON.parse(fs.readFileSync(STORE_FILE, 'utf8'));
+      if (Array.isArray(store.reviews)) return store.reviews;
     }
   } catch (err) {
     console.error('Error reading reviews file:', err);
@@ -23,6 +28,15 @@ function writeReviewsFile(data: any[]): boolean {
     const dir = path.dirname(REVIEWS_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(REVIEWS_FILE, JSON.stringify(data, null, 2), 'utf8');
+
+    if (fs.existsSync(STORE_FILE)) {
+      try {
+        const store = JSON.parse(fs.readFileSync(STORE_FILE, 'utf8'));
+        store.reviews = data;
+        store.lastUpdated = new Date().toISOString();
+        fs.writeFileSync(STORE_FILE, JSON.stringify(store, null, 2), 'utf8');
+      } catch {}
+    }
     return true;
   } catch (err) {
     console.error('Error writing reviews file:', err);

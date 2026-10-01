@@ -23,7 +23,10 @@ import {
   addGalleryItem,
   updateGalleryItem,
   deleteGalleryItem,
-  deleteAppointment
+  deleteAppointment,
+  getReviews,
+  addReview,
+  deleteReview
 } from './crmStore.js';
 
 // Helper to dispatch confirmation email to client and notification to admin
@@ -215,20 +218,25 @@ const DEFAULT_LOCATIONS = [
   }
 ];
 
-// Helper: Read JSON Body
+// Helper: Read JSON Body (eager stream attachment)
 function readBody(req) {
-  return new Promise((resolve) => {
+  if (req._bodyPromise) return req._bodyPromise;
+  req._bodyPromise = new Promise((resolve) => {
     if (req.body && typeof req.body === 'object') return resolve(req.body);
     let data = '';
     req.on('data', (chunk) => { data += chunk; });
     req.on('end', () => {
       try {
-        resolve(data ? JSON.parse(data) : {});
+        const parsed = data ? JSON.parse(data) : {};
+        req.body = parsed;
+        resolve(parsed);
       } catch {
         resolve({});
       }
     });
+    req.on('error', () => resolve({}));
   });
+  return req._bodyPromise;
 }
 
 // Dynamic Dashboard Aggregation Engine
@@ -461,6 +469,9 @@ export default async function handler(req, res) {
   }
 
   const method = req.method;
+  const bodyPromise = (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE')
+    ? readBody(req)
+    : Promise.resolve({});
 
   // JSON helper
   const json = (status, data) => {
@@ -854,65 +865,35 @@ export default async function handler(req, res) {
       }
     }
 
-    // 15. REVIEWS
+    // 15. REVIEWS (Synchronized across Website & CRM Portal)
     if (pathname.startsWith('/api/reviews')) {
       const parts = pathname.split('/').filter(Boolean);
-      const reviewsFile = path.join(process.cwd(), 'server', 'data', 'reviews.json');
-      let reviews = [];
-      try {
-        if (fs.existsSync(reviewsFile)) {
-          reviews = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
-        }
-      } catch (e) {
-        reviews = [];
+
+      if (method === 'GET') {
+        const reviews = await getReviews();
+        return json(200, { success: true, reviews, data: reviews });
       }
 
-      if (parts.length === 2) {
-        if (method === 'GET') {
-          return json(200, { success: true, reviews, data: reviews });
-        }
-        if (method === 'POST') {
-          const body = await readBody(req);
-          const { name, quote, rating, service } = body || {};
-          if (!name || !name.trim() || !quote || !quote.trim()) {
-            return json(400, { success: false, error: 'Name and review message are required.' });
-          }
-          const nameParts = name.trim().split(/\s+/);
-          const avatar = nameParts.length >= 2
-            ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
-            : name.trim().slice(0, 2).toUpperCase();
-
-          const newReview = {
-            id: `rev-${Date.now()}`,
-            author: name.trim(),
-            quote: quote.trim(),
-            rating: Math.min(5, Math.max(1, parseInt(rating, 10) || 5)),
-            service: service ? service.trim() : 'Holistic Wellness Care',
-            avatar,
-            date: 'Recent',
-            createdAt: new Date().toISOString()
-          };
-          reviews.unshift(newReview);
-          try {
-            fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
-          } catch (wErr) {
-            console.error('Failed to write reviews.json:', wErr);
-          }
-          return json(201, { success: true, review: newReview, data: newReview, reviews });
-        }
+      if (method === 'POST') {
+        const body = await bodyPromise;
+        const newReview = await addReview(body);
+        const reviews = await getReviews();
+        return json(201, { success: true, review: newReview, data: newReview, reviews });
       }
 
-      if (parts.length === 3) {
-        const id = parts[2];
-        if (method === 'DELETE') {
-          reviews = reviews.filter((r) => r.id !== id && String(r.id) !== String(id));
-          try {
-            fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
-          } catch (wErr) {
-            console.error('Failed to write reviews.json on delete:', wErr);
-          }
-          return json(200, { success: true, deleted: true, id, reviews });
+      if (method === 'DELETE') {
+        let id = parts.length >= 3 ? parts[2] : null;
+        if (!id) id = url.searchParams.get('id');
+        if (!id) {
+          const body = await bodyPromise;
+          id = body?.id;
         }
+        if (!id) {
+          return json(400, { success: false, error: 'Review ID is required to delete' });
+        }
+        const result = await deleteReview(id);
+        const reviews = await getReviews();
+        return json(200, { success: true, deleted: result.success, id, reviews });
       }
     }
 

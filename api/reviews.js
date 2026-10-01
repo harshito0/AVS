@@ -1,38 +1,20 @@
-import fs from 'fs';
-import path from 'path';
+import { getReviews, addReview, deleteReview } from './crmStore.js';
 
-const INITIAL_REVIEWS = [
-  {
-    id: "t-1",
-    quote: "The massage was incredible! I felt relaxed and recharged.",
-    author: "Priya M.",
-    service: "Registered Massage Therapy",
-    rating: 5,
-    avatar: "PM",
-    date: "Recent",
-    createdAt: "2026-08-15T10:00:00.000Z"
-  },
-  {
-    id: "t-2",
-    quote: "Amazing facial treatment. My skin has never felt this good.",
-    author: "Neha R.",
-    service: "Aesthetic & Skin Therapy",
-    rating: 5,
-    avatar: "NR",
-    date: "Recent",
-    createdAt: "2026-08-20T14:30:00.000Z"
-  },
-  {
-    id: "t-3",
-    quote: "The orthotics have made a huge difference in my daily comfort.",
-    author: "Arjun S.",
-    service: "Custom Orthotics Care",
-    rating: 5,
-    avatar: "AS",
-    date: "Recent",
-    createdAt: "2026-08-28T09:15:00.000Z"
-  }
-];
+function readBody(req) {
+  if (req.body && typeof req.body === 'object') return Promise.resolve(req.body);
+  return new Promise((resolve) => {
+    let data = '';
+    req.on('data', (chunk) => { data += chunk; });
+    req.on('end', () => {
+      try {
+        resolve(data ? JSON.parse(data) : {});
+      } catch {
+        resolve({});
+      }
+    });
+    req.on('error', () => resolve({}));
+  });
+}
 
 export default async function handler(req, res) {
   // CORS Headers
@@ -41,92 +23,63 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,DELETE');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
   );
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  const reviewsFile = path.join(process.cwd(), 'server', 'data', 'reviews.json');
+  const method = req.method;
+  const bodyPromise = (method === 'POST' || method === 'DELETE') ? readBody(req) : Promise.resolve({});
 
-  if (req.method === 'GET') {
+  if (method === 'GET') {
     try {
-      if (fs.existsSync(reviewsFile)) {
-        const fileData = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
-        return res.status(200).json({ success: true, reviews: fileData });
-      }
-      return res.status(200).json({ success: true, reviews: INITIAL_REVIEWS });
+      const reviews = await getReviews();
+      return res.status(200).json({ success: true, reviews, data: reviews });
     } catch (err) {
-      console.error('Error reading reviews:', err);
-      return res.status(200).json({ success: true, reviews: INITIAL_REVIEWS });
+      console.error('Error fetching reviews:', err);
+      return res.status(500).json({ success: false, error: 'Failed to fetch reviews' });
     }
   }
 
-  if (req.method === 'POST') {
+  if (method === 'POST') {
     try {
-      const { name, quote, rating, service } = req.body || {};
-      if (!name || !name.trim() || !quote || !quote.trim()) {
+      const body = await bodyPromise;
+      const { name, author, quote, message, rating, service } = body || {};
+      const authorName = (name || author || '').trim();
+      const quoteText = (quote || message || '').trim();
+
+      if (!authorName || !quoteText) {
         return res.status(400).json({ success: false, error: 'Name and review message are required.' });
       }
 
-      let reviews = [...INITIAL_REVIEWS];
-      try {
-        if (fs.existsSync(reviewsFile)) {
-          reviews = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
-        }
-      } catch (e) {
-        // use fallback
-      }
+      const newReview = await addReview({
+        author: authorName,
+        quote: quoteText,
+        rating: Number(rating) || 5,
+        service: service || 'Registered Massage Therapy (RMT)'
+      });
 
-      const nameParts = name.trim().split(/\s+/);
-      const avatar = nameParts.length >= 2
-        ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
-        : name.trim().slice(0, 2).toUpperCase();
-
-      const newReview = {
-        id: `rev-${Date.now()}`,
-        author: name.trim(),
-        quote: quote.trim(),
-        rating: Math.min(5, Math.max(1, parseInt(rating, 10) || 5)),
-        service: service ? service.trim() : 'Holistic Wellness Care',
-        avatar,
-        date: 'Recent',
-        createdAt: new Date().toISOString()
-      };
-
-      reviews.unshift(newReview);
-      try {
-        fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
-      } catch (writeErr) {
-        console.warn('Could not persist to file in serverless mode:', writeErr);
-      }
-
-      return res.status(201).json({ success: true, review: newReview, reviews });
+      const reviews = await getReviews();
+      return res.status(201).json({ success: true, review: newReview, data: newReview, reviews });
     } catch (err) {
       console.error('Error submitting review:', err);
       return res.status(500).json({ success: false, error: 'Failed to process review' });
     }
   }
 
-  if (req.method === 'DELETE') {
+  if (method === 'DELETE') {
     try {
-      const { id } = req.query || req.body || {};
-      if (!id) {
+      const body = await bodyPromise;
+      const id = req.query?.id || body?.id || (req.url && req.url.split('?')[0].split('/').filter(Boolean).pop());
+      if (!id || id === 'reviews') {
         return res.status(400).json({ success: false, error: 'Review ID is required to delete' });
       }
 
-      let reviews = [];
-      if (fs.existsSync(reviewsFile)) {
-        reviews = JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
-      }
-      reviews = reviews.filter((r) => r.id !== id && String(r.id) !== String(id));
-      try {
-        fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
-      } catch (writeErr) {
-        console.warn('Could not persist to file in serverless mode:', writeErr);
-      }
-      return res.status(200).json({ success: true, deleted: true, id, reviews });
+      const result = await deleteReview(id);
+      const reviews = await getReviews();
+      return res.status(200).json({ success: true, deleted: result.success, id, reviews });
     } catch (err) {
       console.error('Error deleting review:', err);
       return res.status(500).json({ success: false, error: 'Failed to delete review' });

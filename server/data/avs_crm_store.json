@@ -411,6 +411,42 @@
   ],
   "invoices": [
     {
+      "id": "inv-1790858892645",
+      "invoiceNo": "INV-892645",
+      "clientId": "cl-1788697372505-431",
+      "clientName": "Harshit Singh",
+      "clientEmail": "harshitsingh19622@gmail.com",
+      "clientPhone": "9792303434",
+      "clientAddress": "Brampton, ON",
+      "date": "2026-10-01",
+      "invoiceDate": "2026-10-01",
+      "dueDate": "2026-10-08",
+      "location": "Brampton",
+      "status": "Pending",
+      "items": [
+        {
+          "id": "item-init-1",
+          "service": "RMT Massage Therapy",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        },
+        {
+          "id": "item-1790859076757-kq9",
+          "service": "Custom Service",
+          "quantity": 1,
+          "price": 100,
+          "amount": 100
+        }
+      ],
+      "subtotal": 200,
+      "tax": 26,
+      "discount": 0,
+      "total": 226,
+      "paymentMethod": "Credit Card",
+      "notes": "Thank you for choosing Aura Vital Star!"
+    },
+    {
       "id": "inv-1790848224256",
       "invoiceNo": "INV-224256",
       "clientId": "cl-1788697372505-431",
@@ -952,15 +988,6 @@
   ],
   "gallery": [
     {
-      "id": "gal-1790847933345",
-      "title": "svc hair head",
-      "category": "Spa Suites",
-      "description": "hloo for testing",
-      "imageUrl": "blob:https://auravitalstar.ca/0dadbc48-30bc-4929-8b88-6a0682a3e5af",
-      "status": "Published",
-      "dateAdded": "2026-10-01"
-    },
-    {
       "id": "gal-3",
       "title": "The Grand AVS Sanctuary Lounge",
       "category": "Lounge",
@@ -997,5 +1024,57 @@
       "dateAdded": "2026-09-01"
     }
   ],
-  "lastUpdated": "2026-10-01T12:44:07.388Z"
+  "reviews": [
+    {
+      "id": "rev-1790848000001",
+      "author": "Harshit Singh",
+      "quote": "for testing",
+      "rating": 5,
+      "service": "Registered Massage Therapy (RMT)",
+      "avatar": "HS",
+      "date": "Recent",
+      "createdAt": "2026-10-01T12:00:00.000Z"
+    },
+    {
+      "id": "rev-1790848000002",
+      "author": "Harshit Singh",
+      "quote": "hllooo test",
+      "rating": 5,
+      "service": "Registered Massage Therapy (RMT)",
+      "avatar": "HS",
+      "date": "Recent",
+      "createdAt": "2026-10-01T11:55:00.000Z"
+    },
+    {
+      "id": "t-3",
+      "quote": "The orthotics have made a huge difference in my daily comfort.",
+      "author": "Arjun S.",
+      "service": "Custom Orthotics Care",
+      "rating": 5,
+      "avatar": "AS",
+      "date": "Recent",
+      "createdAt": "2026-08-28T09:15:00.000Z"
+    },
+    {
+      "id": "t-2",
+      "quote": "Amazing facial treatment. My skin has never felt this good.",
+      "author": "Neha R.",
+      "service": "Aesthetic & Skin Therapy",
+      "rating": 5,
+      "avatar": "NR",
+      "date": "Recent",
+      "createdAt": "2026-08-20T14:30:00.000Z"
+    },
+    {
+      "id": "t-1",
+      "quote": "The massage was incredible! I felt relaxed and recharged.",
+      "author": "Priya M.",
+      "service": "Registered Massage Therapy",
+      "rating": 5,
+      "avatar": "PM",
+      "date": "Recent",
+      "createdAt": "2026-08-15T10:00:00.000Z"
+    }
+  ],
+  "lastUpdated": "2026-10-01T13:15:00.000Z"
 }

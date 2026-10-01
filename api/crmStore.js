@@ -245,6 +245,61 @@ export const DEFAULT_GALLERY = [
   }
 ];
 
+export const DEFAULT_REVIEWS = [
+  {
+    id: "rev-1790848000001",
+    author: "Harshit Singh",
+    quote: "for testing",
+    rating: 5,
+    service: "Registered Massage Therapy (RMT)",
+    avatar: "HS",
+    date: "Recent",
+    createdAt: "2026-10-01T12:00:00.000Z"
+  },
+  {
+    id: "rev-1790848000002",
+    author: "Harshit Singh",
+    quote: "hllooo test",
+    rating: 5,
+    service: "Registered Massage Therapy (RMT)",
+    avatar: "HS",
+    date: "Recent",
+    createdAt: "2026-10-01T11:55:00.000Z"
+  },
+  {
+    id: "t-3",
+    quote: "The orthotics have made a huge difference in my daily comfort.",
+    author: "Arjun S.",
+    service: "Custom Orthotics Care",
+    rating: 5,
+    avatar: "AS",
+    date: "Recent",
+    createdAt: "2026-08-28T09:15:00.000Z"
+  },
+  {
+    id: "t-2",
+    quote: "Amazing facial treatment. My skin has never felt this good.",
+    author: "Neha R.",
+    service: "Aesthetic & Skin Therapy",
+    rating: 5,
+    avatar: "NR",
+    date: "Recent",
+    createdAt: "2026-08-20T14:30:00.000Z"
+  },
+  {
+    id: "t-1",
+    quote: "The massage was incredible! I felt relaxed and recharged.",
+    author: "Priya M.",
+    service: "Registered Massage Therapy",
+    rating: 5,
+    avatar: "PM",
+    date: "Recent",
+    createdAt: "2026-08-15T10:00:00.000Z"
+  }
+];
+
+export const REVIEWS_FILE_PATH = path.join(process.cwd(), 'server', 'data', 'reviews.json');
+
 // ──────────────────────────────────────────────────────────────
 // In-memory fallback store (used locally or when Redis unavailable)
 // ──────────────────────────────────────────────────────────────
@@ -258,6 +313,7 @@ let store = {
   services: [...DEFAULT_SERVICES],
   packages: [...DEFAULT_PACKAGES],
   gallery: [...DEFAULT_GALLERY],
+  reviews: [...DEFAULT_REVIEWS],
   lastUpdated: new Date().toISOString()
 };
 
@@ -292,6 +348,18 @@ function loadFromFile() {
         store.services      = Array.isArray(parsed.services)      ? parsed.services      : [...DEFAULT_SERVICES];
         store.packages      = Array.isArray(parsed.packages)      ? parsed.packages      : [...DEFAULT_PACKAGES];
         store.gallery       = Array.isArray(parsed.gallery)       ? parsed.gallery       : [...DEFAULT_GALLERY];
+        if (Array.isArray(parsed.reviews) && parsed.reviews.length > 0) {
+          store.reviews = parsed.reviews;
+        } else if (fs.existsSync(REVIEWS_FILE_PATH)) {
+          try {
+            const rawRev = JSON.parse(fs.readFileSync(REVIEWS_FILE_PATH, 'utf-8'));
+            store.reviews = Array.isArray(rawRev) && rawRev.length > 0 ? rawRev : [...DEFAULT_REVIEWS];
+          } catch {
+            store.reviews = [...DEFAULT_REVIEWS];
+          }
+        } else {
+          store.reviews = [...DEFAULT_REVIEWS];
+        }
       }
     }
   } catch (err) {
@@ -306,6 +374,13 @@ function saveToFile() {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     store.lastUpdated = new Date().toISOString();
     fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2), 'utf-8');
+
+    // Also synchronize server/data/reviews.json
+    try {
+      const revDir = path.dirname(REVIEWS_FILE_PATH);
+      if (!fs.existsSync(revDir)) fs.mkdirSync(revDir, { recursive: true });
+      fs.writeFileSync(REVIEWS_FILE_PATH, JSON.stringify(store.reviews || DEFAULT_REVIEWS, null, 2), 'utf-8');
+    } catch {}
   } catch (err) {
     console.error('[CRM Store] Error writing file store:', err.message);
   }
@@ -344,6 +419,7 @@ async function loadFromRedis() {
     store.services      = Array.isArray(parsed.services)      ? parsed.services      : [...DEFAULT_SERVICES];
     store.packages      = Array.isArray(parsed.packages)      ? parsed.packages      : [...DEFAULT_PACKAGES];
     store.gallery       = Array.isArray(parsed.gallery)       ? parsed.gallery       : [...DEFAULT_GALLERY];
+    store.reviews       = Array.isArray(parsed.reviews)       ? parsed.reviews       : [...DEFAULT_REVIEWS];
     return store;
   } catch (err) {
     console.error('[CRM Store] Error reading Redis store:', err.message);
@@ -548,6 +624,61 @@ export async function deleteGalleryItem(id) {
   store.gallery = store.gallery.filter(g => g.id !== id);
   await saveCrmStore();
   return { deleted: true, id };
+}
+
+// ──────────────────────────────────────────────────────────────
+// CMS: REVIEWS
+// Synchronized across Website & CRM Portal
+// ──────────────────────────────────────────────────────────────
+export async function getReviews() {
+  const s = await loadCrmStore();
+  if (!s.reviews || s.reviews.length === 0) {
+    store.reviews = [...DEFAULT_REVIEWS];
+    await saveCrmStore();
+  }
+  return store.reviews;
+}
+
+export async function addReview(data) {
+  await loadCrmStore();
+  const name = (data.name || data.author || 'Anonymous Guest').trim();
+  const quote = (data.quote || data.message || '').trim();
+  if (!name || !quote) {
+    throw new Error('Name and review message are required.');
+  }
+
+  const nameParts = name.split(/\s+/);
+  const avatar = data.avatar || (nameParts.length >= 2
+    ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+    : name.slice(0, 2).toUpperCase());
+
+  const newReview = {
+    id: data.id || ('rev-' + Date.now()),
+    author: name,
+    quote,
+    rating: Math.min(5, Math.max(1, parseInt(data.rating, 10) || 5)),
+    service: data.service ? data.service.trim() : 'Registered Massage Therapy (RMT)',
+    avatar,
+    date: 'Recent',
+    createdAt: data.createdAt || new Date().toISOString()
+  };
+
+  if (!Array.isArray(store.reviews)) store.reviews = [...DEFAULT_REVIEWS];
+  store.reviews.unshift(newReview);
+  await saveCrmStore();
+  return newReview;
+}
+
+export async function deleteReview(id) {
+  await loadCrmStore();
+  if (!Array.isArray(store.reviews)) store.reviews = [...DEFAULT_REVIEWS];
+  const initialLen = store.reviews.length;
+  store.reviews = store.reviews.filter(r => r.id !== id && String(r.id) !== String(id));
+  const deleted = store.reviews.length < initialLen;
+  if (deleted) {
+    await saveCrmStore();
+  }
+  return { success: deleted, id, reviews: store.reviews };
 }
 
 // ──────────────────────────────────────────────────────────────
