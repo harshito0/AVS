@@ -30,30 +30,30 @@ export const AppointmentOverview: React.FC<AppointmentOverviewProps> = ({ data }
   ];
 
   return (
-    <div className="crm-card p-6 bg-white border border-[#E5ECE7] rounded-xl flex flex-col justify-between h-[390px]">
+    <div className="crm-card p-5 sm:p-6 bg-white border border-[#E5ECE7] rounded-xl flex flex-col justify-between h-[390px]">
       {/* Header */}
-      <div className="pb-3 border-b border-slate-100">
+      <div className="pb-2.5 border-b border-slate-100">
         <h3 className="text-base font-bold text-slate-900 tracking-tight">
           Appointment Overview
         </h3>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-500 mt-0.5 truncate">
           Treatment status distribution across schedule
         </p>
       </div>
 
       {/* Main Content: Donut + Legend */}
       {total > 0 ? (
-        <div className="flex-1 flex flex-col sm:flex-row items-center justify-between gap-4 py-3">
+        <div className="flex-1 flex flex-col items-center justify-between py-2">
           {/* Donut Chart with Center Total */}
-          <div className="relative w-44 h-44 shrink-0 flex items-center justify-center">
+          <div className="relative w-32 h-32 shrink-0 flex items-center justify-center my-auto">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
+                  innerRadius={38}
+                  outerRadius={54}
                   paddingAngle={3}
                   dataKey="value"
                   stroke="none"
@@ -67,29 +67,29 @@ export const AppointmentOverview: React.FC<AppointmentOverviewProps> = ({ data }
 
             {/* Center Label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-extrabold text-slate-900 leading-none">
+              <span className="text-xl font-extrabold text-slate-900 leading-none">
                 {total}
               </span>
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-0.5">
+              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mt-0.5">
                 Total
               </span>
             </div>
           </div>
 
-          {/* Legend on the right */}
-          <div className="flex-1 w-full space-y-2.5 pl-0 sm:pl-2">
+          {/* Legend: 4 clean rows fitting cleanly without truncation */}
+          <div className="w-full space-y-1.5 mt-auto">
             {statuses.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between p-2 rounded-lg bg-slate-50/70 hover:bg-slate-50 transition-colors text-xs"
+                className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-slate-50/80 hover:bg-slate-50 transition-colors text-xs border border-slate-100/60"
               >
-                <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${item.bg} shrink-0`} />
-                  <span className="font-semibold text-slate-700">{item.name}</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`w-2 h-2 rounded-full ${item.bg} shrink-0`} />
+                  <span className="font-semibold text-slate-700 truncate">{item.name}</span>
                 </div>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 shrink-0 ml-2">
                   <span className="font-bold text-slate-900">{item.count}</span>
-                  <span className="text-[11px] font-medium text-slate-400 w-9 text-right">
+                  <span className="text-[11px] font-medium text-slate-400 w-8 text-right">
                     {item.percentage}%
                   </span>
                 </div>
@@ -106,9 +106,9 @@ export const AppointmentOverview: React.FC<AppointmentOverviewProps> = ({ data }
       )}
 
       {/* Footer subtle tip */}
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-        <span>Pending & confirmed grouped as Upcoming</span>
-        <span className="font-semibold text-forest-800">{total} total records</span>
+      <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 gap-2">
+        <span className="truncate">Pending & confirmed as Upcoming</span>
+        <span className="font-semibold text-forest-800 shrink-0">{total} records</span>
       </div>
     </div>
   );

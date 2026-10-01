@@ -36,7 +36,7 @@ export const TopServices: React.FC<TopServicesProps> = ({ services = [] }) => {
       </div>
 
       {/* Services List */}
-      <div className="flex-1 overflow-y-auto py-2 space-y-2.5 my-auto">
+      <div className="flex-1 overflow-y-auto py-2 space-y-2.5 pr-1">
         {hasServices ? (
           services.map((svc, idx) => (
             <div

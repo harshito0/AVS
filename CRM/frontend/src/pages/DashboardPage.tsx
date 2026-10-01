@@ -188,18 +188,18 @@ export const DashboardPage: React.FC = () => {
 
       {/* 2. Analytics Row: Revenue Overview, Appointment Overview, Location Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-12 xl:col-span-6">
+        <div className="lg:col-span-12 xl:col-span-6 min-w-0">
           <RevenueOverview
             data={data?.revenueOverview}
             onPeriodChange={() => fetchDashboardData()}
           />
         </div>
-        <div className="lg:col-span-6 xl:col-span-3">
+        <div className="lg:col-span-6 xl:col-span-3 min-w-0">
           <AppointmentOverview
             data={data?.appointmentOverview}
           />
         </div>
-        <div className="lg:col-span-6 xl:col-span-3">
+        <div className="lg:col-span-6 xl:col-span-3 min-w-0">
           <LocationPerformance
             locations={data?.locationPerformance}
           />
