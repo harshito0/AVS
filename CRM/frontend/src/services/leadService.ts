@@ -8,7 +8,7 @@ function mapLead(l: any): Lead {
     phone: l.phone || '',
     email: l.email || '',
     source: (l.source || 'Website') as LeadSource,
-    location: (l.location?.shortName || l.location || 'Brampton') as 'Brampton' | 'Mississauga',
+    location: 'Brampton',
     interestService: l.interestService || 'General Inquiry',
     status: (l.status || 'Follow Up') as LeadStatus,
     addedOn: typeof l.createdAt === 'string' ? l.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],

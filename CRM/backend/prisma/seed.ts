@@ -24,19 +24,6 @@ async function main() {
     },
   });
 
-  const mississauga = await prisma.location.upsert({
-    where: { name: 'Mississauga Centre' },
-    update: {},
-    create: {
-      name: 'Mississauga Centre',
-      shortName: 'Mississauga',
-      address: 'Mississauga, Ontario',
-      phone: '+1 647-987-5451',
-      email: 'mississauga@auravitalstar.ca',
-      isActive: false,
-    },
-  });
-
   console.log('✅ Locations seeded');
 
   // Admin user

@@ -1221,7 +1221,7 @@ function App() {
         </div>
 
         <div className="locations-heading-wrap">
-          <h2 className="locations-heading" id="locations-heading">Two Locations. One Promise.</h2>
+          <h2 className="locations-heading" id="locations-heading">Our Brampton Sanctuary. One Promise.</h2>
           <div className="locations-heading-line" aria-hidden="true"></div>
         </div>
 
@@ -1229,7 +1229,7 @@ function App() {
           <div className="location-card card-left">
             <div className="location-pin">
               <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#c49a3c"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg>
-              Brampton
+              Brampton Sanctuary
             </div>
             <address className="location-addr">157 Queen Street West,<br />Brampton, ON L6Y 1P9</address>
             <a href="https://maps.google.com/?q=157+Queen+Street+West+Brampton+ON" target="_blank" rel="noopener noreferrer" className="location-btn" id="loc-directions-btn">
@@ -1264,12 +1264,15 @@ function App() {
 
           <div className="location-card card-right">
             <div className="location-pin">
-              <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#c49a3c"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg>
-              Mississauga
+              <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="9" stroke="#c49a3c" strokeWidth="1.5"/><path d="M12 7v5l3 3" stroke="#c49a3c" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              Operating Hours
             </div>
-            <p className="location-coming">Coming Soon</p>
-            <a href="#contact" className="location-btn location-btn-outline" id="loc-learn-btn">
-              <span>Learn More</span>
+            <p className="location-addr" style={{ fontSize: '0.85rem', lineHeight: '1.45' }}>
+              Mon–Sat: 10:00 AM – 8:00 PM<br />
+              Sunday: 11:00 AM – 6:00 PM
+            </p>
+            <a href="#booking" onClick={handleBookRedirect} className="location-btn" id="loc-book-brampton-btn">
+              <span>Book Treatment</span>
               <span className="loc-btn-arrow" aria-hidden="true">→</span>
             </a>
           </div>

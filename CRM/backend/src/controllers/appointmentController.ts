@@ -153,8 +153,7 @@ export async function createAppointment(req: Request, res: Response) {
       location = await prisma.location.findUnique({ where: { id: locationId } });
     }
     if (!location && (locationName || locParam)) {
-      const target = (locationName || locParam).toString().toLowerCase();
-      const locTerm = target.includes('mississauga') ? 'Mississauga' : 'Brampton';
+      const locTerm = 'Brampton';
       location = await prisma.location.findFirst({
         where: {
           OR: [

@@ -52,7 +52,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
     d.setDate(d.getDate() + 7);
     return d.toISOString().split('T')[0];
   });
-  const [location, setLocation] = useState<'Brampton' | 'Mississauga'>('Brampton');
+  const [location, setLocation] = useState<'Brampton'>('Brampton');
   const [discount, setDiscount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<string>('Credit Card');
   const [notes, setNotes] = useState('Thank you for choosing Aura Vital Star!');
@@ -300,8 +300,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
             value={location}
             onChange={(e) => setLocation(e.target.value as any)}
             options={[
-              { value: 'Brampton', label: 'Brampton Hub' },
-              { value: 'Mississauga', label: 'Mississauga Suites' }
+              { value: 'Brampton', label: 'Brampton Hub (157 Queen St W)' }
             ]}
           />
         </div>

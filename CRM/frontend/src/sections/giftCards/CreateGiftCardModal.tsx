@@ -20,7 +20,7 @@ export const CreateGiftCardModal: React.FC<CreateGiftCardModalProps> = ({
   const [buyer, setBuyer] = useState('');
   const [value, setValue] = useState<number>(150);
   const [expiryDate, setExpiryDate] = useState('2026-05-31');
-  const [location, setLocation] = useState<'Brampton' | 'Mississauga'>('Brampton');
+  const [location, setLocation] = useState<'Brampton'>('Brampton');
   const [notes, setNotes] = useState('');
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -156,8 +156,7 @@ export const CreateGiftCardModal: React.FC<CreateGiftCardModalProps> = ({
             value={location}
             onChange={(e) => setLocation(e.target.value as any)}
             options={[
-              { value: 'Brampton', label: 'Brampton Hub' },
-              { value: 'Mississauga', label: 'Mississauga Suites' }
+              { value: 'Brampton', label: 'Brampton Hub (157 Queen St W)' }
             ]}
           />
         </div>

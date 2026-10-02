@@ -3,9 +3,9 @@ import { BookingRequest, BookingResponse } from '../types';
 const STORAGE_KEY = 'avs_qr_bookings';
 
 /**
- * Service abstraction for submitting an appointment request.
+ * Service abstraction for submitting an appointment request with Client Consent Form.
  * Structured to seamlessly switch between local mock persistence
- * and live backend API: POST /api/appointments.
+ * and live backend API: POST /api/appointments or POST /api/bookings.
  */
 export const submitBooking = async (bookingData: BookingRequest): Promise<BookingResponse> => {
   const payload = {
@@ -17,14 +17,19 @@ export const submitBooking = async (bookingData: BookingRequest): Promise<Bookin
     guestPhone: bookingData.phone,
     email: bookingData.email,
     guestEmail: bookingData.email,
+    dob: bookingData.dob || bookingData.consentForm?.dob || '',
+    address: bookingData.address || bookingData.consentForm?.address || '',
     service: bookingData.service,
     serviceName: bookingData.service,
+    services: bookingData.services || (bookingData.consentForm?.services ? bookingData.consentForm.services : [bookingData.service]),
     location: bookingData.location,
     locationName: bookingData.location,
     date: bookingData.date,
     time: bookingData.time,
     notes: bookingData.notes || '',
-    source: 'QR Code'
+    source: bookingData.source || 'QR Code Consent Form',
+    consentForm: bookingData.consentForm || null,
+    consentCompleted: Boolean(bookingData.consentCompleted ?? bookingData.consentForm)
   };
 
   // Try endpoints in priority order (proxied relative first, then dev ports)
@@ -57,12 +62,24 @@ export const submitBooking = async (bookingData: BookingRequest): Promise<Bookin
           result.crmAppointment?.id ||
           `AVS-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        saveToLocalStorage({ ...bookingData, bookingId, remoteSynced: true });
+        saveToLocalStorage({ ...payload, bookingId, remoteSynced: true });
+
+        // Also sync into main CRM client localStorage for instant dev visibility
+        try {
+          const crmRaw = localStorage.getItem('avs_crm_bookings');
+          const crmList = crmRaw ? JSON.parse(crmRaw) : [];
+          crmList.unshift({
+            ...payload,
+            id: bookingId,
+            createdAt: new Date().toISOString()
+          });
+          localStorage.setItem('avs_crm_bookings', JSON.stringify(crmList));
+        } catch {}
 
         return {
           success: true,
           bookingId,
-          message: 'Your appointment request has been submitted successfully.',
+          message: 'Your consent form and appointment request have been submitted successfully.',
           data: bookingData
         };
       }
@@ -76,12 +93,24 @@ export const submitBooking = async (bookingData: BookingRequest): Promise<Bookin
   await new Promise((resolve) => setTimeout(resolve, 600));
 
   const bookingId = `APT-QR-${Math.floor(10000 + Math.random() * 90000)}`;
-  saveToLocalStorage({ ...bookingData, bookingId, offlineFallback: true });
+  saveToLocalStorage({ ...payload, bookingId, offlineFallback: true });
+
+  // Sync to CRM local storage fallback
+  try {
+    const crmRaw = localStorage.getItem('avs_crm_bookings');
+    const crmList = crmRaw ? JSON.parse(crmRaw) : [];
+    crmList.unshift({
+      ...payload,
+      id: bookingId,
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('avs_crm_bookings', JSON.stringify(crmList));
+  } catch {}
 
   return {
     success: true,
     bookingId,
-    message: 'Your appointment request has been submitted successfully.',
+    message: 'Your consent form and appointment request have been submitted successfully.',
     data: bookingData
   };
 };

@@ -694,8 +694,7 @@ export async function recordWebsiteBooking(bookingData) {
   const email           = (bookingData.email || bookingData.guestEmail || bookingData.clientEmail || '').toLowerCase().trim();
   const service         = bookingData.service || bookingData.serviceName || 'AVS Signature Treatment';
   const serviceCategory = bookingData.serviceCategory || 'Massage & Wellness';
-  const rawLoc          = (bookingData.locationName || bookingData.location || 'Brampton').toString().toLowerCase();
-  const location        = rawLoc.includes('mississauga') ? 'Mississauga' : 'Brampton';
+  const location        = 'Brampton';
   const date            = bookingData.date || new Date().toISOString().split('T')[0];
   const time            = bookingData.time || '10:00 AM';
   const duration        = bookingData.duration || '60 min';
@@ -719,10 +718,23 @@ export async function recordWebsiteBooking(bookingData) {
   const randomNum = Math.floor(1000 + Math.random() * 9000);
   const apptId    = bookingData.id || `AVS-${year}-${randomNum}`;
 
+  const consentForm     = bookingData.consentForm || null;
+  const consentCompleted = Boolean(bookingData.consentCompleted ?? consentForm);
+  const dob             = bookingData.dob || consentForm?.dob || '';
+  const address         = bookingData.address || consentForm?.address || '';
+
   // 1. Deduplication Check
   const existingApt = store.appointments.find(a => a.id === apptId);
   if (existingApt) {
+    if (consentForm && !existingApt.consentForm) {
+      existingApt.consentForm = consentForm;
+      existingApt.consentCompleted = true;
+    }
     const existingClient = store.clients.find(c => c.id === existingApt.clientId);
+    if (existingClient && consentForm && !existingClient.consentForm) {
+      existingClient.consentForm = consentForm;
+      existingClient.consentCompleted = true;
+    }
     return { appointment: existingApt, client: existingClient };
   }
 
@@ -743,6 +755,13 @@ export async function recordWebsiteBooking(bookingData) {
     client.lastService = service;
     if (phone) client.phone = phone;
     if (email) client.email = email;
+    if (dob) client.dob = dob;
+    if (address) client.address = address;
+    if (consentForm) {
+      client.consentForm = consentForm;
+      client.consentCompleted = true;
+      client.consentSignedAt = consentForm.signedAt || consentForm.signatureDate || todayStr;
+    }
     if (customerName && customerName !== 'Valued Guest') {
       client.fullName = customerName;
       const parts = customerName.split(' ');
@@ -766,6 +785,8 @@ export async function recordWebsiteBooking(bookingData) {
       fullName: customerName,
       phone,
       email,
+      dob,
+      address,
       location,
       totalVisits: 1,
       totalSpent: amount,
@@ -774,6 +795,9 @@ export async function recordWebsiteBooking(bookingData) {
       lastService: service,
       notes: notes || '',
       source: source || 'QR Code',
+      consentForm,
+      consentCompleted,
+      consentSignedAt: consentForm ? (consentForm.signedAt || consentForm.signatureDate || todayStr) : null,
       createdAt: todayStr
     };
     store.clients.unshift(client);
@@ -797,6 +821,10 @@ export async function recordWebsiteBooking(bookingData) {
     amount,
     notes,
     source,
+    dob,
+    address,
+    consentForm,
+    consentCompleted,
     createdAt: new Date().toISOString()
   };
   store.appointments.unshift(newApt);

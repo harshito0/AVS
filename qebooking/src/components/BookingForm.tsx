@@ -33,8 +33,7 @@ const SERVICES_LIST = [
 ];
 
 const LOCATIONS_LIST = [
-  'Brampton',
-  'Mississauga'
+  'Brampton'
 ];
 
 const TIME_SLOTS = [

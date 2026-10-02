@@ -40,7 +40,7 @@ function mapAppointment(a: any): Appointment {
     a.specialist ||
     'Staff Specialist';
 
-  const location = (a.location?.shortName || a.location || 'Brampton') as 'Brampton' | 'Mississauga';
+  const location = 'Brampton';
 
   let status: AppointmentStatus = 'Confirmed';
   const rawStatus = (a.status || 'Confirmed').toString().trim();
@@ -66,7 +66,11 @@ function mapAppointment(a: any): Appointment {
     status,
     amount: typeof a.amount === 'number' ? a.amount : (Number(a.amount) || 0),
     notes: a.notes || undefined,
-    source: a.source || 'QR Code'
+    source: a.source || 'QR Code',
+    dob: a.dob || a.consentForm?.dob || undefined,
+    address: a.address || a.consentForm?.address || undefined,
+    consentForm: a.consentForm || null,
+    consentCompleted: Boolean(a.consentCompleted ?? a.consentForm)
   };
 }
 

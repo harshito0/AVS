@@ -1,25 +1,5 @@
 [
   {
-    "id": "rev-1790848000001",
-    "author": "Harshit Singh",
-    "quote": "for testing",
-    "rating": 5,
-    "service": "Registered Massage Therapy (RMT)",
-    "avatar": "HS",
-    "date": "Recent",
-    "createdAt": "2026-10-01T12:00:00.000Z"
-  },
-  {
-    "id": "rev-1790848000002",
-    "author": "Harshit Singh",
-    "quote": "hllooo test",
-    "rating": 5,
-    "service": "Registered Massage Therapy (RMT)",
-    "avatar": "HS",
-    "date": "Recent",
-    "createdAt": "2026-10-01T11:55:00.000Z"
-  },
-  {
     "id": "t-3",
     "quote": "The orthotics have made a huge difference in my daily comfort.",
     "author": "Arjun S.",

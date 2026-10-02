@@ -38,7 +38,7 @@ function mapInvoice(inv: any): Invoice {
     clientAddress: inv.clientAddress || undefined,
     date: inv.invoiceDate || inv.date || '',
     dueDate: inv.dueDate || '',
-    location: (inv.location?.shortName || inv.location || 'Brampton') as 'Brampton' | 'Mississauga',
+    location: 'Brampton',
     status: (inv.status || 'Pending') as InvoiceStatus,
     items,
     subtotal,

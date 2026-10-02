@@ -152,23 +152,15 @@ export const SettingsPage: React.FC = () => {
                 <p className="text-xs text-slate-500 mt-0.5">Physical branches across the Greater Toronto Area.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl border border-forest-200 bg-forest-50/40 space-y-2">
+              <div className="max-w-2xl">
+                <div className="p-5 rounded-xl border border-forest-200 bg-forest-50/40 space-y-2.5">
                   <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-sm text-forest-950">Brampton Rejuvenation Hub</h4>
-                    <span className="text-[10px] font-bold px-2 py-0.5 bg-forest-850 text-white rounded-full">Primary</span>
+                    <h4 className="font-bold text-sm text-forest-950">Brampton Rejuvenation Sanctuary</h4>
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-forest-850 text-white rounded-full">Active Facility</span>
                   </div>
-                  <p className="text-xs text-slate-600">144 Queen St East, Brampton, ON L6V 1B4</p>
-                  <p className="text-[11px] text-slate-500">6 Treatment Rooms • Hydrotherapy Suite</p>
-                </div>
-
-                <div className="p-4 rounded-xl border border-[#D9E2DC] bg-white space-y-2">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-sm text-slate-900">Mississauga City Centre Suites</h4>
-                    <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">Branch</span>
-                  </div>
-                  <p className="text-xs text-slate-600">300 City Centre Dr, Mississauga, ON L5B 3C1</p>
-                  <p className="text-[11px] text-slate-500">8 Treatment Rooms • Couples Retreat VIP</p>
+                  <p className="text-xs text-slate-700 font-medium">157 Queen Street West, Brampton, ON L6Y 1P9</p>
+                  <p className="text-[11px] text-slate-500">Phone: +1 647-987-5451 • Mon–Sat: 10:00 AM – 8:00 PM | Sun: 11:00 AM – 6:00 PM</p>
+                  <p className="text-[11px] text-forest-800 font-medium">6 Clinical Treatment Suites • Hydrotherapy • Aesthetic Lounge • Dedicated Reception</p>
                 </div>
               </div>
             </div>
@@ -184,9 +176,9 @@ export const SettingsPage: React.FC = () => {
               <div className="divide-y divide-slate-100 border border-[#E3EAE5] rounded-xl bg-white">
                 {[
                   { name: 'Robert Jenkins', role: 'Lead Registered Massage Therapist (RMT)', loc: 'Brampton' },
-                  { name: 'Dr. Sarah Alston', role: 'Holistic Podiatrist & Orthotics Specialist', loc: 'Mississauga' },
+                  { name: 'Dr. Sarah Alston', role: 'Holistic Podiatrist & Orthotics Specialist', loc: 'Brampton' },
                   { name: 'Zoe Martinez', role: 'Senior Clinical Aesthetician (24K Gold Facials)', loc: 'Brampton' },
-                  { name: 'Emma Taylor', role: 'Ayurvedic Bodywork & Aromatherapy Therapist', loc: 'Mississauga' }
+                  { name: 'Emma Taylor', role: 'Ayurvedic Bodywork & Aromatherapy Therapist', loc: 'Brampton' }
                 ].map((s) => (
                   <div key={s.name} className="p-3.5 flex items-center justify-between text-xs">
                     <div>

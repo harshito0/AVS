@@ -15,8 +15,10 @@ import {
   Clock,
   DollarSign,
   Edit2,
-  ExternalLink
+  ExternalLink,
+  ShieldCheck
 } from 'lucide-react';
+import { ConsentFormViewerModal } from '../../components/ConsentFormViewerModal';
 
 export interface ClientDetailsDrawerProps {
   client: Client | null;
@@ -34,11 +36,13 @@ export const ClientDetailsDrawer: React.FC<ClientDetailsDrawerProps> = ({
   onCreateInvoice
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
 
   if (!client) return null;
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    { id: 'consent', label: 'Consent Form', count: client.consentCompleted || client.consentForm ? 1 : 0 },
     { id: 'appointments', label: 'Appointments', count: client.totalVisits },
     { id: 'invoices', label: 'Invoices' },
     { id: 'notes', label: 'Notes' }
@@ -184,6 +188,93 @@ export const ClientDetailsDrawer: React.FC<ClientDetailsDrawerProps> = ({
           </div>
         )}
 
+        {activeTab === 'consent' && (
+          <div className="space-y-4">
+            <div className="crm-card p-4 bg-gradient-to-br from-white to-[#F7FAF8] border-[#DFE7E2] space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-700" />
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                      Client Intake Consent Document
+                    </h5>
+                    <p className="text-[11px] text-slate-500">
+                      {client.consentSignedAt
+                        ? `Signed on ${client.consentSignedAt}`
+                        : 'Official wellness & health declaration'}
+                    </p>
+                  </div>
+                </div>
+                {client.consentCompleted || client.consentForm ? (
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                    <span>✓ Verified &amp; Signed</span>
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                    Pending Form Submission
+                  </span>
+                )}
+              </div>
+
+              {client.consentForm ? (
+                <div className="space-y-3 pt-2 text-xs">
+                  {client.consentForm.signatureData && (
+                    <div className="p-3 bg-white rounded-xl border border-slate-200">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                        Digital Signature Record
+                      </span>
+                      <div className="h-16 flex items-center justify-center p-1 bg-[#FAFBF9] rounded border border-slate-100">
+                        <img
+                          src={client.consentForm.signatureData}
+                          alt="Signature"
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                    <p className="flex justify-between">
+                      <span className="text-slate-500">Medical Treatment:</span>
+                      <span className="font-semibold text-slate-800">{client.consentForm.underMedicalTreatment || 'No'}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span className="text-slate-500">Allergies:</span>
+                      <span className="font-semibold text-slate-800">
+                        {client.consentForm.hasAllergies === 'Yes'
+                          ? (client.consentForm.allergiesDetails || 'Reported')
+                          : 'None reported'}
+                      </span>
+                    </p>
+                  </div>
+
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsConsentModalOpen(true)}
+                    className="w-full text-xs font-bold flex items-center justify-center gap-1.5"
+                    icon={<FileText className="w-3.5 h-3.5" />}
+                  >
+                    View &amp; Print Full Consent Document
+                  </Button>
+                </div>
+              ) : (
+                <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-2">
+                  <p>Client has not yet submitted their digital consent form through QR code booking.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsConsentModalOpen(true)}
+                    className="w-full text-xs font-semibold text-amber-900 border-amber-300"
+                  >
+                    Open Blank Intake Form
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'appointments' && (
           <div className="space-y-3">
             <div className="p-3.5 rounded-xl border border-[#E3EAE5] bg-white flex items-center justify-between">
@@ -221,6 +312,13 @@ export const ClientDetailsDrawer: React.FC<ClientDetailsDrawerProps> = ({
           </div>
         )}
       </div>
+
+      {/* Consent Document Viewer Modal */}
+      <ConsentFormViewerModal
+        isOpen={isConsentModalOpen}
+        onClose={() => setIsConsentModalOpen(false)}
+        client={client}
+      />
     </Drawer>
   );
 };

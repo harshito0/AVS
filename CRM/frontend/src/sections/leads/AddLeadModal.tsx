@@ -21,7 +21,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
     phone: '',
     email: '',
     source: 'Instagram' as LeadSource,
-    location: 'Brampton' as 'Brampton' | 'Mississauga',
+    location: 'Brampton' as 'Brampton',
     interestService: 'RMT Massage Therapy',
     status: 'Follow Up' as LeadStatus,
     notes: ''
@@ -125,8 +125,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
             value={formData.location}
             onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value as any }))}
             options={[
-              { value: 'Brampton', label: 'Brampton Hub' },
-              { value: 'Mississauga', label: 'Mississauga Suites' }
+              { value: 'Brampton', label: 'Brampton Hub (157 Queen St W)' }
             ]}
           />
           <Input

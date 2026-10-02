@@ -38,7 +38,7 @@ export const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({
   const [manualPhone, setManualPhone] = useState('');
   const [serviceName, setServiceName] = useState(INITIAL_SERVICES[0]?.name || 'RMT Massage Therapy');
   const [staff, setStaff] = useState(STAFF_LIST[0]);
-  const [location, setLocation] = useState<'Brampton' | 'Mississauga'>('Brampton');
+  const [location, setLocation] = useState<'Brampton'>('Brampton');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('11:00 AM');
   const [duration, setDuration] = useState('60 min');
@@ -261,8 +261,7 @@ export const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({
             value={location}
             onChange={(e) => setLocation(e.target.value as any)}
             options={[
-              { value: 'Brampton', label: 'Brampton Hub' },
-              { value: 'Mississauga', label: 'Mississauga Suites' }
+              { value: 'Brampton', label: 'Brampton Hub (157 Queen St W)' }
             ]}
           />
         </div>

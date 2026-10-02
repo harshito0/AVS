@@ -16,9 +16,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [locations, setLocations] = useState<{ label: Location; sub: string }[]>([
-    { label: 'All Locations', sub: 'Brampton & Mississauga' },
-    { label: 'Brampton', sub: 'Queen St Rejuvenation Hub' },
-    { label: 'Mississauga', sub: 'City Centre Wellness Suites' }
+    { label: 'Brampton', sub: '157 Queen St W Rejuvenation Hub' }
   ]);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -28,16 +26,18 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
       try {
         const res = await locationsApi.getAll();
         if (res.success && Array.isArray(res.data) && res.data.length > 0 && isMounted) {
-          const list: { label: Location; sub: string }[] = [
-            { label: 'All Locations', sub: 'Combined Facility Overview' }
-          ];
-          res.data.forEach((loc: any) => {
-            list.push({
-              label: (loc.shortName || loc.name) as Location,
-              sub: loc.address || loc.name
+          const list: { label: Location; sub: string }[] = [];
+          res.data
+            .filter((loc: any) => !loc.shortName?.toLowerCase().includes('mississauga') && !loc.name?.toLowerCase().includes('mississauga'))
+            .forEach((loc: any) => {
+              list.push({
+                label: 'Brampton' as Location,
+                sub: loc.address || '157 Queen St W Rejuvenation Hub'
+              });
             });
-          });
-          setLocations(list);
+          if (list.length > 0) {
+            setLocations(list);
+          }
         }
       } catch {
         // preserve fallback list

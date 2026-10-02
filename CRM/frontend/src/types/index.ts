@@ -1,4 +1,4 @@
-export type Location = 'All Locations' | 'Brampton' | 'Mississauga';
+export type Location = 'All Locations' | 'Brampton';
 
 export interface StatMetric {
   title: string;
@@ -16,7 +16,7 @@ export interface Client {
   name: string;
   phone: string;
   email: string;
-  location: 'Brampton' | 'Mississauga';
+  location: 'Brampton';
   totalVisits: number;
   lastVisit: string;
   lastService: string;
@@ -25,7 +25,11 @@ export interface Client {
   avatar?: string;
   gender: 'Female' | 'Male' | 'Other' | 'Prefer not to say';
   dob: string;
+  address?: string;
   notes?: string;
+  consentForm?: any;
+  consentCompleted?: boolean;
+  consentSignedAt?: string;
   createdAt: string;
 }
 
@@ -38,7 +42,7 @@ export interface Lead {
   phone: string;
   email: string;
   source: LeadSource;
-  location: 'Brampton' | 'Mississauga';
+  location: 'Brampton';
   interestService: string;
   status: LeadStatus;
   addedOn: string;
@@ -65,7 +69,7 @@ export interface Invoice {
   clientAddress?: string;
   date: string;
   dueDate: string;
-  location: 'Brampton' | 'Mississauga';
+  location: 'Brampton';
   status: InvoiceStatus;
   items: InvoiceItem[];
   subtotal: number;
@@ -101,7 +105,7 @@ export interface GiftCard {
   status: GiftCardStatus;
   expiryDate: string;
   createdOn: string;
-  location: 'Brampton' | 'Mississauga';
+  location: 'Brampton';
   history: GiftCardHistoryItem[];
   notes?: string;
 }
@@ -117,7 +121,7 @@ export interface Appointment {
   service: string;
   serviceCategory: string;
   staff: string;
-  location: 'Brampton' | 'Mississauga';
+  location: 'Brampton';
   date: string; // YYYY-MM-DD
   time: string; // e.g. '10:00 AM'
   duration: string; // '60 min'
@@ -125,6 +129,11 @@ export interface Appointment {
   amount: number;
   notes?: string;
   source?: string;
+  dob?: string;
+  address?: string;
+  consentForm?: any;
+  consentCompleted?: boolean;
+  createdAt?: string;
 }
 
 export interface GalleryItem {

@@ -51,9 +51,16 @@ export const RecentAppointments: React.FC<RecentAppointmentsProps> = ({ appointm
                   {apt.clientName.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-forest-850 transition-colors">
-                    {apt.clientName}
-                  </h4>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-forest-850 transition-colors">
+                      {apt.clientName}
+                    </h4>
+                    {Boolean((apt as any).consentCompleted || (apt as any).consentForm) && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shrink-0">
+                        ✓ Consent
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[11px] text-slate-500 truncate">
                     {apt.service}
                   </p>

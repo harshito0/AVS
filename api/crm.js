@@ -206,15 +206,6 @@ const DEFAULT_LOCATIONS = [
     phone: '+1 647-987-5451',
     email: 'brampton@auravitalstar.ca',
     isActive: true
-  },
-  {
-    id: 'loc-mississauga',
-    name: 'Mississauga Centre',
-    shortName: 'Mississauga',
-    address: 'Mississauga, Ontario',
-    phone: '+1 647-987-5451',
-    email: 'mississauga@auravitalstar.ca',
-    isActive: true
   }
 ];
 

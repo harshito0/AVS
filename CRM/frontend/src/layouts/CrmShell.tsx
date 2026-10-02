@@ -39,7 +39,7 @@ export const useCrmContext = () => {
 
 export const CrmShell: React.FC = () => {
   const location = useLocation();
-  const [currentLocation, setCurrentLocation] = useState<Location>('All Locations');
+  const [currentLocation, setCurrentLocation] = useState<Location>('Brampton');
   const [dateRange, setDateRangeState] = useState<string>('All Time');
   const [startDate, setStartDate] = useState<string | undefined>(undefined);
   const [endDate, setEndDate] = useState<string | undefined>(undefined);
@@ -66,7 +66,7 @@ export const CrmShell: React.FC = () => {
       case '/appointments':
         return {
           title: 'Appointments',
-          subtitle: 'Schedule and manage client treatments across Brampton & Mississauga',
+          subtitle: 'Schedule and manage client treatments at Aura Vital Star Brampton Centre',
           icon: <Calendar className="w-5 h-5" />
         };
       case '/clients':

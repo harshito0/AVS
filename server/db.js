@@ -54,6 +54,11 @@ export function insertBooking(bookingData) {
     notes: bookingData.notes || '',
     source: bookingData.source || 'Website',
     status: bookingData.status || 'PENDING',
+    dob: bookingData.dob || bookingData.consentForm?.dob || '',
+    address: bookingData.address || bookingData.consentForm?.address || '',
+    consentForm: bookingData.consentForm || null,
+    consentCompleted: Boolean(bookingData.consentCompleted ?? bookingData.consentForm),
+    services: bookingData.services || (bookingData.consentForm?.services ? bookingData.consentForm.services : [bookingData.service]),
     createdAt: new Date().toISOString()
   };
 

@@ -1,7 +1,8 @@
-import React from 'react';
-import { Check, Calendar, Clock, MapPin, Sparkles, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, Calendar, Clock, MapPin, Sparkles, FileText, Printer, ArrowRight, ShieldCheck } from 'lucide-react';
 import { BookingRequest } from '../types';
 import { formatDisplayDate } from '../utils/validation';
+import { ConsentViewModal } from './ConsentViewModal';
 
 interface BookingSuccessProps {
   data: BookingRequest;
@@ -10,51 +11,81 @@ interface BookingSuccessProps {
 }
 
 export const BookingSuccess: React.FC<BookingSuccessProps> = ({ data, bookingId, onReset }) => {
+  const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
+
   return (
-    <div className="max-w-md mx-auto p-4 sm:p-6">
-      <div className="bg-white rounded-3xl border border-[#E3EAE5] shadow-[0_12px_40px_-10px_rgba(15,91,71,0.12)] p-6 sm:p-8 text-center relative overflow-hidden">
-        {/* Top subtle decorative gradient glow */}
+    <div className="max-w-xl mx-auto p-4 sm:p-6">
+      <div className="bg-[#FCFAF6] rounded-3xl border border-[#DFCBB0] shadow-[0_12px_40px_-10px_rgba(15,91,71,0.15)] p-6 sm:p-8 text-center relative overflow-hidden">
+        {/* Decorative ambient background glows */}
         <div className="absolute -top-16 -left-16 w-36 h-36 rounded-full bg-forest-100/50 blur-2xl pointer-events-none" />
         <div className="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-gold-100/50 blur-2xl pointer-events-none" />
 
         {/* Success Icon */}
-        <div className="relative inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-forest-900 to-forest-800 text-white shadow-lg shadow-forest-900/20 mb-5">
+        <div className="relative inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#0F5B47] to-[#165B46] text-white shadow-lg shadow-forest-900/20 mb-4">
           <div className="absolute inset-0 rounded-2xl border border-gold-400/40" />
-          <Check className="w-8 h-8 sm:w-10 sm:h-10 stroke-[2.5]" />
+          <Check className="w-8 h-8 sm:w-10 sm:h-10 stroke-[2.5] text-gold-300" />
         </div>
 
         {/* Heading & Subtitle */}
-        <span className="text-[11px] font-bold tracking-[0.2em] text-gold-600 uppercase block mb-1">
-          Confirmed Request
+        <span className="text-[11px] font-bold tracking-[0.2em] text-gold-700 uppercase block mb-1">
+          Confirmed &amp; Recorded
         </span>
-        <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-serif uppercase">
-          Appointment Request Received
+        <h2 className="text-xl sm:text-2xl font-black text-forest-950 tracking-tight font-serif uppercase">
+          Client Consent &amp; Appointment Received
         </h2>
-        
-        <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+
+        <p className="text-sm text-slate-600 mt-2 leading-relaxed max-w-md mx-auto">
           Thank you, <span className="font-bold text-slate-900">{data.fullName}</span>.
           <br />
-          Your appointment request has been submitted successfully.
+          Your consent form has been securely recorded and your appointment request has been scheduled.
         </p>
 
         {bookingId && (
-          <div className="inline-block mt-3 px-3 py-1 bg-forest-50 border border-forest-200/60 rounded-full text-xs font-semibold text-forest-850">
-            Reference: {bookingId}
+          <div className="inline-block mt-3 px-3.5 py-1 bg-forest-50 border border-forest-200/80 rounded-full text-xs font-semibold text-forest-900 font-mono">
+            Booking ID: {bookingId}
           </div>
         )}
 
+        {/* Verified Consent Badge Banner */}
+        <div className="mt-5 p-3.5 rounded-2xl bg-[#EAF4EE] border border-[#2D7A58]/30 flex items-center justify-between gap-3 text-left">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-forest-900 text-gold-400 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-forest-950">
+                Client Consent Form Verified &amp; Signed
+              </p>
+              <p className="text-[10px] text-forest-800">
+                All 9 health &amp; safety clauses acknowledged and digitally signed.
+              </p>
+            </div>
+          </div>
+
+          {data.consentForm && (
+            <button
+              type="button"
+              onClick={() => setIsConsentModalOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-forest-900 text-white text-xs font-bold hover:bg-forest-850 transition-colors shrink-0 shadow-xs cursor-pointer flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-gold-400" />
+              <span>View Form</span>
+            </button>
+          )}
+        </div>
+
         {/* Summary Details Card */}
-        <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-[#F8FAF9] border border-[#E4ECE7] text-left space-y-3.5">
-          {/* Service */}
+        <div className="mt-5 p-5 rounded-2xl bg-white border border-[#E4ECE7] text-left space-y-3.5 shadow-xs">
+          {/* Services */}
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-gold-50 border border-gold-200/60 flex items-center justify-center text-gold-600 shrink-0 mt-0.5">
               <Sparkles className="w-4 h-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Service
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Selected Treatment(s)
               </span>
-              <p className="text-sm font-bold text-slate-900 truncate">
+              <p className="text-xs font-bold text-slate-900 mt-0.5">
                 {data.service}
               </p>
             </div>
@@ -66,17 +97,17 @@ export const BookingSuccess: React.FC<BookingSuccessProps> = ({ data, bookingId,
               <MapPin className="w-4 h-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Location
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Centre Location
               </span>
-              <p className="text-sm font-bold text-slate-900 truncate">
+              <p className="text-xs font-bold text-slate-900 mt-0.5">
                 {data.location} Centre
               </p>
             </div>
           </div>
 
           {/* Date & Time Grid */}
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
+          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-100">
             <div className="flex items-start gap-2.5">
               <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 shrink-0 mt-0.5">
                 <Calendar className="w-3.5 h-3.5" />
@@ -97,44 +128,52 @@ export const BookingSuccess: React.FC<BookingSuccessProps> = ({ data, bookingId,
               </div>
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Time
+                  Time Slot
                 </span>
                 <p className="text-xs font-bold text-slate-900">
-                  {data.time}
+                  {data.time || 'Pending Staff Assignment'}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Confirmation note */}
-        <div className="mt-5 p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/60 text-xs text-emerald-900 leading-relaxed text-center">
-          <p className="font-semibold">A confirmation &amp; visit reminder email has been sent to <span className="font-bold">{data.email}</span>.</p>
-          <p className="text-[11px] text-emerald-800 mt-1">Our concierge team is preparing your sanctuary prior to your arrival.</p>
-        </div>
-
-        {/* Back to AVS / Reset Button */}
-        <div className="mt-6 flex flex-col gap-2.5">
-          <button
-            type="button"
-            onClick={() => {
-              window.location.href = '/';
-            }}
-            className="w-full py-3.5 px-6 rounded-xl bg-forest-900 hover:bg-forest-850 text-white font-bold text-sm tracking-wide shadow-md shadow-forest-900/15 transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
-          >
-            Back to AVS Website
-            <ArrowRight className="w-4 h-4" />
-          </button>
+        {/* Actions */}
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          {data.consentForm && (
+            <button
+              type="button"
+              onClick={() => setIsConsentModalOpen(true)}
+              className="w-full sm:w-auto px-5 py-3 rounded-xl bg-forest-900 text-white font-bold text-xs uppercase tracking-wider hover:bg-forest-850 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <Printer className="w-4 h-4 text-gold-400" />
+              <span>Print / View Consent Copy</span>
+            </button>
+          )}
 
           <button
             type="button"
             onClick={onReset}
-            className="w-full py-2.5 px-4 text-xs font-semibold text-slate-500 hover:text-forest-900 transition-colors"
+            className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs uppercase tracking-wider hover:bg-slate-50 transition-colors cursor-pointer"
           >
-            Book Another Appointment
+            Submit Another Form
           </button>
         </div>
+
+        <p className="text-[11px] text-slate-400 mt-5 italic">
+          A confirmation copy has been registered. If you need to make changes, please contact Aura Vital Star at +1 647-987-5451.
+        </p>
       </div>
+
+      {/* Full Signed Consent Form Modal */}
+      {data.consentForm && (
+        <ConsentViewModal
+          isOpen={isConsentModalOpen}
+          onClose={() => setIsConsentModalOpen(false)}
+          data={data.consentForm}
+          bookingId={bookingId}
+        />
+      )}
     </div>
   );
 };

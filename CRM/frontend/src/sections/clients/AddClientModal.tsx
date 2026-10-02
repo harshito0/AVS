@@ -238,8 +238,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
             value={formData.location}
             onChange={(e) => handleChange('location', e.target.value)}
             options={[
-              { value: 'Brampton', label: 'Brampton Hub' },
-              { value: 'Mississauga', label: 'Mississauga Suites' }
+              { value: 'Brampton', label: 'Brampton Hub (157 Queen St W)' }
             ]}
           />
         </div>

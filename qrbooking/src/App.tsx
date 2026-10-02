@@ -99,15 +99,12 @@ export const App: React.FC = () => {
         ) : (
           <div>
             {!submittedBooking ? (
-              <>
-                <BookingHeader />
-                <BookingForm
-                  onSuccess={(data, bookingId) => {
-                    setSubmittedBooking({ data, bookingId });
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                />
-              </>
+              <BookingForm
+                onSuccess={(data, bookingId) => {
+                  setSubmittedBooking({ data, bookingId });
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
             ) : (
               <BookingSuccess
                 data={submittedBooking.data}

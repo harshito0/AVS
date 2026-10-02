@@ -14,7 +14,7 @@ import {
 const LOCATIONS = [
   {
     id: 'brampton',
-    tag: 'LOCATION 01',
+    tag: 'SANCTUARY CENTRE',
     name: 'Brampton Rejuvenation Centre',
     shortName: 'Brampton',
     address: '157 Queen Street West, Brampton, ON L6Y 1P9',
@@ -23,19 +23,6 @@ const LOCATIONS = [
     isAvailable: true,
     badge: 'ACTIVE & BOOKING',
     hours: 'Mon–Sat: 10:00 AM – 8:00 PM | Sun: 11:00 AM – 6:00 PM'
-  },
-  {
-    id: 'mississauga',
-    tag: 'LOCATION 02',
-    name: 'Mississauga Centre',
-    shortName: 'Mississauga',
-    address: 'Mississauga, Ontario',
-    phone: '+1 647-987-5451',
-    mapUrl: 'https://maps.google.com/?q=Mississauga+ON',
-    isAvailable: false,
-    badge: 'COMING SOON',
-    hours: 'Opening Soon • VIP Priority List',
-    comingSoonNote: 'Opening soon! You may book at our Brampton location today or join the Mississauga opening VIP list.'
   }
 ];
 

@@ -15,7 +15,8 @@ import {
   CheckCircle2,
   XCircle,
   Phone,
-  Trash2
+  Trash2,
+  ShieldCheck
 } from 'lucide-react';
 import { Table, Column } from '../components/ui/Table';
 import { Button } from '../components/ui/Button';
@@ -27,6 +28,7 @@ import { Pagination } from '../components/ui/Pagination';
 import { Modal } from '../components/ui/Modal';
 import { AppointmentDetailsDrawer } from '../sections/appointments/AppointmentDetailsDrawer';
 import { AddAppointmentModal } from '../sections/appointments/AddAppointmentModal';
+import { ConsentFormViewerModal } from '../components/ConsentFormViewerModal';
 import { appointmentService } from '../services/appointmentService';
 import { Appointment, AppointmentStatus } from '../types';
 import { useCrmContext } from '../layouts/CrmShell';
@@ -45,6 +47,7 @@ export const AppointmentsPage: React.FC = () => {
 
   // Modals & Drawers
   const [selectedAptForDrawer, setSelectedAptForDrawer] = useState<Appointment | null>(null);
+  const [selectedAptForConsent, setSelectedAptForConsent] = useState<Appointment | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -146,6 +149,11 @@ export const AppointmentsPage: React.FC = () => {
       onClick: () => setSelectedAptForDrawer(apt)
     },
     {
+      label: 'View Client Consent Form',
+      icon: <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />,
+      onClick: () => setSelectedAptForConsent(apt)
+    },
+    {
       label: 'Mark as Completed',
       icon: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />,
       onClick: () => {
@@ -228,6 +236,31 @@ export const AppointmentsPage: React.FC = () => {
           <p className="text-[11px] text-slate-400">{apt.time} ({apt.duration})</p>
         </div>
       )
+    },
+    {
+      key: 'consent',
+      header: 'CONSENT FORM',
+      sortable: true,
+      render: (apt) => {
+        const isSigned = Boolean(apt.consentCompleted || apt.consentForm);
+        return (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedAptForConsent(apt);
+            }}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
+              isSigned
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 shadow-2xs'
+                : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            <ShieldCheck className={`w-3.5 h-3.5 ${isSigned ? 'text-emerald-700' : 'text-amber-600'}`} />
+            <span>{isSigned ? '✓ Signed' : 'Pending'}</span>
+          </button>
+        );
+      }
     },
     {
       key: 'amount',
@@ -493,6 +526,13 @@ export const AppointmentsPage: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* Client Consent Document Viewer Modal */}
+      <ConsentFormViewerModal
+        isOpen={Boolean(selectedAptForConsent)}
+        onClose={() => setSelectedAptForConsent(null)}
+        appointment={selectedAptForConsent}
+      />
     </div>
   );
 };

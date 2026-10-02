@@ -139,7 +139,7 @@ export default function PackagesPage({ onBookClick }) {
               <div className="packages-refined-footer-badge">
                 <span className="packages-badge-status">AVS CURATED</span>
                 <span className="packages-badge-detail">
-                  Brampton &bull; Mississauga <span className="packages-badge-bullet">&bull;</span> RMT Insurance Covered Options
+                  Brampton Sanctuary <span className="packages-badge-bullet">&bull;</span> RMT Insurance Covered Options
                 </span>
               </div>
             </div>

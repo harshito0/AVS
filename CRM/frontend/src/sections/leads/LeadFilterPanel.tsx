@@ -91,9 +91,8 @@ export const LeadFilterPanel: React.FC<LeadFilterPanelProps> = ({
             value={locationFilter}
             onChange={(e) => setLocationFilter(e.target.value)}
             options={[
-              { value: 'All', label: 'All Locations' },
-              { value: 'Brampton', label: 'Brampton Centre' },
-              { value: 'Mississauga', label: 'Mississauga Suites' }
+              { value: 'All', label: 'All' },
+              { value: 'Brampton', label: 'Brampton Centre' }
             ]}
           />
         </div>

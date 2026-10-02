@@ -14,7 +14,7 @@ function mapGiftCard(c: any): GiftCard {
     status: (c.status || 'Active') as GiftCardStatus,
     expiryDate: c.expiryDate || '',
     createdOn: typeof c.createdAt === 'string' ? c.createdAt.split('T')[0] : (c.createdOn || new Date().toISOString().split('T')[0]),
-    location: (c.location?.shortName || c.location || 'Brampton') as 'Brampton' | 'Mississauga',
+    location: 'Brampton',
     notes: c.notes || undefined,
     history: Array.isArray(c.transactions)
       ? c.transactions.map((t: any): GiftCardHistoryItem => ({
@@ -64,7 +64,7 @@ export const giftCardService = {
     buyerEmail?: string;
     value: number;
     expiryDate: string;
-    location: 'Brampton' | 'Mississauga';
+    location: 'Brampton';
     notes?: string;
   }): Promise<GiftCard> {
     try {

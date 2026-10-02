@@ -10,8 +10,7 @@ export const REVENUE_CHART_DATA: { month: string; revenue: number; appointments:
 export const SERVICE_PERFORMANCE_DATA: { name: string; count: number; revenue: number; fill: string }[] = [];
 
 export const LOCATION_DISTRIBUTION: { name: string; value: number; percentage: string; color: string }[] = [
-  { name: 'Brampton', value: 0, percentage: '0%', color: '#0F291E' },
-  { name: 'Mississauga', value: 0, percentage: '0%', color: '#C5A880' }
+  { name: 'Brampton', value: 0, percentage: '100%', color: '#0F291E' }
 ];
 
 export const MONTHLY_RETENTION_DATA: { month: string; returning: number; newClients: number }[] = [
